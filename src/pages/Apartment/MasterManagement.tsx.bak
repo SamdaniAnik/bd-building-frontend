@@ -1,0 +1,1321 @@
+import React, { useState, useEffect } from 'react';
+import api from '../../api/client';
+
+interface UnitTemplate {
+  id_unit_templates: number;
+  unit_slot: string;
+  template_name: string;
+  gross_area_sqft: string | number;
+  carpet_area_sqft: string | number;
+  common_area_sqft: string | number;
+  default_land_share_sqft: string | number;
+  default_land_share_katha: string | number;
+  bedrooms: number;
+  bathrooms: number;
+  balconies: number;
+  facing_direction: string;
+  is_corner_unit: boolean | number;
+  description: string;
+}
+
+interface MasterItem {
+  id_master_items: number;
+  item_code: string;
+  item_name: string;
+  category: string;
+  sub_category: string;
+  unit: string;
+  standard_rate: string | number;
+  minimum_stock_alert: string | number;
+  reorder_quantity: string | number;
+  technical_specification: string;
+  is_active: boolean | number;
+}
+
+interface ShareConfig {
+  id_shares_master?: number;
+  project_title?: string;
+  total_land_katha?: string | number;
+  total_land_sqft?: string | number;
+  total_floors_count?: string | number;
+  units_per_floor?: string | number;
+  total_units_count?: string | number;
+  total_buildable_area_sqft?: string | number;
+  common_space_percentage?: string | number;
+  land_share_allocation_method?: string;
+  common_area_allocation_method?: string;
+  notes?: string;
+}
+
+interface MasterWork {
+  id_master_works: number;
+  work_code: string;
+  work_name: string;
+  category: string;
+  scope_level: string;
+  default_allocation_rule: string;
+  standard_budget_estimate: string | number;
+  standard_scope_notes: string;
+  is_active: boolean | number;
+}
+
+interface VendorCategory {
+  id_vendor_cat: number;
+  category_code: string;
+  category_name: string;
+  trade_type: string;
+  default_retention_percent: string | number;
+  default_payment_terms: string;
+}
+
+export default function MasterManagement() {
+  const [activeTab, setActiveTab] = useState<'templates' | 'shares' | 'items' | 'works' | 'vendors'>('templates');
+  const [loading, setLoading] = useState(false);
+  const [templates, setTemplates] = useState<UnitTemplate[]>([]);
+  const [items, setItems] = useState<MasterItem[]>([]);
+  const [shareConfig, setShareConfig] = useState<ShareConfig>({});
+  const [allUnits, setAllUnits] = useState<any[]>([]);
+  const [works, setWorks] = useState<MasterWork[]>([]);
+  const [vendorCats, setVendorCats] = useState<VendorCategory[]>([]);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // Modals & form state
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<Partial<UnitTemplate>>({});
+  const [showItemModal, setShowItemModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<Partial<MasterItem>>({});
+  const [showWorkModal, setShowWorkModal] = useState(false);
+  const [selectedWork, setSelectedWork] = useState<Partial<MasterWork>>({});
+  const [newFloorNum, setNewFloorNum] = useState<number>(7);
+
+  const fetchAllData = async () => {
+    setLoading(true);
+    try {
+      const [tplRes, itemRes, shareRes, workRes, catRes] = await Promise.all([
+        api.get('/apartment/masters/unit-templates'),
+        api.get('/apartment/masters/items'),
+        api.get('/apartment/masters/shares'),
+        api.get('/apartment/masters/works'),
+        api.get('/apartment/masters/vendor-categories')
+      ]);
+
+      if (tplRes.data?.success) setTemplates(tplRes.data.templates || []);
+      if (itemRes.data?.success) setItems(itemRes.data.items || []);
+      if (shareRes.data?.success) {
+        setShareConfig(shareRes.data.shareConfig || {});
+        setAllUnits(shareRes.data.allUnits || []);
+      }
+      if (workRes.data?.success) setWorks(workRes.data.works || []);
+      if (catRes.data?.success) setVendorCats(catRes.data.categories || []);
+    } catch (err: any) {
+      console.error('Error fetching master data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllData();
+  }, []);
+
+  const showToast = (type: 'success' | 'error', message: string) => {
+    setNotification({ type, message });
+    setTimeout(() => setNotification(null), 4000);
+  };
+
+  // Handlers
+  const handleSaveTemplate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await api.post('/apartment/masters/unit-templates', selectedTemplate);
+      if (res.data?.success) {
+        showToast('success', 'Master Unit Template saved successfully!');
+        setShowTemplateModal(false);
+        fetchAllData();
+      }
+    } catch (err: any) {
+      showToast('error', err.response?.data?.message || err.message);
+    }
+  };
+
+  const handleSaveItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await api.post('/apartment/masters/items', selectedItem);
+      if (res.data?.success) {
+        showToast('success', 'Item Catalogue Master saved successfully!');
+        setShowItemModal(false);
+        fetchAllData();
+      }
+    } catch (err: any) {
+      showToast('error', err.response?.data?.message || err.message);
+    }
+  };
+
+  const handleSaveWork = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await api.post('/apartment/masters/works', selectedWork);
+      if (res.data?.success) {
+        showToast('success', 'Work WBS Master saved successfully!');
+        setShowWorkModal(false);
+        fetchAllData();
+      }
+    } catch (err: any) {
+      showToast('error', err.response?.data?.message || err.message);
+    }
+  };
+
+  const handleUpdateShareConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await api.post('/apartment/masters/shares', shareConfig);
+      if (res.data?.success) {
+        showToast('success', 'Master Shares configuration saved!');
+        fetchAllData();
+      }
+    } catch (err: any) {
+      showToast('error', err.response?.data?.message || err.message);
+    }
+  };
+
+  const handleRecalculateShares = async () => {
+    if (!window.confirm('Recalculate Undivided Land Share (Katha & SQFT) and Common Space across all units based on updated master formula?')) return;
+    try {
+      const res = await api.post('/apartment/masters/recalculate-shares');
+      if (res.data?.success) {
+        showToast('success', res.data.message);
+        fetchAllData();
+      }
+    } catch (err: any) {
+      showToast('error', err.response?.data?.message || err.message);
+    }
+  };
+
+  const handleGenerateFloor6Units = async () => {
+    try {
+      const res = await api.post('/apartment/masters/generate-floor-6-units', {
+        floor_number: newFloorNum,
+        floor_name: `Floor ${newFloorNum} (Standard 6 Units)`
+      });
+      if (res.data?.success) {
+        showToast('success', res.data.message);
+        fetchAllData();
+      }
+    } catch (err: any) {
+      showToast('error', err.response?.data?.message || err.message);
+    }
+  };
+
+  return (
+    <div className="page-container" style={{ padding: '24px', maxWidth: '1440px', margin: '0 auto' }}>
+      {/* Toast Alert */}
+      {notification && (
+        <div style={{
+          position: 'fixed', top: '24px', right: '24px', zIndex: 9999,
+          padding: '14px 24px', borderRadius: '10px',
+          background: notification.type === 'success' ? '#065f46' : '#991b1b',
+          color: '#ffffff', fontWeight: 600, boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+          display: 'flex', alignItems: 'center', gap: '10px'
+        }}>
+          <i className={notification.type === 'success' ? 'fa-solid fa-circle-check' : 'fa-solid fa-triangle-exclamation'}></i>
+          {notification.message}
+        </div>
+      )}
+
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '44px', height: '44px', borderRadius: '12px',
+              background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.25rem'
+            }}>
+              <i className="fa-solid fa-cubes-stacked"></i>
+            </div>
+            <div>
+              <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>
+                Master Data Management
+              </h1>
+              <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem' }}>
+                Per-Floor 6-Unit Architecture, Undivided Land Share (Katha & SQFT), Materials & WBS Work Standards
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button
+            onClick={handleRecalculateShares}
+            className="btn btn-outline-primary"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: '8px', fontWeight: 600 }}
+          >
+            <i className="fa-solid fa-calculator"></i>
+            Recalculate All Unit Shares
+          </button>
+          <button
+            onClick={fetchAllData}
+            className="btn btn-secondary"
+            style={{ padding: '10px 16px', borderRadius: '8px' }}
+            title="Refresh Data"
+          >
+            <i className="fa-solid fa-rotate"></i>
+          </button>
+        </div>
+      </div>
+
+      {/* Tab Navigation */}
+      <div style={{
+        display: 'flex', gap: '8px', borderBottom: '2px solid #e2e8f0', marginBottom: '24px', overflowX: 'auto'
+      }}>
+        {[
+          { key: 'templates', label: 'Per-Floor 6-Unit Master', icon: 'fa-solid fa-table-cells-large', badge: '6 Slots (A–F)' },
+          { key: 'shares', label: 'Land & Common Shares Master', icon: 'fa-solid fa-chart-pie', badge: '7.5 Katha' },
+          { key: 'items', label: 'Materials & Items Master', icon: 'fa-solid fa-boxes-stacked', badge: `${items.length} Items` },
+          { key: 'works', label: 'Works & WBS Master', icon: 'fa-solid fa-trowel-bricks', badge: `${works.length} WBS` },
+          { key: 'vendors', label: 'Vendor & Trade Categories', icon: 'fa-solid fa-handshake', badge: `${vendorCats.length} Trades` }
+        ].map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key as any)}
+            style={{
+              padding: '12px 20px',
+              border: 'none',
+              background: 'none',
+              borderBottom: activeTab === tab.key ? '3px solid #4f46e5' : '3px solid transparent',
+              color: activeTab === tab.key ? '#4f46e5' : '#64748b',
+              fontWeight: activeTab === tab.key ? 700 : 500,
+              fontSize: '0.95rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'all 0.2s',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <i className={tab.icon}></i>
+            {tab.label}
+            <span style={{
+              background: activeTab === tab.key ? '#e0e7ff' : '#f1f5f9',
+              color: activeTab === tab.key ? '#3730a3' : '#64748b',
+              padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600
+            }}>
+              {tab.badge}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* ─────────────────────────────────────────────────────────────
+          TAB 1: PER-FLOOR 6-UNIT MASTER ARCHITECTURE
+      ───────────────────────────────────────────────────────────── */}
+      {activeTab === 'templates' && (
+        <div>
+          {/* Quick Explanation Banner */}
+          <div style={{
+            background: 'linear-gradient(135deg, #f8fafc, #edf2f7)',
+            border: '1px solid #cbd5e1',
+            borderRadius: '12px',
+            padding: '20px',
+            marginBottom: '24px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '16px'
+          }}>
+            <div>
+              <h3 style={{ margin: '0 0 6px 0', fontSize: '1.15rem', color: '#1e293b' }}>
+                <i className="fa-solid fa-layer-group text-primary" style={{ marginRight: '8px' }}></i>
+                6-Units Per Floor Standard Layout (Slots A, B, C, D, E, F)
+              </h3>
+              <p style={{ margin: 0, color: '#475569', fontSize: '0.88rem', maxWidth: '780px' }}>
+                Each residential floor is engineered with exactly 6 apartment units. Common floor lobbies (420 SFT) are split equally (70 SFT each), while building common amenities (lifts, substation, rooftop) are distributed across all units.
+              </p>
+            </div>
+
+            {/* Quick Generator */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#ffffff', padding: '8px 14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>Auto-Generate Floor:</span>
+              <input
+                type="number"
+                min="1"
+                max="25"
+                value={newFloorNum}
+                onChange={e => setNewFloorNum(parseInt(e.target.value) || 1)}
+                style={{ width: '60px', padding: '6px 8px', border: '1px solid #cbd5e1', borderRadius: '6px', textAlign: 'center', fontWeight: 700 }}
+              />
+              <button
+                onClick={handleGenerateFloor6Units}
+                className="btn btn-primary"
+                style={{ padding: '6px 14px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600 }}
+              >
+                <i className="fa-solid fa-plus-circle" style={{ marginRight: '6px' }}></i>
+                Create 6 Units
+              </button>
+            </div>
+          </div>
+
+          {/* 6 Unit Slots Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+            {templates.map(tmpl => (
+              <div
+                key={tmpl.id_unit_templates}
+                style={{
+                  background: '#ffffff',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '14px',
+                  boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
+                  padding: '20px',
+                  position: 'relative',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between'
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{
+                        width: '38px', height: '38px', borderRadius: '8px',
+                        background: '#4f46e5', color: '#ffffff',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 800, fontSize: '1.2rem'
+                      }}>
+                        {tmpl.unit_slot}
+                      </div>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: '1rem', color: '#0f172a', fontWeight: 700 }}>
+                          Slot {tmpl.unit_slot}
+                        </h4>
+                        <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                          {tmpl.facing_direction} Facing {tmpl.is_corner_unit ? '• Corner Unit' : ''}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setSelectedTemplate(tmpl);
+                        setShowTemplateModal(true);
+                      }}
+                      style={{
+                        background: '#f1f5f9', border: 'none', color: '#475569',
+                        padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600
+                      }}
+                    >
+                      <i className="fa-solid fa-pen-to-square"></i> Edit
+                    </button>
+                  </div>
+
+                  <p style={{ fontSize: '0.85rem', color: '#334155', fontWeight: 600, marginBottom: '14px' }}>
+                    {tmpl.template_name}
+                  </p>
+
+                  {/* Metrics Box */}
+                  <div style={{
+                    display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px',
+                    background: '#f8fafc', padding: '12px', borderRadius: '10px', border: '1px solid #f1f5f9', marginBottom: '14px'
+                  }}>
+                    <div>
+                      <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block' }}>Gross Area</span>
+                      <strong style={{ fontSize: '0.95rem', color: '#0f172a' }}>{tmpl.gross_area_sqft}</strong>
+                      <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}> SFT</span>
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block' }}>Carpet Area</span>
+                      <strong style={{ fontSize: '0.95rem', color: '#0f172a' }}>{tmpl.carpet_area_sqft}</strong>
+                      <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}> SFT</span>
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block' }}>Common Share</span>
+                      <strong style={{ fontSize: '0.95rem', color: '#4f46e5' }}>{tmpl.common_area_sqft}</strong>
+                      <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}> SFT</span>
+                    </div>
+                  </div>
+
+                  {/* BD Land Share Specification */}
+                  <div style={{
+                    background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '10px 14px', borderRadius: '8px', marginBottom: '12px'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.8rem', color: '#065f46', fontWeight: 600 }}>
+                        <i className="fa-solid fa-map-location-dot" style={{ marginRight: '6px' }}></i>
+                        Undivided Land Share:
+                      </span>
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{ fontSize: '0.9rem', fontWeight: 800, color: '#065f46' }}>
+                          {Number(tmpl.default_land_share_katha).toFixed(4)} Katha
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: '#047857', display: 'block' }}>
+                          ({tmpl.default_land_share_sqft} SQFT)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bed / Bath / Balcony */}
+                  <div style={{ display: 'flex', gap: '14px', fontSize: '0.8rem', color: '#475569' }}>
+                    <span><i className="fa-solid fa-bed text-muted" style={{ marginRight: '4px' }}></i>{tmpl.bedrooms} Beds</span>
+                    <span><i className="fa-solid fa-bath text-muted" style={{ marginRight: '4px' }}></i>{tmpl.bathrooms} Baths</span>
+                    <span><i className="fa-solid fa-tree-city text-muted" style={{ marginRight: '4px' }}></i>{tmpl.balconies} Verandas</span>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '12px', borderTop: '1px solid #f1f5f9', paddingTop: '10px' }}>
+                  <p style={{ margin: 0, fontSize: '0.78rem', color: '#64748b', fontStyle: 'italic' }}>
+                    {tmpl.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Floor-by-Floor Unit Map Preview */}
+          <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '20px' }}>
+            <h3 style={{ margin: '0 0 16px 0', fontSize: '1.1rem', color: '#0f172a' }}>
+              <i className="fa-solid fa-building-user text-primary" style={{ marginRight: '8px' }}></i>
+              Active Multi-Floor Matrix ({allUnits.length} Total Units Generated)
+            </h3>
+
+            <div className="table-responsive">
+              <table className="table table-hover" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                <thead style={{ background: '#f8fafc', color: '#475569', textAlign: 'left' }}>
+                  <tr>
+                    <th style={{ padding: '10px' }}>Unit #</th>
+                    <th style={{ padding: '10px' }}>Slot</th>
+                    <th style={{ padding: '10px' }}>Floor</th>
+                    <th style={{ padding: '10px' }}>Gross SFT</th>
+                    <th style={{ padding: '10px' }}>Carpet SFT</th>
+                    <th style={{ padding: '10px' }}>Common SFT</th>
+                    <th style={{ padding: '10px' }}>Land Share (Katha)</th>
+                    <th style={{ padding: '10px' }}>Land Share (SQFT)</th>
+                    <th style={{ padding: '10px' }}>Facing</th>
+                    <th style={{ padding: '10px' }}>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allUnits.slice(0, 18).map(u => (
+                    <tr key={u.id_units} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '10px', fontWeight: 700, color: '#4f46e5' }}>{u.unit_number}</td>
+                      <td style={{ padding: '10px' }}>
+                        <span style={{
+                          padding: '2px 8px', borderRadius: '4px', background: '#e0e7ff', color: '#3730a3', fontWeight: 700
+                        }}>
+                          Slot {u.unit_slot || u.unit_number.slice(-1)}
+                        </span>
+                      </td>
+                      <td style={{ padding: '10px' }}>Floor {u.floor_number || Math.ceil(parseInt(u.unit_number) / 10) || 1}</td>
+                      <td style={{ padding: '10px', fontWeight: 600 }}>{u.area_sqft}</td>
+                      <td style={{ padding: '10px' }}>{u.carpet_area_sqft || '-'}</td>
+                      <td style={{ padding: '10px', color: '#6366f1' }}>{u.common_area_sqft || '-'}</td>
+                      <td style={{ padding: '10px', fontWeight: 700, color: '#065f46' }}>{u.land_share_katha || '-'}</td>
+                      <td style={{ padding: '10px' }}>{u.land_share_sqft || '-'}</td>
+                      <td style={{ padding: '10px' }}>{u.facing_direction || 'South'}</td>
+                      <td style={{ padding: '10px' }}>
+                        <span style={{
+                          padding: '3px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600,
+                          background: u.status === 'SOLD' ? '#dcfce7' : '#fef3c7',
+                          color: u.status === 'SOLD' ? '#166534' : '#92400e'
+                        }}>
+                          {u.status || 'AVAILABLE'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {allUnits.length > 18 && (
+                <div style={{ textAlign: 'center', padding: '10px', color: '#64748b', fontSize: '0.85rem' }}>
+                  Showing first 18 of {allUnits.length} units. See Flats & Units tab for complete directory.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          TAB 2: LAND SHARES & COMMON SPACE ALLOCATION ENGINE
+      ───────────────────────────────────────────────────────────── */}
+      {activeTab === 'shares' && (
+        <div>
+          <form onSubmit={handleUpdateShareConfig}>
+            <div style={{ background: '#ffffff', borderRadius: '14px', border: '1px solid #e2e8f0', padding: '24px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>
+                    <i className="fa-solid fa-landmark text-primary" style={{ marginRight: '8px' }}></i>
+                    Bangladeshi Land Deed & Undivided Land Share Parameters
+                  </h3>
+                  <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}>
+                    Calculation basis: 1 Katha = 720 SQFT. Each flat owner receives an undivided registered share in the land title.
+                  </p>
+                </div>
+                <button type="submit" className="btn btn-primary" style={{ padding: '10px 20px', borderRadius: '8px', fontWeight: 600 }}>
+                  <i className="fa-solid fa-save" style={{ marginRight: '6px' }}></i> Save Land Formula
+                </button>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
+                <div>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>Total Plot Area (Katha)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    className="form-control"
+                    value={shareConfig.total_land_katha || ''}
+                    onChange={e => {
+                      const katha = parseFloat(e.target.value) || 0;
+                      setShareConfig({
+                        ...shareConfig,
+                        total_land_katha: e.target.value,
+                        total_land_sqft: (katha * 720).toFixed(2)
+                      });
+                    }}
+                    style={{ marginTop: '6px' }}
+                  />
+                  <small style={{ color: '#64748b' }}>Standard example: 7.50 Katha</small>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>Total Land in SQFT (Katha × 720)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    className="form-control"
+                    value={shareConfig.total_land_sqft || ''}
+                    onChange={e => setShareConfig({ ...shareConfig, total_land_sqft: e.target.value })}
+                    style={{ marginTop: '6px' }}
+                  />
+                  <small style={{ color: '#64748b' }}>7.50 × 720 = 5,400.00 SQFT</small>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>Floors Count</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={shareConfig.total_floors_count || ''}
+                    onChange={e => setShareConfig({ ...shareConfig, total_floors_count: e.target.value })}
+                    style={{ marginTop: '6px' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>Units Per Floor</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={shareConfig.units_per_floor || ''}
+                    onChange={e => setShareConfig({ ...shareConfig, units_per_floor: e.target.value })}
+                    style={{ marginTop: '6px', fontWeight: 700 }}
+                  />
+                  <small style={{ color: '#059669', fontWeight: 600 }}>Standard: 6 Units (A–F)</small>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>Total Units Count</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={shareConfig.total_units_count || ''}
+                    onChange={e => setShareConfig({ ...shareConfig, total_units_count: e.target.value })}
+                    style={{ marginTop: '6px' }}
+                  />
+                  <small style={{ color: '#64748b' }}>6 Floors × 6 Units = 36 Units</small>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>Common Space Percentage</label>
+                  <div style={{ display: 'flex', alignItems: 'center', marginTop: '6px' }}>
+                    <input
+                      type="number"
+                      step="0.1"
+                      className="form-control"
+                      value={shareConfig.common_space_percentage || ''}
+                      onChange={e => setShareConfig({ ...shareConfig, common_space_percentage: e.target.value })}
+                    />
+                    <span style={{ marginLeft: '8px', fontWeight: 600 }}>%</span>
+                  </div>
+                  <small style={{ color: '#64748b' }}>Lobby, Stairs, Lift Core, Substation</small>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>Land Share Allocation Method</label>
+                  <select
+                    className="form-select"
+                    value={shareConfig.land_share_allocation_method || 'PROPORTIONAL_TO_AREA'}
+                    onChange={e => setShareConfig({ ...shareConfig, land_share_allocation_method: e.target.value })}
+                    style={{ marginTop: '6px' }}
+                  >
+                    <option value="PROPORTIONAL_TO_AREA">Proportional to Flat Gross SFT</option>
+                    <option value="EQUAL_PER_UNIT">Equal Split Per Flat (5,400 / 36 = 150 SFT)</option>
+                    <option value="CUSTOM">Custom Legal Allotment</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>Common Area Split Hierarchy</label>
+                  <select
+                    className="form-select"
+                    value={shareConfig.common_area_allocation_method || 'FLOOR_COMMON_PLUS_BUILDING_COMMON'}
+                    onChange={e => setShareConfig({ ...shareConfig, common_area_allocation_method: e.target.value })}
+                    style={{ marginTop: '6px' }}
+                  >
+                    <option value="FLOOR_COMMON_PLUS_BUILDING_COMMON">Two-Tier: Floor 6-Units Lobby + Building Common</option>
+                    <option value="UNIFORM_ALL_UNITS">Single-Tier Uniform Building Split</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '20px' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>Deed Registration & Legal Notes</label>
+                <textarea
+                  className="form-control"
+                  rows={2}
+                  value={shareConfig.notes || ''}
+                  onChange={e => setShareConfig({ ...shareConfig, notes: e.target.value })}
+                  placeholder="Legal share transfer guidelines, RAJUK approval clause..."
+                  style={{ marginTop: '6px' }}
+                />
+              </div>
+            </div>
+          </form>
+
+          {/* Allocation Breakdown Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+            <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '20px' }}>
+              <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: '#1e293b' }}>
+                <i className="fa-solid fa-scale-balanced text-primary" style={{ marginRight: '8px' }}></i>
+                Tier 1: Floor Common Area
+              </h4>
+              <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                Includes floor corridor, lift front landing, and service ducts on each residential level.
+              </p>
+              <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '0.85rem' }}>
+                  <span>Floor Common Lobby:</span>
+                  <strong>420.00 SFT</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '0.85rem' }}>
+                  <span>Flats per floor:</span>
+                  <strong>6 Units (Slots A–F)</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#4f46e5', fontWeight: 700 }}>
+                  <span>Each Unit Share:</span>
+                  <strong>70.00 SFT</strong>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '20px' }}>
+              <h4 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: '#1e293b' }}>
+                <i className="fa-solid fa-city text-primary" style={{ marginRight: '8px' }}></i>
+                Tier 2: Building Common Area
+              </h4>
+              <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                Includes 2 high-speed passenger elevators, ground floor reception, guard room, sub-station, and rooftop community hall.
+              </p>
+              <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '0.85rem' }}>
+                  <span>Building Core Area:</span>
+                  <strong>7,200.00 SFT</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '0.85rem' }}>
+                  <span>Total Building Units:</span>
+                  <strong>36 Flats</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#059669', fontWeight: 700 }}>
+                  <span>Average Unit Share:</span>
+                  <strong>~180.00 - 200.00 SFT</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          TAB 3: ITEM & MATERIAL CATALOGUE MASTER
+      ───────────────────────────────────────────────────────────── */}
+      {activeTab === 'items' && (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#0f172a' }}>
+              <i className="fa-solid fa-warehouse text-primary" style={{ marginRight: '8px' }}></i>
+              Master Materials & Equipment Catalogue ({items.length} Items)
+            </h3>
+            <button
+              onClick={() => {
+                setSelectedItem({
+                  category: 'STRUCTURAL',
+                  unit: 'Bags',
+                  standard_rate: 0,
+                  minimum_stock_alert: 50,
+                  reorder_quantity: 200,
+                  is_active: true
+                });
+                setShowItemModal(true);
+              }}
+              className="btn btn-primary"
+              style={{ padding: '8px 16px', borderRadius: '8px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <i className="fa-solid fa-plus"></i> Add Master Item
+            </button>
+          </div>
+
+          <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+            <table className="table table-hover" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', margin: 0 }}>
+              <thead style={{ background: '#f8fafc', color: '#475569', textAlign: 'left' }}>
+                <tr>
+                  <th style={{ padding: '12px' }}>Code</th>
+                  <th style={{ padding: '12px' }}>Item Name & Technical Spec</th>
+                  <th style={{ padding: '12px' }}>Category</th>
+                  <th style={{ padding: '12px' }}>UoM</th>
+                  <th style={{ padding: '12px', textAlign: 'right' }}>Standard Rate (BDT)</th>
+                  <th style={{ padding: '12px', textAlign: 'center' }}>Min Stock Alert</th>
+                  <th style={{ padding: '12px', textAlign: 'center' }}>Reorder Qty</th>
+                  <th style={{ padding: '12px', textAlign: 'center' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map(it => (
+                  <tr key={it.id_master_items} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '12px', fontWeight: 700, color: '#4f46e5' }}>{it.item_code}</td>
+                    <td style={{ padding: '12px' }}>
+                      <strong style={{ color: '#1e293b', display: 'block' }}>{it.item_name}</strong>
+                      <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{it.technical_specification}</span>
+                    </td>
+                    <td style={{ padding: '12px' }}>
+                      <span style={{
+                        padding: '3px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600,
+                        background: it.category === 'STRUCTURAL' ? '#fee2e2' : it.category === 'FINISHING' ? '#e0e7ff' : '#dcfce7',
+                        color: it.category === 'STRUCTURAL' ? '#991b1b' : it.category === 'FINISHING' ? '#3730a3' : '#166534'
+                      }}>
+                        {it.category}
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px' }}>{it.unit}</td>
+                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>
+                      ৳{Number(it.standard_rate).toLocaleString()}
+                    </td>
+                    <td style={{ padding: '12px', textAlign: 'center', color: '#d97706', fontWeight: 600 }}>
+                      {it.minimum_stock_alert}
+                    </td>
+                    <td style={{ padding: '12px', textAlign: 'center' }}>{it.reorder_quantity}</td>
+                    <td style={{ padding: '12px', textAlign: 'center' }}>
+                      <button
+                        onClick={() => {
+                          setSelectedItem(it);
+                          setShowItemModal(true);
+                        }}
+                        style={{ background: 'none', border: 'none', color: '#4f46e5', cursor: 'pointer', fontSize: '0.9rem' }}
+                      >
+                        <i className="fa-solid fa-pen-to-square"></i>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          TAB 4: WORKS & WBS MASTER
+      ───────────────────────────────────────────────────────────── */}
+      {activeTab === 'works' && (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#0f172a' }}>
+              <i className="fa-solid fa-trowel-bricks text-primary" style={{ marginRight: '8px' }}></i>
+              Master Work Breakdown Structure (WBS) & Allocation Matrix
+            </h3>
+            <button
+              onClick={() => {
+                setSelectedWork({
+                  category: 'STRUCTURAL',
+                  scope_level: 'BUILDING_COMMON',
+                  default_allocation_rule: 'ALL_UNITS_AREA_BASED',
+                  standard_budget_estimate: 0,
+                  is_active: true
+                });
+                setShowWorkModal(true);
+              }}
+              className="btn btn-primary"
+              style={{ padding: '8px 16px', borderRadius: '8px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <i className="fa-solid fa-plus"></i> Add Master Work
+            </button>
+          </div>
+
+          <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+            <table className="table table-hover" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', margin: 0 }}>
+              <thead style={{ background: '#f8fafc', color: '#475569', textAlign: 'left' }}>
+                <tr>
+                  <th style={{ padding: '12px' }}>WBS Code</th>
+                  <th style={{ padding: '12px' }}>Work Description</th>
+                  <th style={{ padding: '12px' }}>Category</th>
+                  <th style={{ padding: '12px' }}>Scope Level</th>
+                  <th style={{ padding: '12px' }}>Default Allocation Rule</th>
+                  <th style={{ padding: '12px', textAlign: 'right' }}>Standard Budget (BDT)</th>
+                  <th style={{ padding: '12px', textAlign: 'center' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {works.map(w => (
+                  <tr key={w.id_master_works} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '12px', fontWeight: 700, color: '#4f46e5' }}>{w.work_code}</td>
+                    <td style={{ padding: '12px' }}>
+                      <strong style={{ color: '#1e293b', display: 'block' }}>{w.work_name}</strong>
+                      <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{w.standard_scope_notes}</span>
+                    </td>
+                    <td style={{ padding: '12px' }}>{w.category}</td>
+                    <td style={{ padding: '12px' }}>
+                      <span style={{
+                        padding: '3px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600,
+                        background: w.scope_level === 'FLOOR_COMMON' ? '#fef3c7' : w.scope_level === 'INDIVIDUAL_UNIT' ? '#fee2e2' : '#e0e7ff',
+                        color: w.scope_level === 'FLOOR_COMMON' ? '#92400e' : w.scope_level === 'INDIVIDUAL_UNIT' ? '#991b1b' : '#3730a3'
+                      }}>
+                        {w.scope_level}
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px', fontWeight: 600, color: '#0f172a' }}>
+                      {w.default_allocation_rule}
+                    </td>
+                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700, color: '#047857' }}>
+                      ৳{Number(w.standard_budget_estimate).toLocaleString()}
+                    </td>
+                    <td style={{ padding: '12px', textAlign: 'center' }}>
+                      <button
+                        onClick={() => {
+                          setSelectedWork(w);
+                          setShowWorkModal(true);
+                        }}
+                        style={{ background: 'none', border: 'none', color: '#4f46e5', cursor: 'pointer', fontSize: '0.9rem' }}
+                      >
+                        <i className="fa-solid fa-pen-to-square"></i>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          TAB 5: VENDOR & TRADE CATEGORIES MASTER
+      ───────────────────────────────────────────────────────────── */}
+      {activeTab === 'vendors' && (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#0f172a' }}>
+              <i className="fa-solid fa-handshake text-primary" style={{ marginRight: '8px' }}></i>
+              Vendor & Trade Contract Categories ({vendorCats.length} Categories)
+            </h3>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+            {vendorCats.map(vc => (
+              <div key={vc.id_vendor_cat} style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '18px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                  <span style={{ padding: '2px 8px', borderRadius: '4px', background: '#f1f5f9', fontWeight: 700, fontSize: '0.8rem', color: '#475569' }}>
+                    {vc.category_code}
+                  </span>
+                  <span style={{ padding: '2px 8px', borderRadius: '4px', background: '#fee2e2', color: '#991b1b', fontWeight: 700, fontSize: '0.75rem' }}>
+                    {vc.default_retention_percent}% Retention
+                  </span>
+                </div>
+                <h4 style={{ margin: '0 0 4px 0', fontSize: '1rem', color: '#0f172a' }}>{vc.category_name}</h4>
+                <p style={{ margin: '0 0 12px 0', fontSize: '0.82rem', color: '#64748b' }}>Trade: {vc.trade_type}</p>
+                <div style={{ background: '#f8fafc', padding: '8px 12px', borderRadius: '6px', fontSize: '0.8rem', color: '#334155' }}>
+                  <span style={{ fontWeight: 600 }}>Payment Terms:</span> {vc.default_payment_terms}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          MODAL: EDIT / CREATE UNIT TEMPLATE (SLOTS A TO F)
+      ───────────────────────────────────────────────────────────── */}
+      {showTemplateModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000
+        }}>
+          <div style={{ background: '#ffffff', borderRadius: '14px', width: '90%', maxWidth: '640px', padding: '24px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>
+                Edit Slot {selectedTemplate.unit_slot} Master Architecture
+              </h3>
+              <button onClick={() => setShowTemplateModal(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
+            </div>
+
+            <form onSubmit={handleSaveTemplate}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginBottom: '14px' }}>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Template Title</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={selectedTemplate.template_name || ''}
+                    onChange={e => setSelectedTemplate({ ...selectedTemplate, template_name: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Gross Area (SFT)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    className="form-control"
+                    value={selectedTemplate.gross_area_sqft || ''}
+                    onChange={e => setSelectedTemplate({ ...selectedTemplate, gross_area_sqft: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Carpet Area (SFT)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    className="form-control"
+                    value={selectedTemplate.carpet_area_sqft || ''}
+                    onChange={e => setSelectedTemplate({ ...selectedTemplate, carpet_area_sqft: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Common Area Share (SFT)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    className="form-control"
+                    value={selectedTemplate.common_area_sqft || ''}
+                    onChange={e => setSelectedTemplate({ ...selectedTemplate, common_area_sqft: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Land Share (SQFT)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    className="form-control"
+                    value={selectedTemplate.default_land_share_sqft || ''}
+                    onChange={e => {
+                      const sqft = parseFloat(e.target.value) || 0;
+                      setSelectedTemplate({
+                        ...selectedTemplate,
+                        default_land_share_sqft: e.target.value,
+                        default_land_share_katha: (sqft / 720).toFixed(4)
+                      });
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Land Share (Katha)</label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    className="form-control"
+                    value={selectedTemplate.default_land_share_katha || ''}
+                    onChange={e => setSelectedTemplate({ ...selectedTemplate, default_land_share_katha: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Facing Direction</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={selectedTemplate.facing_direction || ''}
+                    onChange={e => setSelectedTemplate({ ...selectedTemplate, facing_direction: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Bedrooms</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={selectedTemplate.bedrooms || 3}
+                    onChange={e => setSelectedTemplate({ ...selectedTemplate, bedrooms: parseInt(e.target.value) || 3 })}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Bathrooms</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={selectedTemplate.bathrooms || 3}
+                    onChange={e => setSelectedTemplate({ ...selectedTemplate, bathrooms: parseInt(e.target.value) || 3 })}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Balconies / Verandas</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={selectedTemplate.balconies || 2}
+                    onChange={e => setSelectedTemplate({ ...selectedTemplate, balconies: parseInt(e.target.value) || 2 })}
+                  />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '20px' }}>
+                  <input
+                    type="checkbox"
+                    id="cornerChk"
+                    checked={!!selectedTemplate.is_corner_unit}
+                    onChange={e => setSelectedTemplate({ ...selectedTemplate, is_corner_unit: e.target.checked })}
+                  />
+                  <label htmlFor="cornerChk" style={{ fontSize: '0.85rem', fontWeight: 600 }}>Corner Unit</label>
+                </div>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Description</label>
+                  <textarea
+                    className="form-control"
+                    rows={2}
+                    value={selectedTemplate.description || ''}
+                    onChange={e => setSelectedTemplate({ ...selectedTemplate, description: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button type="button" onClick={() => setShowTemplateModal(false)} className="btn btn-secondary">Cancel</button>
+                <button type="submit" className="btn btn-primary">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          MODAL: ADD / EDIT MASTER ITEM
+      ───────────────────────────────────────────────────────────── */}
+      {showItemModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000
+        }}>
+          <div style={{ background: '#ffffff', borderRadius: '14px', width: '90%', maxWidth: '600px', padding: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>
+                {selectedItem.id_master_items ? 'Edit Master Item' : 'New Master Item'}
+              </h3>
+              <button onClick={() => setShowItemModal(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
+            </div>
+
+            <form onSubmit={handleSaveItem}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '16px' }}>
+                <div>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Item Code</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={selectedItem.item_code || ''}
+                    onChange={e => setSelectedItem({ ...selectedItem, item_code: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Category</label>
+                  <select
+                    className="form-select"
+                    value={selectedItem.category || 'STRUCTURAL'}
+                    onChange={e => setSelectedItem({ ...selectedItem, category: e.target.value })}
+                  >
+                    <option value="STRUCTURAL">Structural (Cement, Steel, Sand, Bricks)</option>
+                    <option value="FINISHING">Finishing (Tiles, Paint, Glass)</option>
+                    <option value="ELECTRICAL">Electrical (Cables, Switches, DB)</option>
+                    <option value="PLUMBING">Plumbing & Piping</option>
+                    <option value="SANITARY">Sanitary & Fittings</option>
+                    <option value="HARDWARE">Hardware & Woodwork</option>
+                    <option value="HVAC_GENERATOR">HVAC & Generator</option>
+                  </select>
+                </div>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Item Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={selectedItem.item_name || ''}
+                    onChange={e => setSelectedItem({ ...selectedItem, item_name: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Unit of Measure (UoM)</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={selectedItem.unit || ''}
+                    onChange={e => setSelectedItem({ ...selectedItem, unit: e.target.value })}
+                    placeholder="Bags, CFT, Ton, SFT..."
+                    required
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Standard Rate (BDT)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    className="form-control"
+                    value={selectedItem.standard_rate || ''}
+                    onChange={e => setSelectedItem({ ...selectedItem, standard_rate: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Min Stock Alert</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={selectedItem.minimum_stock_alert || ''}
+                    onChange={e => setSelectedItem({ ...selectedItem, minimum_stock_alert: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Reorder Qty</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={selectedItem.reorder_quantity || ''}
+                    onChange={e => setSelectedItem({ ...selectedItem, reorder_quantity: e.target.value })}
+                  />
+                </div>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Technical Specification</label>
+                  <textarea
+                    className="form-control"
+                    rows={2}
+                    value={selectedItem.technical_specification || ''}
+                    onChange={e => setSelectedItem({ ...selectedItem, technical_specification: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button type="button" onClick={() => setShowItemModal(false)} className="btn btn-secondary">Cancel</button>
+                <button type="submit" className="btn btn-primary">Save Item</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          MODAL: ADD / EDIT MASTER WORK (WBS)
+      ───────────────────────────────────────────────────────────── */}
+      {showWorkModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000
+        }}>
+          <div style={{ background: '#ffffff', borderRadius: '14px', width: '90%', maxWidth: '600px', padding: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>
+                {selectedWork.id_master_works ? 'Edit Work WBS' : 'New Master Work (WBS)'}
+              </h3>
+              <button onClick={() => setShowWorkModal(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
+            </div>
+
+            <form onSubmit={handleSaveWork}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '16px' }}>
+                <div>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>WBS Code</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={selectedWork.work_code || ''}
+                    onChange={e => setSelectedWork({ ...selectedWork, work_code: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Category</label>
+                  <select
+                    className="form-select"
+                    value={selectedWork.category || 'STRUCTURAL'}
+                    onChange={e => setSelectedWork({ ...selectedWork, category: e.target.value })}
+                  >
+                    <option value="STRUCTURAL">Structural (Foundation, RCC, Columns)</option>
+                    <option value="FACILITIES_MEP">Facilities & MEP (Lifts, Substation, Pumps)</option>
+                    <option value="FINISHING">Finishing (Tiles, Paint, False Ceiling)</option>
+                    <option value="INDIVIDUAL_INTERIOR">Individual Interior (Custom Flat Works)</option>
+                    <option value="EXTERNAL_CIVIL">External Civil & Landscaping</option>
+                  </select>
+                </div>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Work Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={selectedWork.work_name || ''}
+                    onChange={e => setSelectedWork({ ...selectedWork, work_name: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Scope Level</label>
+                  <select
+                    className="form-select"
+                    value={selectedWork.scope_level || 'BUILDING_COMMON'}
+                    onChange={e => setSelectedWork({ ...selectedWork, scope_level: e.target.value })}
+                  >
+                    <option value="BUILDING_COMMON">Building Common (All 36 Units)</option>
+                    <option value="FLOOR_COMMON">Floor Common (6 Units of That Floor)</option>
+                    <option value="INDIVIDUAL_UNIT">Individual Unit Exclusive</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Default Cost Allocation Rule</label>
+                  <select
+                    className="form-select"
+                    value={selectedWork.default_allocation_rule || 'ALL_UNITS_AREA_BASED'}
+                    onChange={e => setSelectedWork({ ...selectedWork, default_allocation_rule: e.target.value })}
+                  >
+                    <option value="ALL_UNITS_AREA_BASED">Area Based across All 36 Units</option>
+                    <option value="FLOOR_6_UNITS_EQUAL">Floor 6 Units Equal Split</option>
+                    <option value="ALL_UNITS_EQUAL">Equal Split across All 36 Units</option>
+                    <option value="INDIVIDUAL_UNIT_ONLY">Direct Flat Owner (100%)</option>
+                  </select>
+                </div>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Standard Budget Estimate (BDT)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    className="form-control"
+                    value={selectedWork.standard_budget_estimate || ''}
+                    onChange={e => setSelectedWork({ ...selectedWork, standard_budget_estimate: e.target.value })}
+                  />
+                </div>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Scope Notes & Specifications</label>
+                  <textarea
+                    className="form-control"
+                    rows={2}
+                    value={selectedWork.standard_scope_notes || ''}
+                    onChange={e => setSelectedWork({ ...selectedWork, standard_scope_notes: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button type="button" onClick={() => setShowWorkModal(false)} className="btn btn-secondary">Cancel</button>
+                <button type="submit" className="btn btn-primary">Save Work Master</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
