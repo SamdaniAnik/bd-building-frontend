@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
 
 export default function CommitteeVoting() {
+  useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
   const [proposals, setProposals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,16 +40,16 @@ export default function CommitteeVoting() {
       <div className="page-header">
         <div>
           <div className="breadcrumb">
-            <span>Apartment System</span>
+            <span>{tr("Apartment System")}</span>
             <span className="breadcrumb-sep">/</span>
-            <span>Governance</span>
+            <span>{tr("Governance")}</span>
           </div>
           <h1 className="page-title">
-            <i className="fa-solid fa-check-to-slot text-primary"></i> Owner Committee Decisions & Voting (Section 20)
+            <i className="fa-solid fa-check-to-slot text-primary"></i> {tr("Owner Committee Decisions & Voting (Section 20)")}
           </h1>
         </div>
         <span className="badge badge-primary" style={{ padding: '6px 14px' }}>
-          Proposal → Discussion → Vote → Resolution
+          {tr("Proposal → Discussion → Vote → Resolution")}
         </span>
       </div>
 
@@ -60,10 +62,10 @@ export default function CommitteeVoting() {
               <div className="card-header flex-between">
                 <div>
                   <span className={`badge ${p.status === 'APPROVED' ? 'badge-success' : 'badge-warning'}`}>
-                    {p.status} RESOLUTION
+                    {p.status} {tr("RESOLUTION")}
                   </span>
                   <span className="text-xs text-muted ml-2" style={{ marginLeft: '8px' }}>
-                    Proposed by {p.proposed_by} on {p.proposal_date}
+                    {tr("Proposed by")} {p.proposed_by} on {p.proposal_date}
                   </span>
                 </div>
                 <div className="fw-bold text-primary">
@@ -77,11 +79,11 @@ export default function CommitteeVoting() {
                 {/* Voting Bar */}
                 <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
                   <div className="flex-between text-sm mb-2">
-                    <span className="fw-bold">Owner Vote Tally:</span>
+                    <span className="fw-bold">{tr("Owner Vote Tally:")}</span>
                     <span>
-                      <strong className="text-success">{p.votes_for} In Favor</strong> &bull;{' '}
-                      <strong className="text-danger">{p.votes_against} Opposed</strong> &bull;{' '}
-                      {totalVotes} of 6 Flat Owners Voted
+                      <strong className="text-success">{p.votes_for} {tr("In Favor")}</strong> &bull;{' '}
+                      <strong className="text-danger">{p.votes_against} {tr("Opposed")}</strong> &bull;{' '}
+                      {totalVotes} {tr("of 6 Flat Owners Voted")}
                     </span>
                   </div>
                   <div className="progress" style={{ height: '10px' }}>
@@ -93,21 +95,21 @@ export default function CommitteeVoting() {
                 <div className="flex-between">
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button className="btn btn-success btn-sm" onClick={() => handleCastVote(p.id_proposals, 'FOR')}>
-                      <i className="fa-solid fa-thumbs-up"></i> Vote In Favor
+                      <i className="fa-solid fa-thumbs-up"></i> {tr("Vote In Favor")}
                     </button>
                     <button className="btn btn-danger btn-sm" onClick={() => handleCastVote(p.id_proposals, 'AGAINST')}>
-                      <i className="fa-solid fa-thumbs-down"></i> Vote Against
+                      <i className="fa-solid fa-thumbs-down"></i> {tr("Vote Against")}
                     </button>
                     <button className="btn btn-light btn-sm" onClick={() => handleCastVote(p.id_proposals, 'ABSTAIN')}>
-                      Abstain
+                      {tr("Abstain")}
                     </button>
                   </div>
-                  <span className="text-xs text-muted">Voting closes: {p.voting_deadline}</span>
+                  <span className="text-xs text-muted">{tr("Voting closes")}: {p.voting_deadline}</span>
                 </div>
 
                 {/* Individual Owner Votes List */}
                 <div className="section-heading" style={{ fontSize: '0.8rem', marginTop: '18px' }}>
-                  <i className="fa-solid fa-users"></i> Registered Flat Owner Ballots ({p.votes?.length || 0})
+                  <i className="fa-solid fa-users"></i> {tr("Registered Flat Owner Ballots")} ({p.votes?.length || 0})
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '8px' }}>
                   {(p.votes || []).map((v: any) => (

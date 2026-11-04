@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
 
 export default function SiteManagerMobile() {
+  useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
   const [pettyExpenses, setPettyExpenses] = useState<any[]>([]);
   const [labour, setLabour] = useState<{ workers: any[]; attendance: any[] }>({ workers: [], attendance: [] });
   const [inventory, setInventory] = useState<any[]>([]);
@@ -92,20 +94,20 @@ export default function SiteManagerMobile() {
       <div className="page-header">
         <div>
           <div className="breadcrumb">
-            <span>Apartment System</span>
+            <span>{tr("Apartment System")}</span>
             <span className="breadcrumb-sep">/</span>
-            <span>Site Operations</span>
+            <span>{tr("Site Operations")}</span>
           </div>
           <h1 className="page-title">
-            <i className="fa-solid fa-mobile-screen-button text-primary"></i> Site Management & Inventory (Sections 10–16 & 36–38)
+            <i className="fa-solid fa-mobile-screen-button text-primary"></i> {tr("Site Management & Inventory (Sections 10–16 & 36–38)")}
           </h1>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button className="btn btn-primary btn-sm" onClick={() => setShowExpenseModal(true)}>
-            <i className="fa-solid fa-receipt"></i> Log Site Expense
+            <i className="fa-solid fa-receipt"></i> {tr("Log Site Expense")}
           </button>
           <button className="btn btn-outline btn-sm" onClick={() => setShowAttendanceModal(true)}>
-            <i className="fa-solid fa-user-clock"></i> Labour Attendance
+            <i className="fa-solid fa-user-clock"></i> {tr("Labour Attendance")}
           </button>
         </div>
       </div>
@@ -116,12 +118,12 @@ export default function SiteManagerMobile() {
           <i className="fa-solid fa-triangle-exclamation" style={{ fontSize: '1.4rem' }}></i>
           <div>
             <div className="fw-bold">
-              ⚠ Material Minimum Stock Reorder Alert (Section 14)
+              {tr("⚠ Material Minimum Stock Reorder Alert (Section 14)")}
             </div>
             <p className="text-sm mt-1">
               {reorderAlerts.map(r => (
                 <span key={r.id_inventory}>
-                  <strong>{r.material_name}</strong>: Current stock is <strong>{r.current_stock} {r.unit}</strong> (Minimum safe threshold: {r.minimum_reorder_stock} {r.unit}). Please initiate Purchase Order. &nbsp;
+                  <strong>{r.material_name}</strong>{tr(": Current stock is")} <strong>{r.current_stock} {r.unit}</strong> ({tr("Minimum safe threshold")}: {r.minimum_reorder_stock} {r.unit}). Please initiate Purchase Order. &nbsp;
                 </span>
               ))}
             </p>
@@ -132,19 +134,19 @@ export default function SiteManagerMobile() {
       {/* TABS */}
       <div className="pill-tabs">
         <button className={`pill-tab ${activeTab === 'petty' ? 'active' : ''}`} onClick={() => setActiveTab('petty')}>
-          <i className="fa-solid fa-wallet" style={{ marginRight: '6px' }}></i> Site Petty Cash ({pettyExpenses.length})
+          <i className="fa-solid fa-wallet" style={{ marginRight: '6px' }}></i> {tr("Site Petty Cash")} ({pettyExpenses.length})
         </button>
         <button className={`pill-tab ${activeTab === 'labour' ? 'active' : ''}`} onClick={() => setActiveTab('labour')}>
-          <i className="fa-solid fa-person-digging" style={{ marginRight: '6px' }}></i> Labour & Attendance ({labour.attendance.length})
+          <i className="fa-solid fa-person-digging" style={{ marginRight: '6px' }}></i> {tr("Labour & Attendance")} ({labour.attendance.length})
         </button>
         <button className={`pill-tab ${activeTab === 'stock' ? 'active' : ''}`} onClick={() => setActiveTab('stock')}>
-          <i className="fa-solid fa-boxes-packing" style={{ marginRight: '6px' }}></i> Site Stock / Inventory ({inventory.length})
+          <i className="fa-solid fa-boxes-packing" style={{ marginRight: '6px' }}></i> {tr("Site Stock / Inventory")} ({inventory.length})
         </button>
         <button className={`pill-tab ${activeTab === 'matching' ? 'active' : ''}`} onClick={() => setActiveTab('matching')}>
-          <i className="fa-solid fa-scale-balanced" style={{ marginRight: '6px' }}></i> 3-Way Matching ({deliveries.length})
+          <i className="fa-solid fa-scale-balanced" style={{ marginRight: '6px' }}></i> {tr("3-Way Matching")} ({deliveries.length})
         </button>
         <button className={`pill-tab ${activeTab === 'photos' ? 'active' : ''}`} onClick={() => setActiveTab('photos')}>
-          <i className="fa-solid fa-camera" style={{ marginRight: '6px' }}></i> Photo Timeline & GPS ({photos.length})
+          <i className="fa-solid fa-camera" style={{ marginRight: '6px' }}></i> {tr("Photo Timeline & GPS")} ({photos.length})
         </button>
       </div>
 
@@ -155,12 +157,12 @@ export default function SiteManagerMobile() {
             <table>
               <thead>
                 <tr>
-                  <th>Receipt #</th>
-                  <th>Category</th>
-                  <th>Payee / Purpose</th>
-                  <th>Date</th>
-                  <th>Supervisor</th>
-                  <th className="text-right">Amount (৳)</th>
+                  <th>{tr("Receipt #")}</th>
+                  <th>{tr("Category")}</th>
+                  <th>{tr("Payee / Purpose")}</th>
+                  <th>{tr("Date")}</th>
+                  <th>{tr("Supervisor")}</th>
+                  <th className="text-right">{tr("Amount (৳)")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -180,7 +182,7 @@ export default function SiteManagerMobile() {
               </tbody>
               <tfoot>
                 <tr>
-                  <td colSpan={5}>Total Site Petty Cash Spent</td>
+                  <td colSpan={5}>{tr("Total Site Petty Cash Spent")}</td>
                   <td className="text-right fw-bold text-danger">৳{pettyExpenses.reduce((s, p) => s + parseFloat(p.amount || 0), 0).toFixed(2)}
                   </td>
                 </tr>
@@ -197,12 +199,12 @@ export default function SiteManagerMobile() {
             <table>
               <thead>
                 <tr>
-                  <th>Worker Name</th>
-                  <th>Trade / Category</th>
-                  <th>Date</th>
-                  <th>Hours (Reg + OT)</th>
-                  <th>Work Performed</th>
-                  <th className="text-right">Daily Earned Pay (৳)</th>
+                  <th>{tr("Worker Name")}</th>
+                  <th>{tr("Trade / Category")}</th>
+                  <th>{tr("Date")}</th>
+                  <th>{tr("Hours (Reg + OT)")}</th>
+                  <th>{tr("Work Performed")}</th>
+                  <th className="text-right">{tr("Daily Earned Pay (৳)")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -211,7 +213,7 @@ export default function SiteManagerMobile() {
                     <td className="fw-bold">{a.worker_name}</td>
                     <td><span className="badge badge-primary">{a.worker_type}</span></td>
                     <td>{a.attendance_date}</td>
-                    <td>{a.hours_worked} hrs {parseFloat(a.overtime_hours) > 0 ? `(+${a.overtime_hours} OT)` : ''}</td>
+                    <td>{a.hours_worked} {tr("hrs")} {parseFloat(a.overtime_hours) > 0 ? `(+${a.overtime_hours} OT)` : ''}</td>
                     <td className="text-muted text-sm">{a.work_performed}</td>
                     <td className="text-right fw-bold text-success">৳{parseFloat(a.calculated_pay).toFixed(2)}</td>
                   </tr>
@@ -229,14 +231,14 @@ export default function SiteManagerMobile() {
             <table>
               <thead>
                 <tr>
-                  <th>Material</th>
-                  <th>Category</th>
-                  <th className="text-right">Opening Stock</th>
-                  <th className="text-right">Purchased</th>
-                  <th className="text-right">Consumed</th>
-                  <th className="text-right">Current Balance</th>
-                  <th>Min Reorder Limit</th>
-                  <th>Status</th>
+                  <th>{tr("Material")}</th>
+                  <th>{tr("Category")}</th>
+                  <th className="text-right">{tr("Opening Stock")}</th>
+                  <th className="text-right">{tr("Purchased")}</th>
+                  <th className="text-right">{tr("Consumed")}</th>
+                  <th className="text-right">{tr("Current Balance")}</th>
+                  <th>{tr("Min Reorder Limit")}</th>
+                  <th>{tr("Status")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -272,21 +274,21 @@ export default function SiteManagerMobile() {
         <div className="card mb-4">
           <div className="card-header">
             <div className="card-title">
-              <i className="fa-solid fa-code-compare text-primary"></i> 3-Way Matching: Purchase Order vs Goods Received vs Invoice (Section 16)
+              <i className="fa-solid fa-code-compare text-primary"></i> {tr("3-Way Matching: Purchase Order vs Goods Received vs Invoice (Section 16)")}
             </div>
           </div>
           <div className="table-wrapper">
             <table>
               <thead>
                 <tr>
-                  <th>Delivery Challan #</th>
-                  <th>Supplier / Vendor</th>
-                  <th>Material Item</th>
-                  <th className="text-right">PO Ordered</th>
-                  <th className="text-right">Received</th>
-                  <th className="text-right">Damaged</th>
-                  <th className="text-right">Accepted Net</th>
-                  <th>3-Way Match Verification</th>
+                  <th>{tr("Delivery Challan #")}</th>
+                  <th>{tr("Supplier / Vendor")}</th>
+                  <th>{tr("Material Item")}</th>
+                  <th className="text-right">{tr("PO Ordered")}</th>
+                  <th className="text-right">{tr("Received")}</th>
+                  <th className="text-right">{tr("Damaged")}</th>
+                  <th className="text-right">{tr("Accepted Net")}</th>
+                  <th>{tr("3-Way Match Verification")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -348,30 +350,30 @@ export default function SiteManagerMobile() {
           <div className="modal" style={{ maxWidth: '500px' }} onClick={e => e.stopPropagation()}>
             <form onSubmit={handleRecordExpense}>
               <div className="modal-header">
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Record Site Petty Cash Expense</h3>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>{tr("Record Site Petty Cash Expense")}</h3>
                 <button type="button" className="btn btn-light btn-sm" onClick={() => setShowExpenseModal(false)}>
                   <i className="fa-solid fa-times"></i>
                 </button>
               </div>
               <div className="modal-body">
                 <div className="form-group">
-                  <label className="form-label required">Expense Category</label>
+                  <label className="form-label required">{tr("Expense Category")}</label>
                   <select
                     className="form-select"
                     value={expenseForm.category}
                     onChange={e => setExpenseForm({ ...expenseForm, category: e.target.value })}
                   >
-                    <option value="TRANSPORTATION">Transportation & Pickup</option>
-                    <option value="LABOUR_FOOD">Labour Overtime Food & Tea</option>
-                    <option value="SMALL_TOOLS">Small Tools & Safety Gear</option>
-                    <option value="EMERGENCY_MATERIALS">Emergency Material Purchase</option>
-                    <option value="TEMPORARY_WATER">Temporary Water Tanker</option>
-                    <option value="TEMPORARY_ELECTRICITY">Temporary Generator Fuel</option>
+                    <option value="TRANSPORTATION">{tr("Transportation & Pickup")}</option>
+                    <option value="LABOUR_FOOD">{tr("Labour Overtime Food & Tea")}</option>
+                    <option value="SMALL_TOOLS">{tr("Small Tools & Safety Gear")}</option>
+                    <option value="EMERGENCY_MATERIALS">{tr("Emergency Material Purchase")}</option>
+                    <option value="TEMPORARY_WATER">{tr("Temporary Water Tanker")}</option>
+                    <option value="TEMPORARY_ELECTRICITY">{tr("Temporary Generator Fuel")}</option>
                   </select>
                 </div>
                 <div className="form-row cols-2">
                   <div className="form-group">
-                    <label className="form-label required">Amount (৳)</label>
+                    <label className="form-label required">{tr("Amount (৳)")}</label>
                     <input
                       type="number"
                       step="0.01"
@@ -382,7 +384,7 @@ export default function SiteManagerMobile() {
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Payee / Vendor</label>
+                    <label className="form-label">{tr("Payee / Vendor")}</label>
                     <input
                       type="text"
                       className="form-control"
@@ -392,7 +394,7 @@ export default function SiteManagerMobile() {
                   </div>
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Scope Description</label>
+                  <label className="form-label">{tr("Scope Description")}</label>
                   <textarea
                     className="form-control"
                     rows={2}
@@ -402,8 +404,8 @@ export default function SiteManagerMobile() {
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-light" onClick={() => setShowExpenseModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Expense</button>
+                <button type="button" className="btn btn-light" onClick={() => setShowExpenseModal(false)}>{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Save Expense")}</button>
               </div>
             </form>
           </div>
@@ -416,21 +418,21 @@ export default function SiteManagerMobile() {
           <div className="modal" style={{ maxWidth: '500px' }} onClick={e => e.stopPropagation()}>
             <form onSubmit={handleRecordAttendance}>
               <div className="modal-header">
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Log Daily Worker Attendance</h3>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>{tr("Log Daily Worker Attendance")}</h3>
                 <button type="button" className="btn btn-light btn-sm" onClick={() => setShowAttendanceModal(false)}>
                   <i className="fa-solid fa-times"></i>
                 </button>
               </div>
               <div className="modal-body">
                 <div className="form-group">
-                  <label className="form-label required">Worker</label>
+                  <label className="form-label required">{tr("Worker")}</label>
                   <select
                     className="form-select"
                     value={attForm.id_workers}
                     onChange={e => setAttForm({ ...attForm, id_workers: e.target.value })}
                     required
                   >
-                    <option value="">Select Worker</option>
+                    <option value="">{tr("Select Worker")}</option>
                     {labour.workers.map((w: any) => (
                       <option key={w.id_workers} value={w.id_workers}>{w.worker_name} ({w.worker_type} - ${w.daily_rate}/day)</option>
                     ))}
@@ -438,7 +440,7 @@ export default function SiteManagerMobile() {
                 </div>
                 <div className="form-row cols-2">
                   <div className="form-group">
-                    <label className="form-label required">Regular Hours</label>
+                    <label className="form-label required">{tr("Regular Hours")}</label>
                     <input
                       type="number"
                       step="0.5"
@@ -449,7 +451,7 @@ export default function SiteManagerMobile() {
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Overtime Hours</label>
+                    <label className="form-label">{tr("Overtime Hours")}</label>
                     <input
                       type="number"
                       step="0.5"
@@ -460,19 +462,19 @@ export default function SiteManagerMobile() {
                   </div>
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Task / Work Performed</label>
+                  <label className="form-label">{tr("Task / Work Performed")}</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="e.g. 4th floor column shuttering"
+                    placeholder={tr("e.g. 4th floor column shuttering")}
                     value={attForm.work_performed}
                     onChange={e => setAttForm({ ...attForm, work_performed: e.target.value })}
                   />
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-light" onClick={() => setShowAttendanceModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Attendance</button>
+                <button type="button" className="btn btn-light" onClick={() => setShowAttendanceModal(false)}>{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Save Attendance")}</button>
               </div>
             </form>
           </div>

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
 
 export default function FinancialReports() {
+  useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
   const [reportData, setReportData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState<string>('project_cost');
@@ -42,7 +44,7 @@ export default function FinancialReports() {
       <div className="loader-overlay">
         <div className="loader-spinner">
           <i className="fa-solid fa-spinner fa-spin text-primary" style={{ fontSize: '2rem' }}></i>
-          <p className="mt-2 text-muted">Compiling Financial Reports...</p>
+          <p className="mt-2 text-muted">{tr("Compiling Financial Reports...")}</p>
         </div>
       </div>
     );
@@ -56,35 +58,35 @@ export default function FinancialReports() {
       <div className="page-header no-print">
         <div>
           <div className="breadcrumb">
-            <span>Apartment System</span>
+            <span>{tr("Apartment System")}</span>
             <span className="breadcrumb-sep">/</span>
-            <span>Reports</span>
+            <span>{tr("Reports")}</span>
           </div>
           <h1 className="page-title">
-            <i className="fa-solid fa-file-invoice text-primary"></i> Financial & Project Statements (Section 43)
+            <i className="fa-solid fa-file-invoice text-primary"></i> {tr("Financial & Project Statements (Section 43)")}
           </h1>
         </div>
         <button className="btn btn-primary" onClick={() => window.print()}>
-          <i className="fa-solid fa-print"></i> Print / Download PDF
+          <i className="fa-solid fa-print"></i> {tr("Print / Download PDF")}
         </button>
       </div>
 
       {/* REPORT SELECTOR TABS (Hidden in Print) */}
       <div className="pill-tabs no-print">
         <button className={`pill-tab ${selectedReport === 'project_cost' ? 'active' : ''}`} onClick={() => setSelectedReport('project_cost')}>
-          Project Cost Summary
+          {tr("Project Cost Summary")}
         </button>
         <button className={`pill-tab ${selectedReport === 'unit_cost' ? 'active' : ''}`} onClick={() => setSelectedReport('unit_cost')}>
-          Unit-Wise Cost Allocation
+          {tr("Unit-Wise Cost Allocation")}
         </button>
         <button className={`pill-tab ${selectedReport === 'budget_actual' ? 'active' : ''}`} onClick={() => setSelectedReport('budget_actual')}>
-          Budget vs Actual
+          {tr("Budget vs Actual")}
         </button>
         <button className={`pill-tab ${selectedReport === 'vendor_ledger' ? 'active' : ''}`} onClick={() => setSelectedReport('vendor_ledger')}>
-          Vendor Balances & Payable
+          {tr("Vendor Balances & Payable")}
         </button>
         <button className={`pill-tab ${selectedReport === 'loan_summary' ? 'active' : ''}`} onClick={() => setSelectedReport('loan_summary')}>
-          Owner Bank Loans
+          {tr("Owner Bank Loans")}
         </button>
       </div>
 
@@ -95,15 +97,15 @@ export default function FinancialReports() {
           <div>
             <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a' }}>{project.project_name || 'Gulshan Heights Luxury Residences'}</h2>
             <p style={{ color: '#475569', fontSize: '0.85rem', marginTop: '2px' }}>
-              Project Code: {project.project_code || 'GH-2026'} &bull; {project.address || 'Plot 42, Road 71, Gulshan-2, Dhaka 1212'}
+              {tr("Project Code")}: {project.project_code || 'GH-2026'} &bull; {project.address || 'Plot 42, Road 71, Gulshan-2, Dhaka 1212'}
             </p>
           </div>
           <div style={{ textAlign: 'right' }}>
             <div className="badge badge-primary uppercase" style={{ fontSize: '0.8rem', padding: '6px 12px' }}>
-              Official Financial Statement
+              {tr("Official Financial Statement")}
             </div>
             <div className="text-xs text-muted mt-2">
-              Generated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              {tr("Generated")}: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
             </div>
           </div>
         </div>
@@ -112,35 +114,35 @@ export default function FinancialReports() {
         {selectedReport === 'project_cost' && (
           <div>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '14px', color: '#1e293b' }}>
-              Executive Project Financial Summary
+              {tr("Executive Project Financial Summary")}
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '24px' }}>
               <div className="p-3 rounded" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                <div className="text-xs text-muted">Total Construction Cost:</div>
+                <div className="text-xs text-muted">{tr("Total Construction Cost:")}</div>
                 <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#4f46e5' }}>৳{kpis.total_project_cost?.toLocaleString()}</div>
               </div>
               <div className="p-3 rounded" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
-                <div className="text-xs text-muted">Total Paid by Flat Owners:</div>
+                <div className="text-xs text-muted">{tr("Total Paid by Flat Owners:")}</div>
                 <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#059669' }}>৳{kpis.total_paid?.toLocaleString()}</div>
               </div>
               <div className="p-3 rounded" style={{ background: '#fef2f2', border: '1px solid #fecaca' }}>
-                <div className="text-xs text-muted">Total Owner Dues / Receivable:</div>
+                <div className="text-xs text-muted">{tr("Total Owner Dues / Receivable:")}</div>
                 <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#dc2626' }}>৳{kpis.owner_receivable?.toLocaleString()}</div>
               </div>
               <div className="p-3 rounded" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
-                <div className="text-xs text-muted">Vendor Payable Dues:</div>
+                <div className="text-xs text-muted">{tr("Vendor Payable Dues:")}</div>
                 <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#d97706' }}>৳{kpis.vendor_payable?.toLocaleString()}</div>
               </div>
             </div>
 
-            <div className="section-heading">Detailed Construction Cost Breakdown</div>
+            <div className="section-heading">{tr("Detailed Construction Cost Breakdown")}</div>
             <div className="table-wrapper">
               <table>
                 <thead>
                   <tr>
-                    <th>Category</th>
-                    <th className="text-right">Amount (৳)</th>
-                    <th className="text-right">Share of Total</th>
+                    <th>{tr("Category")}</th>
+                    <th className="text-right">{tr("Amount (৳)")}</th>
+                    <th className="text-right">{tr("Share of Total")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -156,7 +158,7 @@ export default function FinancialReports() {
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td>Total Project Construction Cost</td>
+                    <td>{tr("Total Project Construction Cost")}</td>
                     <td className="text-right fw-bold" style={{ fontSize: '1rem' }}>৳{kpis.total_project_cost?.toLocaleString()}</td>
                     <td className="text-right">100.0%</td>
                   </tr>
@@ -170,19 +172,19 @@ export default function FinancialReports() {
         {selectedReport === 'unit_cost' && (
           <div>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '14px', color: '#1e293b' }}>
-              Unit-wise Cost & Payment Schedule (Units A–F)
+              {tr("Unit-wise Cost & Payment Schedule (Units A–F)")}
             </h3>
             <div className="table-wrapper">
               <table>
                 <thead>
                   <tr>
-                    <th>Unit</th>
-                    <th>Area (SFT)</th>
-                    <th className="text-right">Combined Cost (৳)</th>
-                    <th className="text-right">Individual Upgrade (৳)</th>
-                    <th className="text-right">Total Liability (৳)</th>
-                    <th className="text-right">Amount Paid (৳)</th>
-                    <th className="text-right">Outstanding Balance (৳)</th>
+                    <th>{tr("Unit")}</th>
+                    <th>{tr("Area (SFT)")}</th>
+                    <th className="text-right">{tr("Combined Cost (৳)")}</th>
+                    <th className="text-right">{tr("Individual Upgrade (৳)")}</th>
+                    <th className="text-right">{tr("Total Liability (৳)")}</th>
+                    <th className="text-right">{tr("Amount Paid (৳)")}</th>
+                    <th className="text-right">{tr("Outstanding Balance (৳)")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -200,8 +202,8 @@ export default function FinancialReports() {
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td>Total (6 Units)</td>
-                    <td>6,960 SFT</td>
+                    <td>{tr("Total (6 Units)")}</td>
+                    <td>{tr("6,960 SFT")}</td>
                     <td className="text-right">৳{kpis.combined_cost?.toLocaleString()}</td>
                     <td className="text-right">৳{kpis.individual_cost?.toLocaleString()}</td>
                     <td className="text-right">৳{kpis.total_project_cost?.toLocaleString()}</td>
@@ -218,18 +220,18 @@ export default function FinancialReports() {
         {selectedReport === 'budget_actual' && (
           <div>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '14px', color: '#1e293b' }}>
-              Budget vs Actual Variance Report
+              {tr("Budget vs Actual Variance Report")}
             </h3>
             <div className="table-wrapper">
               <table>
                 <thead>
                   <tr>
-                    <th>Category</th>
-                    <th className="text-right">Original Budget (৳)</th>
-                    <th className="text-right">Revised Budget (৳)</th>
-                    <th className="text-right">Actual Spent (৳)</th>
-                    <th className="text-right">Variance (৳)</th>
-                    <th>Status</th>
+                    <th>{tr("Category")}</th>
+                    <th className="text-right">{tr("Original Budget (৳)")}</th>
+                    <th className="text-right">{tr("Revised Budget (৳)")}</th>
+                    <th className="text-right">{tr("Actual Spent (৳)")}</th>
+                    <th className="text-right">{tr("Variance (৳)")}</th>
+                    <th>{tr("Status")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -265,18 +267,18 @@ export default function FinancialReports() {
         {selectedReport === 'vendor_ledger' && (
           <div>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '14px', color: '#1e293b' }}>
-              Vendor Liabilities & Payment Position
+              {tr("Vendor Liabilities & Payment Position")}
             </h3>
             <div className="table-wrapper">
               <table>
                 <thead>
                   <tr>
-                    <th>Company Name</th>
-                    <th>Category</th>
-                    <th className="text-right">Total Invoiced (৳)</th>
-                    <th className="text-right">Paid to Date (৳)</th>
-                    <th className="text-right">Outstanding Due (৳)</th>
-                    <th>Payment Terms</th>
+                    <th>{tr("Company Name")}</th>
+                    <th>{tr("Category")}</th>
+                    <th className="text-right">{tr("Total Invoiced (৳)")}</th>
+                    <th className="text-right">{tr("Paid to Date (৳)")}</th>
+                    <th className="text-right">{tr("Outstanding Due (৳)")}</th>
+                    <th>{tr("Payment Terms")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -293,7 +295,7 @@ export default function FinancialReports() {
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td colSpan={2}>Total Vendor Liabilities</td>
+                    <td colSpan={2}>{tr("Total Vendor Liabilities")}</td>
                     <td className="text-right">৳{(reportData?.vendors || []).reduce((s: number, v: any) => s + parseFloat(v.total_invoiced || 0), 0).toLocaleString()}</td>
                     <td className="text-right text-success">৳{(reportData?.vendors || []).reduce((s: number, v: any) => s + parseFloat(v.total_paid || 0), 0).toLocaleString()}</td>
                     <td className="text-right text-danger">৳{kpis.vendor_payable?.toLocaleString()}</td>
@@ -309,20 +311,20 @@ export default function FinancialReports() {
         {selectedReport === 'loan_summary' && (
           <div>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '14px', color: '#1e293b' }}>
-              Owner Institutional Bank Loans Schedule
+              {tr("Owner Institutional Bank Loans Schedule")}
             </h3>
             <div className="table-wrapper">
               <table>
                 <thead>
                   <tr>
-                    <th>Flat Owner</th>
-                    <th>Unit</th>
-                    <th>Lender Bank</th>
-                    <th className="text-right">Approved Amount (৳)</th>
-                    <th className="text-right">Disbursed Amount (৳)</th>
-                    <th className="text-right">Principal Paid (৳)</th>
-                    <th className="text-right">Outstanding Principal (৳)</th>
-                    <th>Status</th>
+                    <th>{tr("Flat Owner")}</th>
+                    <th>{tr("Unit")}</th>
+                    <th>{tr("Lender Bank")}</th>
+                    <th className="text-right">{tr("Approved Amount (৳)")}</th>
+                    <th className="text-right">{tr("Disbursed Amount (৳)")}</th>
+                    <th className="text-right">{tr("Principal Paid (৳)")}</th>
+                    <th className="text-right">{tr("Outstanding Principal (৳)")}</th>
+                    <th>{tr("Status")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -349,19 +351,19 @@ export default function FinancialReports() {
           <div>
             <div style={{ height: '30px' }}></div>
             <div style={{ borderTop: '1px solid #94a3b8', width: '180px', textAlign: 'center', paddingTop: '4px' }}>
-              Project Manager
+              {tr("Project Manager")}
             </div>
           </div>
           <div>
             <div style={{ height: '30px' }}></div>
             <div style={{ borderTop: '1px solid #94a3b8', width: '180px', textAlign: 'center', paddingTop: '4px' }}>
-              Chief Accountant
+              {tr("Chief Accountant")}
             </div>
           </div>
           <div>
             <div style={{ height: '30px' }}></div>
             <div style={{ borderTop: '1px solid #94a3b8', width: '180px', textAlign: 'center', paddingTop: '4px' }}>
-              Committee Chairman
+              {tr("Committee Chairman")}
             </div>
           </div>
         </div>

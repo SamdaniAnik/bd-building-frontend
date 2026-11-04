@@ -1,11 +1,13 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { tr, useLang } from '../../i18n/LanguageContext';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../api/client';
 
 const EMPTY = { shareholderName:'', fatherName:'', nidNo:'', phone:'', email:'', address:'', landShareKatha:'', landSharePercent:'', landShareSqft:'', entitledFlatAreaSqft:'', entitledFlatCount:'', entitledCarParkCount:'', agreementNo:'', agreementDate:'', paymentMode:'Flat', cashAmountBdt:'', powerOfAttorneyNo:'', powerOfAttorneyDate:'', status:'Active', notes:'' };
 
 export default function ManageLandShareholders() {
+  useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
   const { id: buildingId } = useParams<{id:string}>();
   const [rows, setRows] = useState<any[]>([]);
   const [summary, setSummary] = useState<any>({});
@@ -95,16 +97,16 @@ export default function ManageLandShareholders() {
       <div className="page-header">
         <div>
           <div className="breadcrumb mb-2">
-            <Link to="/buildings">Buildings</Link>
+            <Link to="/buildings">{tr("Buildings")}</Link>
             <span className="breadcrumb-sep">/</span>
             <Link to={`/buildings/details/${buildingId}`}>{buildingName}</Link>
             <span className="breadcrumb-sep">/</span>
-            <span>Shareholders</span>
+            <span>{tr("Shareholders")}</span>
           </div>
-          <h1 className="page-title"><i className="fa-solid fa-users text-info" />Land Shareholders — {buildingName}</h1>
+          <h1 className="page-title"><i className="fa-solid fa-users text-info" />{tr("Land Shareholders")} — {buildingName}</h1>
         </div>
         <button className="btn btn-primary" onClick={()=>{setShowForm(true);setEditId(null);setForm({...EMPTY});}}>
-          <i className="fa-solid fa-plus" /> Add Shareholder
+          <i className="fa-solid fa-plus" /> {tr("Add Shareholder")}
         </button>
       </div>
 
@@ -112,13 +114,13 @@ export default function ManageLandShareholders() {
       <div className="card mb-4">
         <div className="card-body">
           <div className="stats-grid" style={{marginBottom:'16px'}}>
-            <div className="stat-card stat-info"><div className="stat-value">{summary.shareholder_count||0}</div><div className="stat-label">Shareholders</div></div>
-            <div className="stat-card stat-primary"><div className="stat-value">{Number(summary.total_share_katha||0).toFixed(2)}</div><div className="stat-label">Total Share (কাঠা)</div></div>
-            <div className={`stat-card ${pct>100?'stat-danger':pct>=100?'stat-success':'stat-warning'}`}><div className="stat-value">{pct.toFixed(2)}%</div><div className="stat-label">Allocated (%)</div></div>
-            <div className={`stat-card ${remaining===0?'stat-success':'stat-warning'}`}><div className="stat-value">{remaining.toFixed(2)}%</div><div className="stat-label">Remaining</div></div>
+            <div className="stat-card stat-info"><div className="stat-value">{summary.shareholder_count||0}</div><div className="stat-label">{tr("Shareholders")}</div></div>
+            <div className="stat-card stat-primary"><div className="stat-value">{Number(summary.total_share_katha||0).toFixed(2)}</div><div className="stat-label">{tr("Total Share (কাঠা)")}</div></div>
+            <div className={`stat-card ${pct>100?'stat-danger':pct>=100?'stat-success':'stat-warning'}`}><div className="stat-value">{pct.toFixed(2)}%</div><div className="stat-label">{tr("Allocated (%)")}</div></div>
+            <div className={`stat-card ${remaining===0?'stat-success':'stat-warning'}`}><div className="stat-value">{remaining.toFixed(2)}%</div><div className="stat-label">{tr("Remaining")}</div></div>
           </div>
           <div style={{marginBottom:'4px',display:'flex',justifyContent:'space-between',fontSize:'0.8rem'}}>
-            <span className="text-muted">Share Allocation Progress</span>
+            <span className="text-muted">{tr("Share Allocation Progress")}</span>
             <span className={`fw-bold ${pct>=100?'text-success':'text-warning'}`}>{pct.toFixed(2)}% / 100%</span>
           </div>
           <div className="progress">
@@ -137,48 +139,48 @@ export default function ManageLandShareholders() {
           {error && <div className="alert alert-danger" style={{margin:'0 20px'}}><i className="fa-solid fa-circle-exclamation" />{error}</div>}
           <form onSubmit={handleSubmit}>
             <div className="card-body">
-              <div className="section-heading"><i className="fa-solid fa-person" />Personal Information</div>
+              <div className="section-heading"><i className="fa-solid fa-person" />{tr("Personal Information")}</div>
               <div className="form-row cols-3">
-                <div className="form-group"><label className="form-label required">Full Name (পূর্ণ নাম)</label><input type="text" name="shareholderName" className="form-control" value={form.shareholderName} onChange={h} required /></div>
-                <div className="form-group"><label className="form-label">Father's Name (পিতার নাম)</label><input type="text" name="fatherName" className="form-control" value={form.fatherName} onChange={h} /></div>
-                <div className="form-group"><label className="form-label">NID No. (জাতীয় পরিচয়পত্র)</label><input type="text" name="nidNo" className="form-control" value={form.nidNo} onChange={h} placeholder="17-digit NID" /></div>
-                <div className="form-group"><label className="form-label">Phone</label><input type="text" name="phone" className="form-control" value={form.phone} onChange={h} placeholder="01XXXXXXXXX" /></div>
-                <div className="form-group"><label className="form-label">Email</label><input type="email" name="email" className="form-control" value={form.email} onChange={h} /></div>
-                <div className="form-group"><label className="form-label">Address</label><input type="text" name="address" className="form-control" value={form.address} onChange={h} /></div>
+                <div className="form-group"><label className="form-label required">{tr("Full Name (পূর্ণ নাম)")}</label><input type="text" name="shareholderName" className="form-control" value={form.shareholderName} onChange={h} required /></div>
+                <div className="form-group"><label className="form-label">{tr("Father's Name (পিতার নাম)")}</label><input type="text" name="fatherName" className="form-control" value={form.fatherName} onChange={h} /></div>
+                <div className="form-group"><label className="form-label">{tr("NID No. (জাতীয় পরিচয়পত্র)")}</label><input type="text" name="nidNo" className="form-control" value={form.nidNo} onChange={h} placeholder={tr("17-digit NID")} /></div>
+                <div className="form-group"><label className="form-label">{tr("Phone")}</label><input type="text" name="phone" className="form-control" value={form.phone} onChange={h} placeholder="01XXXXXXXXX" /></div>
+                <div className="form-group"><label className="form-label">{tr("Email")}</label><input type="email" name="email" className="form-control" value={form.email} onChange={h} /></div>
+                <div className="form-group"><label className="form-label">{tr("Address")}</label><input type="text" name="address" className="form-control" value={form.address} onChange={h} /></div>
               </div>
 
-              <div className="section-heading"><i className="fa-solid fa-map" />Land Share (ভূমির অংশ)</div>
+              <div className="section-heading"><i className="fa-solid fa-map" />{tr("Land Share (ভূমির অংশ)")}</div>
               <div className="form-row cols-4">
-                <div className="form-group"><label className="form-label required">Share (কাঠা)</label><div className="input-group"><input type="number" step="0.0001" name="landShareKatha" className="form-control" value={form.landShareKatha} onChange={h} required /><span className="input-group-text">কাঠা</span></div></div>
-                <div className="form-group"><label className="form-label required">Share (%)</label><div className="input-group"><input type="number" step="0.01" name="landSharePercent" className="form-control" value={form.landSharePercent} onChange={h} min="0" max="100" required placeholder={`Available: ${remaining.toFixed(2)}%`} /><span className="input-group-text">%</span></div><div className="form-text">Remaining: {remaining.toFixed(2)}%</div></div>
-                <div className="form-group"><label className="form-label">Share (Sqft) Auto</label><div className="input-group"><input type="number" name="landShareSqft" className="form-control" value={form.landShareSqft} onChange={h} /><span className="input-group-text">sqft</span></div></div>
-                <div className="form-group"><label className="form-label">Payment Mode</label><select name="paymentMode" className="form-select" value={form.paymentMode} onChange={h}>{['Cash','Flat','Cash + Flat','Plot'].map(m=><option key={m} value={m}>{m}</option>)}</select></div>
+                <div className="form-group"><label className="form-label required">{tr("Share (কাঠা)")}</label><div className="input-group"><input type="number" step="0.0001" name="landShareKatha" className="form-control" value={form.landShareKatha} onChange={h} required /><span className="input-group-text">কাঠা</span></div></div>
+                <div className="form-group"><label className="form-label required">{tr("Share (%)")}</label><div className="input-group"><input type="number" step="0.01" name="landSharePercent" className="form-control" value={form.landSharePercent} onChange={h} min="0" max="100" required placeholder={`Available: ${remaining.toFixed(2)}%`} /><span className="input-group-text">%</span></div><div className="form-text">Remaining: {remaining.toFixed(2)}%</div></div>
+                <div className="form-group"><label className="form-label">{tr("Share (Sqft) Auto")}</label><div className="input-group"><input type="number" name="landShareSqft" className="form-control" value={form.landShareSqft} onChange={h} /><span className="input-group-text">{tr("sqft")}</span></div></div>
+                <div className="form-group"><label className="form-label">{tr("Payment Mode")}</label><select name="paymentMode" className="form-select" value={form.paymentMode} onChange={h}>{['Cash','Flat','Cash + Flat','Plot'].map(m=><option key={m} value={m}>{m}</option>)}</select></div>
               </div>
 
-              <div className="section-heading"><i className="fa-solid fa-home" />Flat Entitlement</div>
+              <div className="section-heading"><i className="fa-solid fa-home" />{tr("Flat Entitlement")}</div>
               <div className="form-row cols-4">
-                <div className="form-group"><label className="form-label">Entitled Flat Area</label><div className="input-group"><input type="number" step="0.01" name="entitledFlatAreaSqft" className="form-control" value={form.entitledFlatAreaSqft} onChange={h} /><span className="input-group-text">sqft</span></div></div>
-                <div className="form-group"><label className="form-label">No. of Flats</label><input type="number" name="entitledFlatCount" className="form-control" value={form.entitledFlatCount} onChange={h} /></div>
-                <div className="form-group"><label className="form-label">Car Parks</label><input type="number" step="0.5" name="entitledCarParkCount" className="form-control" value={form.entitledCarParkCount} onChange={h} /></div>
-                {(form.paymentMode==='Cash'||form.paymentMode==='Cash + Flat') && <div className="form-group"><label className="form-label">Cash Amount (৳)</label><div className="input-group input-group-prepend"><span className="input-group-text">৳</span><input type="number" step="0.01" name="cashAmountBdt" className="form-control" value={form.cashAmountBdt} onChange={h} /></div></div>}
+                <div className="form-group"><label className="form-label">{tr("Entitled Flat Area")}</label><div className="input-group"><input type="number" step="0.01" name="entitledFlatAreaSqft" className="form-control" value={form.entitledFlatAreaSqft} onChange={h} /><span className="input-group-text">{tr("sqft")}</span></div></div>
+                <div className="form-group"><label className="form-label">{tr("No. of Flats")}</label><input type="number" name="entitledFlatCount" className="form-control" value={form.entitledFlatCount} onChange={h} /></div>
+                <div className="form-group"><label className="form-label">{tr("Car Parks")}</label><input type="number" step="0.5" name="entitledCarParkCount" className="form-control" value={form.entitledCarParkCount} onChange={h} /></div>
+                {(form.paymentMode==='Cash'||form.paymentMode==='Cash + Flat') && <div className="form-group"><label className="form-label">{tr("Cash Amount (৳)")}</label><div className="input-group input-group-prepend"><span className="input-group-text">৳</span><input type="number" step="0.01" name="cashAmountBdt" className="form-control" value={form.cashAmountBdt} onChange={h} /></div></div>}
               </div>
 
-              <div className="section-heading"><i className="fa-solid fa-file-signature" />Agreement Details</div>
+              <div className="section-heading"><i className="fa-solid fa-file-signature" />{tr("Agreement Details")}</div>
               <div className="form-row cols-4">
-                <div className="form-group"><label className="form-label">Agreement No.</label><input type="text" name="agreementNo" className="form-control" value={form.agreementNo} onChange={h} /></div>
-                <div className="form-group"><label className="form-label">Agreement Date</label><input type="date" name="agreementDate" className="form-control" value={form.agreementDate} onChange={h} /></div>
-                <div className="form-group"><label className="form-label">Power of Attorney No.</label><input type="text" name="powerOfAttorneyNo" className="form-control" value={form.powerOfAttorneyNo} onChange={h} /></div>
-                <div className="form-group"><label className="form-label">POA Date</label><input type="date" name="powerOfAttorneyDate" className="form-control" value={form.powerOfAttorneyDate} onChange={h} /></div>
+                <div className="form-group"><label className="form-label">{tr("Agreement No.")}</label><input type="text" name="agreementNo" className="form-control" value={form.agreementNo} onChange={h} /></div>
+                <div className="form-group"><label className="form-label">{tr("Agreement Date")}</label><input type="date" name="agreementDate" className="form-control" value={form.agreementDate} onChange={h} /></div>
+                <div className="form-group"><label className="form-label">{tr("Power of Attorney No.")}</label><input type="text" name="powerOfAttorneyNo" className="form-control" value={form.powerOfAttorneyNo} onChange={h} /></div>
+                <div className="form-group"><label className="form-label">{tr("POA Date")}</label><input type="date" name="powerOfAttorneyDate" className="form-control" value={form.powerOfAttorneyDate} onChange={h} /></div>
               </div>
               <div className="form-row cols-2">
-                <div className="form-group"><label className="form-label">Status</label><select name="status" className="form-select" value={form.status} onChange={h}><option value="Active">Active</option><option value="Inactive">Inactive</option></select></div>
-                <div className="form-group"><label className="form-label">Notes</label><textarea name="notes" className="form-control" rows={2} value={form.notes} onChange={h} /></div>
+                <div className="form-group"><label className="form-label">{tr("Status")}</label><select name="status" className="form-select" value={form.status} onChange={h}><option value="Active">{tr("Active")}</option><option value="Inactive">{tr("Inactive")}</option></select></div>
+                <div className="form-group"><label className="form-label">{tr("Notes")}</label><textarea name="notes" className="form-control" rows={2} value={form.notes} onChange={h} /></div>
               </div>
             </div>
             <div className="card-footer flex-between">
-              <button type="button" className="btn btn-light" onClick={()=>{setShowForm(false);setEditId(null);}}>Cancel</button>
+              <button type="button" className="btn btn-light" onClick={()=>{setShowForm(false);setEditId(null);}}>{tr("Cancel")}</button>
               <button type="submit" className="btn btn-primary" disabled={formLoading}>
-                {formLoading ? <><div className="spinner" style={{width:'16px',height:'16px'}} />Saving...</> : <><i className={`fa-solid ${editId?'fa-floppy-disk':'fa-user-plus'}`} />{editId?'Update':'Add Shareholder'}</>}
+                {formLoading ? <><div className="spinner" style={{width:'16px',height:'16px'}} />{tr("Saving...")}</> : <><i className={`fa-solid ${editId?'fa-floppy-disk':'fa-user-plus'}`} />{editId?'Update':'Add Shareholder'}</>}
               </button>
             </div>
           </form>
@@ -191,10 +193,10 @@ export default function ManageLandShareholders() {
         <div className="card-body" style={{padding:0}}>
           <div className="table-wrapper">
             <table>
-              <thead><tr><th>#</th><th>Name</th><th>NID</th><th>Phone</th><th>Share (কাঠা)</th><th>Share (%)</th><th>Flats</th><th>Flat Area</th><th>Payment Mode</th><th>Status</th><th>Actions</th></tr></thead>
+              <thead><tr><th>#</th><th>{tr("Name")}</th><th>NID</th><th>{tr("Phone")}</th><th>{tr("Share (কাঠা)")}</th><th>{tr("Share (%)")}</th><th>{tr("Flats")}</th><th>{tr("Flat Area")}</th><th>{tr("Payment Mode")}</th><th>{tr("Status")}</th><th>{tr("Actions")}</th></tr></thead>
               <tbody>
-                {loading ? <tr><td colSpan={11} style={{textAlign:'center',padding:'40px'}}><div className="flex-center gap-2"><div className="spinner" />Loading...</div></td></tr>
-                : rows.length===0 ? <tr><td colSpan={11}><div className="empty-state"><i className="fa-solid fa-users" /><h3>No Shareholders</h3><p>Click "Add Shareholder" to add land shareholders</p></div></td></tr>
+                {loading ? <tr><td colSpan={11} style={{textAlign:'center',padding:'40px'}}><div className="flex-center gap-2"><div className="spinner" />{tr("Loading...")}</div></td></tr>
+                : rows.length===0 ? <tr><td colSpan={11}><div className="empty-state"><i className="fa-solid fa-users" /><h3>{tr("No Shareholders")}</h3><p>{tr("Click \"Add Shareholder\" to add land shareholders")}</p></div></td></tr>
                 : rows.map((s, i) => (
                   <tr key={s.id_shareholders}>
                     <td>{i+1}</td>

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
 
 export default function FinanceManagement() {
+  useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
   const [contributions, setContributions] = useState<any[]>([]);
   const [loans, setLoans] = useState<any[]>([]);
   const [budgets, setBudgets] = useState<any[]>([]);
@@ -140,17 +142,17 @@ export default function FinanceManagement() {
       <div className="page-header">
         <div>
           <div className="breadcrumb">
-            <span>Apartment System</span>
+            <span>{tr("Apartment System")}</span>
             <span className="breadcrumb-sep">/</span>
-            <span>Finance</span>
+            <span>{tr("Finance")}</span>
           </div>
           <h1 className="page-title">
-            <i className="fa-solid fa-coins text-primary"></i> Financial Management, Loans & Budgets
+            <i className="fa-solid fa-coins text-primary"></i> {tr("Financial Management, Loans & Budgets")}
           </h1>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button className="btn btn-success" onClick={() => setShowContribModal(true)}>
-            <i className="fa-solid fa-plus-circle"></i> Record Owner Contribution
+            <i className="fa-solid fa-plus-circle"></i> {tr("Record Owner Contribution")}
           </button>
         </div>
       </div>
@@ -159,30 +161,30 @@ export default function FinanceManagement() {
       <div className="card mb-4" style={{ background: '#f8fafc', border: '1.5px solid #cbd5e1' }}>
         <div className="card-body" style={{ padding: '16px 20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-            <span className="badge badge-primary">Section 28 Architecture</span>
+            <span className="badge badge-primary">{tr("Section 28 Architecture")}</span>
             <span className="fw-bold" style={{ fontSize: '0.9rem', color: '#1e293b' }}>
-              Separation of Funding Sources from Construction Expenditures
+              {tr("Separation of Funding Sources from Construction Expenditures")}
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', padding: '6px 0', fontSize: '0.8rem', fontWeight: 600 }}>
             <div className="p-2 rounded bg-white shadow-sm flex-center" style={{ border: '1px solid #e2e8f0', minWidth: '130px' }}>
-              <i className="fa-solid fa-landmark text-info mr-1" style={{ marginRight: '6px' }}></i> BANK LOAN
+              <i className="fa-solid fa-landmark text-info mr-1" style={{ marginRight: '6px' }}></i> {tr("BANK LOAN")}
             </div>
             <i className="fa-solid fa-arrow-right text-muted"></i>
             <div className="p-2 rounded bg-white shadow-sm flex-center" style={{ border: '1px solid #e2e8f0', minWidth: '130px' }}>
-              <i className="fa-solid fa-user-shield text-primary mr-1" style={{ marginRight: '6px' }}></i> OWNER FUNDING
+              <i className="fa-solid fa-user-shield text-primary mr-1" style={{ marginRight: '6px' }}></i> {tr("OWNER FUNDING")}
             </div>
             <i className="fa-solid fa-arrow-right text-muted"></i>
             <div className="p-2 rounded bg-white shadow-sm flex-center" style={{ border: '1px solid #e2e8f0', minWidth: '150px' }}>
-              <i className="fa-solid fa-vault text-success mr-1" style={{ marginRight: '6px' }}></i> PROJECT CONTRIBUTION
+              <i className="fa-solid fa-vault text-success mr-1" style={{ marginRight: '6px' }}></i> {tr("PROJECT CONTRIBUTION")}
             </div>
             <i className="fa-solid fa-arrow-right text-muted"></i>
             <div className="p-2 rounded bg-white shadow-sm flex-center" style={{ border: '1px solid #e2e8f0', minWidth: '160px' }}>
-              <i className="fa-solid fa-helmet-safety text-warning mr-1" style={{ marginRight: '6px' }}></i> CONSTRUCTION EXPENSE
+              <i className="fa-solid fa-helmet-safety text-warning mr-1" style={{ marginRight: '6px' }}></i> {tr("CONSTRUCTION EXPENSE")}
             </div>
             <i className="fa-solid fa-arrow-right text-muted"></i>
             <div className="p-2 rounded bg-white shadow-sm flex-center" style={{ border: '1px solid #e2e8f0', minWidth: '140px' }}>
-              <i className="fa-solid fa-money-bill-transfer text-danger mr-1" style={{ marginRight: '6px' }}></i> VENDOR PAYMENT
+              <i className="fa-solid fa-money-bill-transfer text-danger mr-1" style={{ marginRight: '6px' }}></i> {tr("VENDOR PAYMENT")}
             </div>
           </div>
         </div>
@@ -190,16 +192,16 @@ export default function FinanceManagement() {
 
       <div className="pill-tabs">
         <button className={`pill-tab ${activeTab === 'contributions' ? 'active' : ''}`} onClick={() => setActiveTab('contributions')}>
-          <i className="fa-solid fa-receipt" style={{ marginRight: '6px' }}></i> Owner Contributions & Payments ({contributions.length})
+          <i className="fa-solid fa-receipt" style={{ marginRight: '6px' }}></i> {tr("Owner Contributions & Payments")} ({contributions.length})
         </button>
         <button className={`pill-tab ${activeTab === 'loans' ? 'active' : ''}`} onClick={() => setActiveTab('loans')}>
-          <i className="fa-solid fa-building-columns" style={{ marginRight: '6px' }}></i> Bank Loans & Disbursements ({loans.length})
+          <i className="fa-solid fa-building-columns" style={{ marginRight: '6px' }}></i> {tr("Bank Loans & Disbursements")} ({loans.length})
         </button>
         <button className={`pill-tab ${activeTab === 'budgets' ? 'active' : ''}`} onClick={() => setActiveTab('budgets')}>
-          <i className="fa-solid fa-scale-balanced" style={{ marginRight: '6px' }}></i> Budgets & Change Orders ({budgets.length})
+          <i className="fa-solid fa-scale-balanced" style={{ marginRight: '6px' }}></i> {tr("Budgets & Change Orders")} ({budgets.length})
         </button>
         <button className={`pill-tab ${activeTab === 'accounts' ? 'active' : ''}`} onClick={() => setActiveTab('accounts')}>
-          <i className="fa-solid fa-wallet" style={{ marginRight: '6px' }}></i> Cash & Bank Accounts ({accounts.length})
+          <i className="fa-solid fa-wallet" style={{ marginRight: '6px' }}></i> {tr("Cash & Bank Accounts")} ({accounts.length})
         </button>
       </div>
 
@@ -210,14 +212,14 @@ export default function FinanceManagement() {
             <table>
               <thead>
                 <tr>
-                  <th>Receipt #</th>
-                  <th>Flat Owner</th>
-                  <th>Unit</th>
-                  <th>Payment Date</th>
-                  <th>Contribution Purpose</th>
-                  <th>Method</th>
-                  <th className="text-right">Amount Paid (৳)</th>
-                  <th>Account / Ref</th>
+                  <th>{tr("Receipt #")}</th>
+                  <th>{tr("Flat Owner")}</th>
+                  <th>{tr("Unit")}</th>
+                  <th>{tr("Payment Date")}</th>
+                  <th>{tr("Contribution Purpose")}</th>
+                  <th>{tr("Method")}</th>
+                  <th className="text-right">{tr("Amount Paid (৳)")}</th>
+                  <th>{tr("Account / Ref")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -241,7 +243,7 @@ export default function FinanceManagement() {
               </tbody>
               <tfoot>
                 <tr>
-                  <td colSpan={6}>Total Owner Contributions Received</td>
+                  <td colSpan={6}>{tr("Total Owner Contributions Received")}</td>
                   <td className="text-right fw-bold text-success" style={{ fontSize: '1.05rem' }}>৳{contributions.reduce((s, c) => s + parseFloat(c.amount || 0), 0).toLocaleString()}
                   </td>
                   <td></td>
@@ -259,14 +261,14 @@ export default function FinanceManagement() {
             <table>
               <thead>
                 <tr>
-                  <th>Owner & Unit</th>
-                  <th>Lender / Bank</th>
-                  <th className="text-right">Approved Limit (৳)</th>
-                  <th className="text-right">Disbursed to Date (৳)</th>
-                  <th className="text-right">Remaining to Disburse (৳)</th>
-                  <th className="text-right">Interest Rate</th>
-                  <th>Monthly Installment (৳)</th>
-                  <th className="text-center">Disbursements</th>
+                  <th>{tr("Owner & Unit")}</th>
+                  <th>{tr("Lender / Bank")}</th>
+                  <th className="text-right">{tr("Approved Limit (৳)")}</th>
+                  <th className="text-right">{tr("Disbursed to Date (৳)")}</th>
+                  <th className="text-right">{tr("Remaining to Disburse (৳)")}</th>
+                  <th className="text-right">{tr("Interest Rate")}</th>
+                  <th>{tr("Monthly Installment (৳)")}</th>
+                  <th className="text-center">{tr("Disbursements")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -289,7 +291,7 @@ export default function FinanceManagement() {
                           className="btn btn-outline btn-sm"
                           onClick={() => { setSelectedLoan(l); setShowDisburseModal(true); }}
                         >
-                          <i className="fa-solid fa-arrow-down-to-bracket"></i> Record Disbursement ({l.disbursements?.length || 0})
+                          <i className="fa-solid fa-arrow-down-to-bracket"></i> {tr("Record Disbursement")} ({l.disbursements?.length || 0})
                         </button>
                       </td>
                     </tr>
@@ -306,20 +308,20 @@ export default function FinanceManagement() {
         <div className="card mb-4">
           <div className="card-header flex-between">
             <div className="card-title">
-              <i className="fa-solid fa-calculator text-primary"></i> Master Project Construction Budgets
+              <i className="fa-solid fa-calculator text-primary"></i> {tr("Master Project Construction Budgets")}
             </div>
           </div>
           <div className="table-wrapper">
             <table>
               <thead>
                 <tr>
-                  <th>Category</th>
-                  <th className="text-right">Original Budget (৳)</th>
-                  <th className="text-right">Revised Budget (৳)</th>
-                  <th className="text-right">Actual Spent (৳)</th>
-                  <th className="text-right">Variance (৳)</th>
-                  <th>Change Orders</th>
-                  <th className="text-center">Modify</th>
+                  <th>{tr("Category")}</th>
+                  <th className="text-right">{tr("Original Budget (৳)")}</th>
+                  <th className="text-right">{tr("Revised Budget (৳)")}</th>
+                  <th className="text-right">{tr("Actual Spent (৳)")}</th>
+                  <th className="text-right">{tr("Variance (৳)")}</th>
+                  <th>{tr("Change Orders")}</th>
+                  <th className="text-center">{tr("Modify")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -340,10 +342,10 @@ export default function FinanceManagement() {
                       <td>
                         {(b.change_orders || []).length > 0 ? (
                           <span className="badge badge-warning">
-                            {b.change_orders.length} Approved Change Order(s)
+                            {b.change_orders.length} {tr("Approved Change Order(s)")}
                           </span>
                         ) : (
-                          <span className="badge badge-gray">No Changes</span>
+                          <span className="badge badge-gray">{tr("No Changes")}</span>
                         )}
                       </td>
                       <td className="text-center">
@@ -351,7 +353,7 @@ export default function FinanceManagement() {
                           className="btn btn-outline btn-sm"
                           onClick={() => { setSelectedBudget(b); setShowChangeModal(true); }}
                         >
-                          <i className="fa-solid fa-pen-to-square"></i> Change Order
+                          <i className="fa-solid fa-pen-to-square"></i> {tr("Change Order")}
                         </button>
                       </td>
                     </tr>
@@ -375,20 +377,20 @@ export default function FinanceManagement() {
                 </div>
               </div>
               <div className="card-body">
-                <div className="text-xs text-muted mb-1">Current Liquid Balance</div>
+                <div className="text-xs text-muted mb-1">{tr("Current Liquid Balance")}</div>
                 <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#059669' }}>৳{parseFloat(acc.balance).toLocaleString()}
                 </div>
                 <div style={{ marginTop: '14px', fontSize: '0.85rem' }}>
                   <div className="flex-between py-1 border-bottom">
-                    <span className="text-muted">Account Type:</span>
+                    <span className="text-muted">{tr("Account Type:")}</span>
                     <span className="badge badge-info">{acc.account_type}</span>
                   </div>
                   <div className="flex-between py-1 border-bottom">
-                    <span className="text-muted">Bank Institution:</span>
+                    <span className="text-muted">{tr("Bank Institution:")}</span>
                     <span className="fw-semibold">{acc.bank_name || 'Cash Safe'}</span>
                   </div>
                   <div className="flex-between py-1">
-                    <span className="text-muted">Account Number:</span>
+                    <span className="text-muted">{tr("Account Number:")}</span>
                     <span className="font-mono">{acc.account_number}</span>
                   </div>
                 </div>
@@ -404,7 +406,7 @@ export default function FinanceManagement() {
           <div className="modal" style={{ maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
             <form onSubmit={handleRecordContribution}>
               <div className="modal-header">
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Record Flat Owner Payment / Contribution</h3>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>{tr("Record Flat Owner Payment / Contribution")}</h3>
                 <button type="button" className="btn btn-light btn-sm" onClick={() => setShowContribModal(false)}>
                   <i className="fa-solid fa-times"></i>
                 </button>
@@ -412,28 +414,28 @@ export default function FinanceManagement() {
               <div className="modal-body">
                 <div className="form-row cols-2">
                   <div className="form-group">
-                    <label className="form-label required">Flat Owner</label>
+                    <label className="form-label required">{tr("Flat Owner")}</label>
                     <select
                       className="form-select"
                       value={contribForm.id_owners}
                       onChange={e => setContribForm({ ...contribForm, id_owners: e.target.value })}
                       required
                     >
-                      <option value="">Select Flat Owner</option>
+                      <option value="">{tr("Select Flat Owner")}</option>
                       {owners.map(o => (
                         <option key={o.id_owners} value={o.id_owners}>{o.full_name}</option>
                       ))}
                     </select>
                   </div>
                   <div className="form-group">
-                    <label className="form-label required">Unit / Flat</label>
+                    <label className="form-label required">{tr("Unit / Flat")}</label>
                     <select
                       className="form-select"
                       value={contribForm.id_units}
                       onChange={e => setContribForm({ ...contribForm, id_units: e.target.value })}
                       required
                     >
-                      <option value="">Select Unit</option>
+                      <option value="">{tr("Select Unit")}</option>
                       {units.map(u => (
                         <option key={u.id_units} value={u.id_units}>{u.unit_number}</option>
                       ))}
@@ -442,19 +444,19 @@ export default function FinanceManagement() {
                 </div>
                 <div className="form-row cols-2">
                   <div className="form-group">
-                    <label className="form-label required">Payment Amount (৳)</label>
+                    <label className="form-label required">{tr("Payment Amount (৳)")}</label>
                     <input
                       type="number"
                       step="0.01"
                       className="form-control"
-                      placeholder="e.g. 15000"
+                      placeholder={tr("e.g. 15000")}
                       value={contribForm.amount}
                       onChange={e => setContribForm({ ...contribForm, amount: e.target.value })}
                       required
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Payment Date</label>
+                    <label className="form-label">{tr("Payment Date")}</label>
                     <input
                       type="date"
                       className="form-control"
@@ -465,47 +467,47 @@ export default function FinanceManagement() {
                 </div>
                 <div className="form-row cols-2">
                   <div className="form-group">
-                    <label className="form-label">Contribution Type</label>
+                    <label className="form-label">{tr("Contribution Type")}</label>
                     <select
                       className="form-select"
                       value={contribForm.contribution_type}
                       onChange={e => setContribForm({ ...contribForm, contribution_type: e.target.value })}
                     >
-                      <option value="INITIAL_DEPOSIT">Initial Booking Deposit</option>
-                      <option value="CONSTRUCTION_INSTALLMENT">Construction Installment</option>
-                      <option value="MONTHLY_CONTRIBUTION">Monthly Contribution</option>
-                      <option value="SPECIAL_CONTRIBUTION">Special Contribution</option>
-                      <option value="LOAN_FUNDED">Bank Loan Funded Payment</option>
+                      <option value="INITIAL_DEPOSIT">{tr("Initial Booking Deposit")}</option>
+                      <option value="CONSTRUCTION_INSTALLMENT">{tr("Construction Installment")}</option>
+                      <option value="MONTHLY_CONTRIBUTION">{tr("Monthly Contribution")}</option>
+                      <option value="SPECIAL_CONTRIBUTION">{tr("Special Contribution")}</option>
+                      <option value="LOAN_FUNDED">{tr("Bank Loan Funded Payment")}</option>
                     </select>
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Payment Method</label>
+                    <label className="form-label">{tr("Payment Method")}</label>
                     <select
                       className="form-select"
                       value={contribForm.payment_method}
                       onChange={e => setContribForm({ ...contribForm, payment_method: e.target.value })}
                     >
-                      <option value="BANK_TRANSFER">Bank Wire / EFT Transfer</option>
-                      <option value="CHEQUE">Bank Cheque</option>
-                      <option value="CASH">Cash</option>
-                      <option value="LOAN">Direct Bank Loan Disbursement</option>
+                      <option value="BANK_TRANSFER">{tr("Bank Wire / EFT Transfer")}</option>
+                      <option value="CHEQUE">{tr("Bank Cheque")}</option>
+                      <option value="CASH">{tr("Cash")}</option>
+                      <option value="LOAN">{tr("Direct Bank Loan Disbursement")}</option>
                     </select>
                   </div>
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Cheque # / Transaction Reference</label>
+                  <label className="form-label">{tr("Cheque # / Transaction Reference")}</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="e.g. CHQ-001290 or EFT-88123"
+                    placeholder={tr("e.g. CHQ-001290 or EFT-88123")}
                     value={contribForm.reference}
                     onChange={e => setContribForm({ ...contribForm, reference: e.target.value })}
                   />
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-light" onClick={() => setShowContribModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-success">Save Contribution & Issue Receipt</button>
+                <button type="button" className="btn btn-light" onClick={() => setShowContribModal(false)}>{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-success">{tr("Save Contribution & Issue Receipt")}</button>
               </div>
             </form>
           </div>
@@ -518,7 +520,7 @@ export default function FinanceManagement() {
           <div className="modal" style={{ maxWidth: '550px' }} onClick={e => e.stopPropagation()}>
             <form onSubmit={handleApplyChangeOrder}>
               <div className="modal-header">
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Apply Change Order: {selectedBudget.category}</h3>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>{tr("Apply Change Order")}: {selectedBudget.category}</h3>
                 <button type="button" className="btn btn-light btn-sm" onClick={() => setShowChangeModal(false)}>
                   <i className="fa-solid fa-times"></i>
                 </button>
@@ -526,17 +528,17 @@ export default function FinanceManagement() {
               <div className="modal-body">
                 <div className="p-3 mb-3 rounded" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
                   <div className="flex-between text-sm">
-                    <span className="text-muted">Current Budget:</span>
+                    <span className="text-muted">{tr("Current Budget:")}</span>
                     <span className="fw-bold">৳{parseFloat(selectedBudget.revised_budget || selectedBudget.original_budget).toLocaleString()}</span>
                   </div>
                 </div>
                 <div className="form-group">
-                  <label className="form-label required">Change Amount (৳ +/-)</label>
+                  <label className="form-label required">{tr("Change Amount (৳ +/-)")}</label>
                   <input
                     type="number"
                     step="0.01"
                     className="form-control"
-                    placeholder="e.g. +5000 or -2000"
+                    placeholder={tr("e.g. +5000 or -2000")}
                     value={changeForm.change_amount}
                     onChange={e => setChangeForm({ ...changeForm, change_amount: e.target.value })}
                     required
@@ -544,11 +546,11 @@ export default function FinanceManagement() {
                   <div className="form-text">Positive values increase budget; negative values reduce it.</div>
                 </div>
                 <div className="form-group">
-                  <label className="form-label required">Reason / Committee Resolution</label>
+                  <label className="form-label required">{tr("Reason / Committee Resolution")}</label>
                   <textarea
                     className="form-control"
                     rows={3}
-                    placeholder="Explain technical or material justification approved by committee..."
+                    placeholder={tr("Explain technical or material justification approved by committee...")}
                     value={changeForm.reason}
                     onChange={e => setChangeForm({ ...changeForm, reason: e.target.value })}
                     required
@@ -556,8 +558,8 @@ export default function FinanceManagement() {
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-light" onClick={() => setShowChangeModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">Authorize Change Order</button>
+                <button type="button" className="btn btn-light" onClick={() => setShowChangeModal(false)}>{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Authorize Change Order")}</button>
               </div>
             </form>
           </div>
@@ -570,26 +572,26 @@ export default function FinanceManagement() {
           <div className="modal" style={{ maxWidth: '550px' }} onClick={e => e.stopPropagation()}>
             <form onSubmit={handleDisbursement}>
               <div className="modal-header">
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Record Bank Loan Disbursement Installment</h3>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>{tr("Record Bank Loan Disbursement Installment")}</h3>
                 <button type="button" className="btn btn-light btn-sm" onClick={() => setShowDisburseModal(false)}>
                   <i className="fa-solid fa-times"></i>
                 </button>
               </div>
               <div className="modal-body">
                 <div className="p-3 mb-3 rounded" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
-                  <div className="text-xs text-muted">Lender & Owner:</div>
+                  <div className="text-xs text-muted">{tr("Lender & Owner:")}</div>
                   <div className="fw-bold">{selectedLoan.bank_lender_name} &bull; {selectedLoan.owner_name}</div>
                   <div className="text-xs text-muted mt-1">
                     Approved Limit: ৳${parseFloat(selectedLoan.approved_amount).toLocaleString()} &bull; Disbursed: ৳${parseFloat(selectedLoan.disbursed_amount).toLocaleString()}
                   </div>
                 </div>
                 <div className="form-group">
-                  <label className="form-label required">Disbursement Amount (৳)</label>
+                  <label className="form-label required">{tr("Disbursement Amount (৳)")}</label>
                   <input
                     type="number"
                     step="0.01"
                     className="form-control"
-                    placeholder="e.g. 30000"
+                    placeholder={tr("e.g. 30000")}
                     value={disburseForm.amount}
                     onChange={e => setDisburseForm({ ...disburseForm, amount: e.target.value })}
                     required
@@ -597,7 +599,7 @@ export default function FinanceManagement() {
                 </div>
                 <div className="form-row cols-2">
                   <div className="form-group">
-                    <label className="form-label">Disbursement Date</label>
+                    <label className="form-label">{tr("Disbursement Date")}</label>
                     <input
                       type="date"
                       className="form-control"
@@ -606,11 +608,11 @@ export default function FinanceManagement() {
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Bank Reference #</label>
+                    <label className="form-label">{tr("Bank Reference #")}</label>
                     <input
                       type="text"
                       className="form-control"
-                      placeholder="e.g. BA-TRF-03"
+                      placeholder={tr("e.g. BA-TRF-03")}
                       value={disburseForm.reference_number}
                       onChange={e => setDisburseForm({ ...disburseForm, reference_number: e.target.value })}
                     />
@@ -618,8 +620,8 @@ export default function FinanceManagement() {
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-light" onClick={() => setShowDisburseModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">Confirm Disbursement</button>
+                <button type="button" className="btn btn-light" onClick={() => setShowDisburseModal(false)}>{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Confirm Disbursement")}</button>
               </div>
             </form>
           </div>

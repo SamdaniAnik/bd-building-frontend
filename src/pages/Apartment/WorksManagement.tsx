@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
 
 export default function WorksManagement() {
+  useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
   const [works, setWorks] = useState<any[]>([]);
   const [units, setUnits] = useState<any[]>([]);
   const [vendors, setVendors] = useState<any[]>([]);
@@ -138,35 +140,35 @@ export default function WorksManagement() {
       <div className="page-header">
         <div>
           <div className="breadcrumb">
-            <span>Apartment System</span>
+            <span>{tr("Apartment System")}</span>
             <span className="breadcrumb-sep">/</span>
-            <span>Construction</span>
+            <span>{tr("Construction")}</span>
           </div>
           <h1 className="page-title">
-            <i className="fa-solid fa-trowel-bricks text-primary"></i> Construction Works & Cost Allocation Engine
+            <i className="fa-solid fa-trowel-bricks text-primary"></i> {tr("Construction Works & Cost Allocation Engine")}
           </h1>
         </div>
         <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
-          <i className="fa-solid fa-plus-circle"></i> Create New Work & Cost Allocation
+          <i className="fa-solid fa-plus-circle"></i> {tr("Create New Work & Cost Allocation")}
         </button>
       </div>
 
       {/* FILTER TABS */}
       <div className="pill-tabs">
         <button className={`pill-tab ${activeFilter === 'ALL' ? 'active' : ''}`} onClick={() => setActiveFilter('ALL')}>
-          All Works ({works.length})
+          {tr("All Works")} ({works.length})
         </button>
         <button className={`pill-tab ${activeFilter === 'COMBINED' ? 'active' : ''}`} onClick={() => setActiveFilter('COMBINED')}>
           <i className="fa-solid fa-users-gear" style={{ marginRight: '6px' }}></i>
-          Combined / Common Works ({works.filter(w => w.work_type === 'COMBINED').length})
+          {tr("Combined / Common Works")} ({works.filter(w => w.work_type === 'COMBINED').length})
         </button>
         <button className={`pill-tab ${activeFilter === 'INDIVIDUAL' ? 'active' : ''}`} onClick={() => setActiveFilter('INDIVIDUAL')}>
           <i className="fa-solid fa-door-open" style={{ marginRight: '6px' }}></i>
-          Individual Flat Works ({works.filter(w => w.work_type === 'INDIVIDUAL').length})
+          {tr("Individual Flat Works")} ({works.filter(w => w.work_type === 'INDIVIDUAL').length})
         </button>
         <button className={`pill-tab ${activeFilter === 'EXTRA_WORK' ? 'active' : ''}`} onClick={() => setActiveFilter('EXTRA_WORK')}>
           <i className="fa-solid fa-wrench" style={{ marginRight: '6px' }}></i>
-          Owner Extra Works ({works.filter(w => w.work_type === 'EXTRA_WORK').length})
+          {tr("Owner Extra Works")} ({works.filter(w => w.work_type === 'EXTRA_WORK').length})
         </button>
       </div>
 
@@ -176,14 +178,14 @@ export default function WorksManagement() {
           <table>
             <thead>
               <tr>
-                <th>Work Details</th>
-                <th>Type</th>
-                <th>Contractor / Vendor</th>
-                <th className="text-right">Cost (৳)</th>
-                <th>Allocation / Target</th>
-                <th>Progress</th>
-                <th>Workflow Status</th>
-                <th className="text-center">Allocations</th>
+                <th>{tr("Work Details")}</th>
+                <th>{tr("Type")}</th>
+                <th>{tr("Contractor / Vendor")}</th>
+                <th className="text-right">{tr("Cost (৳)")}</th>
+                <th>{tr("Allocation / Target")}</th>
+                <th>{tr("Progress")}</th>
+                <th>{tr("Workflow Status")}</th>
+                <th className="text-center">{tr("Allocations")}</th>
               </tr>
             </thead>
             <tbody>
@@ -211,7 +213,7 @@ export default function WorksManagement() {
                       {w.work_type === 'COMBINED' ? (
                         <div>
                           <span className="badge badge-info">{w.cost_allocation_method}</span>
-                          <div className="text-xs text-muted mt-1">Split across 6 units</div>
+                          <div className="text-xs text-muted mt-1">{tr("Split across 6 units")}</div>
                         </div>
                       ) : (
                         <div>
@@ -222,7 +224,7 @@ export default function WorksManagement() {
                     </td>
                     <td style={{ minWidth: '120px' }}>
                       <div className="flex-between text-xs text-muted mb-1">
-                        <span>Progress</span>
+                        <span>{tr("Progress")}</span>
                         <span>{w.progress_percentage}%</span>
                       </div>
                       <div className="progress" style={{ height: '6px' }}>
@@ -233,7 +235,7 @@ export default function WorksManagement() {
                       {isExtra ? (
                         <div>
                           <span className="badge badge-warning">{w.extra_work_status}</span>
-                          <div className="text-xs text-muted mt-1">8-Step Workflow</div>
+                          <div className="text-xs text-muted mt-1">{tr("8-Step Workflow")}</div>
                         </div>
                       ) : (
                         <span className={`badge ${w.status === 'COMPLETED' ? 'badge-success' : 'badge-primary'}`}>
@@ -243,7 +245,7 @@ export default function WorksManagement() {
                     </td>
                     <td className="text-center">
                       <span className="badge badge-gray">
-                        {(w.allocations || []).length} Units Allocated
+                        {(w.allocations || []).length} {tr("Units Allocated")}
                       </span>
                     </td>
                   </tr>
@@ -259,12 +261,12 @@ export default function WorksManagement() {
         <div className="card-header">
           <div className="card-title">
             <i className="fa-solid fa-arrows-split-up-and-left text-warning"></i>
-            Owner-Requested Extra Work Workflow (Section 12: 8 Steps from Request to Payment)
+            {tr("Owner-Requested Extra Work Workflow (Section 12: 8 Steps from Request to Payment)")}
           </div>
         </div>
         <div className="card-body">
           <p className="text-sm text-muted mb-3">
-            Individual owner modifications (e.g. Premium kitchen cabinets, Italian marble, additional power outlets) follow an isolated 8-step lifecycle and strictly charge only the requesting owner.
+            {tr("Individual owner modifications (e.g. Premium kitchen cabinets, Italian marble, additional power outlets) follow an isolated 8-step lifecycle and strictly charge only the requesting owner.")}
           </p>
           <div className="stepper-container">
             {extraWorkSteps.map((step, idx) => (
@@ -283,7 +285,7 @@ export default function WorksManagement() {
           <div className="modal" style={{ maxWidth: '800px' }} onClick={e => e.stopPropagation()}>
             <form onSubmit={handleCreateWork}>
               <div className="modal-header">
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Create Construction Work & Cost Allocation</h3>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>{tr("Create Construction Work & Cost Allocation")}</h3>
                 <button type="button" className="btn btn-light btn-sm" onClick={() => setShowCreateModal(false)}>
                   <i className="fa-solid fa-times"></i>
                 </button>
@@ -291,66 +293,66 @@ export default function WorksManagement() {
               <div className="modal-body">
                 <div className="form-row cols-2">
                   <div className="form-group">
-                    <label className="form-label required">Work Name</label>
+                    <label className="form-label required">{tr("Work Name")}</label>
                     <input
                       type="text"
                       className="form-control"
-                      placeholder="e.g. Ground Floor RCC Beams & Slabs"
+                      placeholder={tr("e.g. Ground Floor RCC Beams & Slabs")}
                       value={formData.work_name}
                       onChange={e => setFormData({ ...formData, work_name: e.target.value })}
                       required
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label required">Work Type</label>
+                    <label className="form-label required">{tr("Work Type")}</label>
                     <select
                       className="form-select"
                       value={formData.work_type}
                       onChange={e => setFormData({ ...formData, work_type: e.target.value })}
                     >
-                      <option value="COMBINED">COMBINED (Shared Common Facility)</option>
-                      <option value="INDIVIDUAL">INDIVIDUAL (Belongs only to 1 Flat)</option>
-                      <option value="EXTRA_WORK">OWNER EXTRA WORK (Owner-Requested Upgrade)</option>
+                      <option value="COMBINED">{tr("COMBINED (Shared Common Facility)")}</option>
+                      <option value="INDIVIDUAL">{tr("INDIVIDUAL (Belongs only to 1 Flat)")}</option>
+                      <option value="EXTRA_WORK">{tr("OWNER EXTRA WORK (Owner-Requested Upgrade)")}</option>
                     </select>
                   </div>
                 </div>
 
                 <div className="form-row cols-3">
                   <div className="form-group">
-                    <label className="form-label">Category</label>
+                    <label className="form-label">{tr("Category")}</label>
                     <select
                       className="form-select"
                       value={formData.work_category}
                       onChange={e => setFormData({ ...formData, work_category: e.target.value })}
                     >
-                      <option value="Structural">Structural (Civil/RCC)</option>
-                      <option value="Facilities & MEP">Facilities & MEP (Lift/Generator)</option>
-                      <option value="Finishing">Finishing (Tiles/Paint)</option>
-                      <option value="Electrical">Electrical</option>
-                      <option value="Plumbing">Plumbing & Sanitary</option>
-                      <option value="Individual Interior">Individual Interior</option>
+                      <option value="Structural">{tr("Structural (Civil/RCC)")}</option>
+                      <option value="Facilities & MEP">{tr("Facilities & MEP (Lift/Generator)")}</option>
+                      <option value="Finishing">{tr("Finishing (Tiles/Paint)")}</option>
+                      <option value="Electrical">{tr("Electrical")}</option>
+                      <option value="Plumbing">{tr("Plumbing & Sanitary")}</option>
+                      <option value="Individual Interior">{tr("Individual Interior")}</option>
                     </select>
                   </div>
                   <div className="form-group">
-                    <label className="form-label required">Total Work Cost (৳)</label>
+                    <label className="form-label required">{tr("Total Work Cost (৳)")}</label>
                     <input
                       type="number"
                       step="0.01"
                       className="form-control"
-                      placeholder="e.g. 50000"
+                      placeholder={tr("e.g. 50000")}
                       value={formData.actual_cost}
                       onChange={e => setFormData({ ...formData, actual_cost: e.target.value })}
                       required
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Contractor / Vendor</label>
+                    <label className="form-label">{tr("Contractor / Vendor")}</label>
                     <select
                       className="form-select"
                       value={formData.id_vendors}
                       onChange={e => setFormData({ ...formData, id_vendors: e.target.value })}
                     >
-                      <option value="">Select Vendor (Optional)</option>
+                      <option value="">{tr("Select Vendor (Optional)")}</option>
                       {vendors.map(v => (
                         <option key={v.id_vendors} value={v.id_vendors}>{v.company_name} ({v.category})</option>
                       ))}
@@ -362,28 +364,28 @@ export default function WorksManagement() {
                 {(formData.work_type === 'INDIVIDUAL' || formData.work_type === 'EXTRA_WORK') && (
                   <div className="form-row cols-2" style={{ background: '#fef3c7', padding: '14px', borderRadius: '8px', marginBottom: '16px' }}>
                     <div className="form-group mb-0">
-                      <label className="form-label required">Select Target Flat Unit</label>
+                      <label className="form-label required">{tr("Select Target Flat Unit")}</label>
                       <select
                         className="form-select"
                         value={formData.id_units}
                         onChange={e => setFormData({ ...formData, id_units: e.target.value })}
                         required
                       >
-                        <option value="">Choose Unit (A–F)</option>
+                        <option value="">{tr("Choose Unit (A–F)")}</option>
                         {units.map(u => (
                           <option key={u.id_units} value={u.id_units}>{u.unit_number} ({u.area_sqft} SFT)</option>
                         ))}
                       </select>
-                      <div className="form-text text-muted">Cost will be charged 100% to this unit. Zero impact on other owners.</div>
+                      <div className="form-text text-muted">{tr("Cost will be charged 100% to this unit. Zero impact on other owners.")}</div>
                     </div>
                     <div className="form-group mb-0">
-                      <label className="form-label">Select Flat Owner</label>
+                      <label className="form-label">{tr("Select Flat Owner")}</label>
                       <select
                         className="form-select"
                         value={formData.id_owners}
                         onChange={e => setFormData({ ...formData, id_owners: e.target.value })}
                       >
-                        <option value="">Choose Owner</option>
+                        <option value="">{tr("Choose Owner")}</option>
                         {owners.map(o => (
                           <option key={o.id_owners} value={o.id_owners}>{o.full_name}</option>
                         ))}
@@ -397,7 +399,7 @@ export default function WorksManagement() {
                   <div style={{ background: '#f8fafc', border: '1.5px solid #cbd5e1', padding: '16px', borderRadius: '10px', marginBottom: '16px' }}>
                     <div className="flex-between mb-2">
                       <label className="form-label fw-bold mb-0">
-                        <i className="fa-solid fa-calculator text-primary"></i> Combined Cost Allocation Method (Section 10)
+                        <i className="fa-solid fa-calculator text-primary"></i> {tr("Combined Cost Allocation Method (Section 10)")}
                       </label>
                       <button
                         type="button"
@@ -405,7 +407,7 @@ export default function WorksManagement() {
                         onClick={handlePreviewAllocation}
                         disabled={previewLoading}
                       >
-                        <i className="fa-solid fa-eye"></i> Calculate & Preview Allocation
+                        <i className="fa-solid fa-eye"></i> {tr("Calculate & Preview Allocation")}
                       </button>
                     </div>
                     <div className="form-row cols-2">
@@ -415,14 +417,14 @@ export default function WorksManagement() {
                           value={formData.cost_allocation_method}
                           onChange={e => setFormData({ ...formData, cost_allocation_method: e.target.value })}
                         >
-                          <option value="AREA_BASED">Area-based (Unit Area / Total Area × Combined Cost)</option>
-                          <option value="EQUAL">Equal Allocation (Total Cost / Number of Units)</option>
-                          <option value="PERCENTAGE">Percentage Allocation</option>
-                          <option value="CUSTOM">Custom Manual Allocation</option>
+                          <option value="AREA_BASED">{tr("Area-based (Unit Area / Total Area × Combined Cost)")}</option>
+                          <option value="EQUAL">{tr("Equal Allocation (Total Cost / Number of Units)")}</option>
+                          <option value="PERCENTAGE">{tr("Percentage Allocation")}</option>
+                          <option value="CUSTOM">{tr("Custom Manual Allocation")}</option>
                         </select>
                       </div>
                       <div className="text-xs text-muted flex-center">
-                        Total allocation must always equal exactly 100% of the original expense.
+                        {tr("Total allocation must always equal exactly 100% of the original expense.")}
                       </div>
                     </div>
 
@@ -430,7 +432,7 @@ export default function WorksManagement() {
                     {previewData && (
                       <div className="mt-3">
                         <div className="flex-between mb-2">
-                          <span className="text-xs text-muted uppercase fw-bold">Live Allocation Breakdown Preview:</span>
+                          <span className="text-xs text-muted uppercase fw-bold">{tr("Live Allocation Breakdown Preview:")}</span>
                           <span className={`badge ${previewData.is_balanced ? 'badge-success' : 'badge-danger'}`}>
                             {previewData.is_balanced ? '✓ Perfectly Balanced Total' : 'Sum Mismatch'}
                           </span>
@@ -439,10 +441,10 @@ export default function WorksManagement() {
                           <table style={{ background: 'white' }}>
                             <thead>
                               <tr>
-                                <th>Unit</th>
-                                <th>Area</th>
-                                <th className="text-right">Share %</th>
-                                <th className="text-right">Allocated Amount (৳)</th>
+                                <th>{tr("Unit")}</th>
+                                <th>{tr("Area")}</th>
+                                <th className="text-right">{tr("Share %")}</th>
+                                <th className="text-right">{tr("Allocated Amount (৳)")}</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -457,7 +459,7 @@ export default function WorksManagement() {
                             </tbody>
                             <tfoot>
                               <tr>
-                                <td colSpan={3}>Calculated Total Allocation</td>
+                                <td colSpan={3}>{tr("Calculated Total Allocation")}</td>
                                 <td className="text-right fw-bold text-success">৳{previewData.calculated_sum?.toLocaleString()}</td>
                               </tr>
                             </tfoot>
@@ -469,11 +471,11 @@ export default function WorksManagement() {
                 )}
 
                 <div className="form-group">
-                  <label className="form-label">Scope Description & Specifications</label>
+                  <label className="form-label">{tr("Scope Description & Specifications")}</label>
                   <textarea
                     className="form-control"
                     rows={2}
-                    placeholder="Enter detailed scope, materials, test requirements..."
+                    placeholder={tr("Enter detailed scope, materials, test requirements...")}
                     value={formData.description}
                     onChange={e => setFormData({ ...formData, description: e.target.value })}
                   />
@@ -481,7 +483,7 @@ export default function WorksManagement() {
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-light" onClick={() => setShowCreateModal(false)}>
-                  Cancel
+                  {tr("Cancel")}
                 </button>
                 <button type="submit" className="btn btn-primary" disabled={submitting}>
                   {submitting ? 'Allocating & Saving...' : 'Confirm Work & Apply Allocation'}

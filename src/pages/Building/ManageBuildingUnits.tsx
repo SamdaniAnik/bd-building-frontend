@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { tr, useLang } from '../../i18n/LanguageContext';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../api/client';
 
@@ -7,6 +8,7 @@ const formatBDT = (v:any) => v ? `৳ ${Number(v).toLocaleString('en-BD')}` : '�
 const EMPTY = { unitNo:'', unitName:'', unitType:'Residential Flat', idFloors:'', grossAreaSqft:'', carpetAreaSqft:'', superBuiltUpAreaSqft:'', balconyAreaSqft:'', carParkCount:'0', bedCount:'', bathCount:'', isCornerUnit:false, facingDirection:'', pricePerSqftBdt:'', totalPriceBdt:'', carParkPriceBdt:'', utilityConnectionBdt:'', totalSalePriceBdt:'', allocationType:'Available', idShareholders:'', buyerName:'', buyerPhone:'', status:'Available', notes:'' };
 
 export default function ManageBuildingUnits() {
+  useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
   const { id: buildingId } = useParams<{id:string}>();
   const [units, setUnits] = useState<any[]>([]);
   const [summary, setSummary] = useState<any>({});
@@ -114,21 +116,21 @@ export default function ManageBuildingUnits() {
     <div>
       <div className="page-header">
         <div>
-          <div className="breadcrumb mb-2"><Link to="/buildings">Buildings</Link><span className="breadcrumb-sep">/</span><Link to={`/buildings/details/${buildingId}`}>{buildingName}</Link><span className="breadcrumb-sep">/</span><span>Units</span></div>
+          <div className="breadcrumb mb-2"><Link to="/buildings">{tr("Buildings")}</Link><span className="breadcrumb-sep">/</span><Link to={`/buildings/details/${buildingId}`}>{buildingName}</Link><span className="breadcrumb-sep">/</span><span>{tr("Units")}</span></div>
           <h1 className="page-title"><i className="fa-solid fa-home text-success" />Units — {buildingName}</h1>
         </div>
         <button className="btn btn-success" onClick={()=>{setShowForm(true);setEditId(null);setForm({...EMPTY});}}>
-          <i className="fa-solid fa-plus" /> Add Unit
+          <i className="fa-solid fa-plus" /> {tr("Add Unit")}
         </button>
       </div>
 
       {/* Summary */}
       <div className="stats-grid mb-4">
-        <div className="stat-card stat-info"><div className="stat-value">{summary.total_units||0}</div><div className="stat-label">Total Units</div></div>
-        <div className="stat-card stat-success"><div className="stat-value">{summary.available||0}</div><div className="stat-label">Available</div></div>
-        <div className="stat-card stat-warning"><div className="stat-value">{summary.booked||0}</div><div className="stat-label">Booked</div></div>
-        <div className="stat-card stat-primary"><div className="stat-value">{summary.sold||0}</div><div className="stat-label">Sold</div></div>
-        <div className="stat-card stat-danger"><div className="stat-value" style={{fontSize:'1.1rem'}}>{formatBDT(summary.total_sale_value)}</div><div className="stat-label">Total Sale Value</div></div>
+        <div className="stat-card stat-info"><div className="stat-value">{summary.total_units||0}</div><div className="stat-label">{tr("Total Units")}</div></div>
+        <div className="stat-card stat-success"><div className="stat-value">{summary.available||0}</div><div className="stat-label">{tr("Available")}</div></div>
+        <div className="stat-card stat-warning"><div className="stat-value">{summary.booked||0}</div><div className="stat-label">{tr("Booked")}</div></div>
+        <div className="stat-card stat-primary"><div className="stat-value">{summary.sold||0}</div><div className="stat-label">{tr("Sold")}</div></div>
+        <div className="stat-card stat-danger"><div className="stat-value" style={{fontSize:'1.1rem'}}>{formatBDT(summary.total_sale_value)}</div><div className="stat-label">{tr("Total Sale Value")}</div></div>
       </div>
 
       {/* Form */}
@@ -138,46 +140,46 @@ export default function ManageBuildingUnits() {
           {error && <div className="alert alert-danger" style={{margin:'0 20px'}}><i className="fa-solid fa-circle-exclamation" />{error}</div>}
           <form onSubmit={handleSubmit}>
             <div className="card-body">
-              <div className="section-heading"><i className="fa-solid fa-tag" />Basic Info</div>
+              <div className="section-heading"><i className="fa-solid fa-tag" />{tr("Basic Info")}</div>
               <div className="form-row cols-4">
-                <div className="form-group"><label className="form-label required">Unit No.</label><input type="text" name="unitNo" className="form-control" value={form.unitNo} onChange={h} required placeholder="e.g. A-101" /></div>
-                <div className="form-group"><label className="form-label">Unit Name</label><input type="text" name="unitName" className="form-control" value={form.unitName} onChange={h} /></div>
-                <div className="form-group"><label className="form-label required">Type</label><select name="unitType" className="form-select" value={form.unitType} onChange={h}>{['Residential Flat','Commercial Space','Office','Shop','Car Park','Store Room'].map(t=><option key={t} value={t}>{t}</option>)}</select></div>
-                <div className="form-group"><label className="form-label">BHK / Beds</label><select name="bedCount" className="form-select" value={form.bedCount} onChange={h}><option value="">Select</option>{['Studio','1 BHK','2 BHK','3 BHK','4 BHK','5 BHK'].map(b=><option key={b} value={b}>{b}</option>)}</select></div>
+                <div className="form-group"><label className="form-label required">{tr("Unit No.")}</label><input type="text" name="unitNo" className="form-control" value={form.unitNo} onChange={h} required placeholder={tr("e.g. A-101")} /></div>
+                <div className="form-group"><label className="form-label">{tr("Unit Name")}</label><input type="text" name="unitName" className="form-control" value={form.unitName} onChange={h} /></div>
+                <div className="form-group"><label className="form-label required">{tr("Type")}</label><select name="unitType" className="form-select" value={form.unitType} onChange={h}>{['Residential Flat','Commercial Space','Office','Shop','Car Park','Store Room'].map(t=><option key={t} value={t}>{t}</option>)}</select></div>
+                <div className="form-group"><label className="form-label">{tr("BHK / Beds")}</label><select name="bedCount" className="form-select" value={form.bedCount} onChange={h}><option value="">{tr("Select")}</option>{['Studio','1 BHK','2 BHK','3 BHK','4 BHK','5 BHK'].map(b=><option key={b} value={b}>{b}</option>)}</select></div>
               </div>
 
-              <div className="section-heading"><i className="fa-solid fa-ruler" />Area (Sqft)</div>
+              <div className="section-heading"><i className="fa-solid fa-ruler" />{tr("Area (Sqft)")}</div>
               <div className="form-row cols-4">
-                <div className="form-group"><label className="form-label">Gross Area</label><div className="input-group"><input type="number" step="0.01" name="grossAreaSqft" className="form-control" value={form.grossAreaSqft} onChange={h} /><span className="input-group-text">sqft</span></div></div>
-                <div className="form-group"><label className="form-label">Carpet Area</label><div className="input-group"><input type="number" step="0.01" name="carpetAreaSqft" className="form-control" value={form.carpetAreaSqft} onChange={h} /><span className="input-group-text">sqft</span></div></div>
-                <div className="form-group"><label className="form-label">Super Built-up (for price)</label><div className="input-group"><input type="number" step="0.01" name="superBuiltUpAreaSqft" className="form-control" value={form.superBuiltUpAreaSqft} onChange={h} /><span className="input-group-text">sqft</span></div></div>
-                <div className="form-group"><label className="form-label">Balcony</label><div className="input-group"><input type="number" step="0.01" name="balconyAreaSqft" className="form-control" value={form.balconyAreaSqft} onChange={h} /><span className="input-group-text">sqft</span></div></div>
-                <div className="form-group"><label className="form-label">Car Parks</label><input type="number" name="carParkCount" className="form-control" value={form.carParkCount} onChange={h} min="0" /></div>
-                <div className="form-group"><label className="form-label">Facing Direction</label><select name="facingDirection" className="form-select" value={form.facingDirection} onChange={h}><option value="">Select</option>{['North','South','East','West','North-East','North-West','South-East','South-West'].map(d=><option key={d} value={d}>{d}</option>)}</select></div>
-                <div className="form-group" style={{display:'flex',alignItems:'center',gap:'8px',paddingTop:'24px'}}><input type="checkbox" id="isCorner" name="isCornerUnit" checked={!!form.isCornerUnit} onChange={h} style={{width:'16px',height:'16px'}} /><label htmlFor="isCorner" style={{margin:0}}>Corner Unit</label></div>
+                <div className="form-group"><label className="form-label">{tr("Gross Area")}</label><div className="input-group"><input type="number" step="0.01" name="grossAreaSqft" className="form-control" value={form.grossAreaSqft} onChange={h} /><span className="input-group-text">{tr("sqft")}</span></div></div>
+                <div className="form-group"><label className="form-label">{tr("Carpet Area")}</label><div className="input-group"><input type="number" step="0.01" name="carpetAreaSqft" className="form-control" value={form.carpetAreaSqft} onChange={h} /><span className="input-group-text">{tr("sqft")}</span></div></div>
+                <div className="form-group"><label className="form-label">{tr("Super Built-up (for price)")}</label><div className="input-group"><input type="number" step="0.01" name="superBuiltUpAreaSqft" className="form-control" value={form.superBuiltUpAreaSqft} onChange={h} /><span className="input-group-text">{tr("sqft")}</span></div></div>
+                <div className="form-group"><label className="form-label">{tr("Balcony")}</label><div className="input-group"><input type="number" step="0.01" name="balconyAreaSqft" className="form-control" value={form.balconyAreaSqft} onChange={h} /><span className="input-group-text">{tr("sqft")}</span></div></div>
+                <div className="form-group"><label className="form-label">{tr("Car Parks")}</label><input type="number" name="carParkCount" className="form-control" value={form.carParkCount} onChange={h} min="0" /></div>
+                <div className="form-group"><label className="form-label">{tr("Facing Direction")}</label><select name="facingDirection" className="form-select" value={form.facingDirection} onChange={h}><option value="">{tr("Select")}</option>{['North','South','East','West','North-East','North-West','South-East','South-West'].map(d=><option key={d} value={d}>{d}</option>)}</select></div>
+                <div className="form-group" style={{display:'flex',alignItems:'center',gap:'8px',paddingTop:'24px'}}><input type="checkbox" id="isCorner" name="isCornerUnit" checked={!!form.isCornerUnit} onChange={h} style={{width:'16px',height:'16px'}} /><label htmlFor="isCorner" style={{margin:0}}>{tr("Corner Unit")}</label></div>
               </div>
 
-              <div className="section-heading"><i className="fa-solid fa-bangladeshi-taka-sign" />Pricing (BDT)</div>
+              <div className="section-heading"><i className="fa-solid fa-bangladeshi-taka-sign" />{tr("Pricing (BDT)")}</div>
               <div className="form-row cols-4">
-                <div className="form-group"><label className="form-label">Rate per Sqft (৳)</label><div className="input-group input-group-prepend"><span className="input-group-text">৳</span><input type="number" step="0.01" name="pricePerSqftBdt" className="form-control" value={form.pricePerSqftBdt} onChange={h} placeholder="e.g. 8000" /><span className="input-group-text">/sqft</span></div></div>
-                <div className="form-group"><label className="form-label">Flat Price (৳) Auto</label><div className="input-group input-group-prepend"><span className="input-group-text">৳</span><input type="number" step="0.01" name="totalPriceBdt" className="form-control" value={form.totalPriceBdt} onChange={h} /></div></div>
-                <div className="form-group"><label className="form-label">Car Park Price (৳)</label><div className="input-group input-group-prepend"><span className="input-group-text">৳</span><input type="number" step="0.01" name="carParkPriceBdt" className="form-control" value={form.carParkPriceBdt} onChange={h} /></div></div>
-                <div className="form-group"><label className="form-label">Utility Connection (৳)</label><div className="input-group input-group-prepend"><span className="input-group-text">৳</span><input type="number" step="0.01" name="utilityConnectionBdt" className="form-control" value={form.utilityConnectionBdt} onChange={h} /></div></div>
-                <div className="form-group" style={{gridColumn:'span 2'}}><label className="form-label fw-bold text-success">Total Sale Price (৳) — Grand Total</label><div className="input-group input-group-prepend"><span className="input-group-text">৳</span><input type="number" step="0.01" name="totalSalePriceBdt" className="form-control fw-bold" value={form.totalSalePriceBdt} onChange={h} /></div></div>
+                <div className="form-group"><label className="form-label">{tr("Rate per Sqft (৳)")}</label><div className="input-group input-group-prepend"><span className="input-group-text">৳</span><input type="number" step="0.01" name="pricePerSqftBdt" className="form-control" value={form.pricePerSqftBdt} onChange={h} placeholder={tr("e.g. 8000")} /><span className="input-group-text">{tr("/sqft")}</span></div></div>
+                <div className="form-group"><label className="form-label">{tr("Flat Price (৳) Auto")}</label><div className="input-group input-group-prepend"><span className="input-group-text">৳</span><input type="number" step="0.01" name="totalPriceBdt" className="form-control" value={form.totalPriceBdt} onChange={h} /></div></div>
+                <div className="form-group"><label className="form-label">{tr("Car Park Price (৳)")}</label><div className="input-group input-group-prepend"><span className="input-group-text">৳</span><input type="number" step="0.01" name="carParkPriceBdt" className="form-control" value={form.carParkPriceBdt} onChange={h} /></div></div>
+                <div className="form-group"><label className="form-label">{tr("Utility Connection (৳)")}</label><div className="input-group input-group-prepend"><span className="input-group-text">৳</span><input type="number" step="0.01" name="utilityConnectionBdt" className="form-control" value={form.utilityConnectionBdt} onChange={h} /></div></div>
+                <div className="form-group" style={{gridColumn:'span 2'}}><label className="form-label fw-bold text-success">{tr("Total Sale Price (৳) — Grand Total")}</label><div className="input-group input-group-prepend"><span className="input-group-text">৳</span><input type="number" step="0.01" name="totalSalePriceBdt" className="form-control fw-bold" value={form.totalSalePriceBdt} onChange={h} /></div></div>
               </div>
 
-              <div className="section-heading"><i className="fa-solid fa-handshake" />Allocation</div>
+              <div className="section-heading"><i className="fa-solid fa-handshake" />{tr("Allocation")}</div>
               <div className="form-row cols-4">
-                <div className="form-group"><label className="form-label">Allocation</label><select name="allocationType" className="form-select" value={form.allocationType} onChange={h}>{['Available','Developer Share','Land Owner Share','Sold','Reserved'].map(t=><option key={t} value={t}>{t}</option>)}</select></div>
-                {form.allocationType==='Land Owner Share' && <div className="form-group"><label className="form-label">Shareholder</label><select name="idShareholders" className="form-select" value={form.idShareholders} onChange={h}><option value="">Select</option>{shareholders.map((s:any)=><option key={s.value} value={s.value}>{s.label}</option>)}</select></div>}
+                <div className="form-group"><label className="form-label">{tr("Allocation")}</label><select name="allocationType" className="form-select" value={form.allocationType} onChange={h}>{['Available','Developer Share','Land Owner Share','Sold','Reserved'].map(t=><option key={t} value={t}>{t}</option>)}</select></div>
+                {form.allocationType==='Land Owner Share' && <div className="form-group"><label className="form-label">{tr("Shareholder")}</label><select name="idShareholders" className="form-select" value={form.idShareholders} onChange={h}><option value="">{tr("Select")}</option>{shareholders.map((s:any)=><option key={s.value} value={s.value}>{s.label}</option>)}</select></div>}
                 {['Sold','Reserved'].includes(form.allocationType) && <>
-                  <div className="form-group"><label className="form-label">Buyer Name</label><input type="text" name="buyerName" className="form-control" value={form.buyerName} onChange={h} /></div>
-                  <div className="form-group"><label className="form-label">Buyer Phone</label><input type="text" name="buyerPhone" className="form-control" value={form.buyerPhone} onChange={h} /></div>
+                  <div className="form-group"><label className="form-label">{tr("Buyer Name")}</label><input type="text" name="buyerName" className="form-control" value={form.buyerName} onChange={h} /></div>
+                  <div className="form-group"><label className="form-label">{tr("Buyer Phone")}</label><input type="text" name="buyerPhone" className="form-control" value={form.buyerPhone} onChange={h} /></div>
                 </>}
-                <div className="form-group"><label className="form-label">Status</label><select name="status" className="form-select" value={form.status} onChange={h}>{['Available','Booked','Sold','Under Construction','Handed Over'].map(s=><option key={s} value={s}>{s}</option>)}</select></div>
+                <div className="form-group"><label className="form-label">{tr("Status")}</label><select name="status" className="form-select" value={form.status} onChange={h}>{['Available','Booked','Sold','Under Construction','Handed Over'].map(s=><option key={s} value={s}>{s}</option>)}</select></div>
               </div>
             </div>
-            <div className="card-footer flex-between"><button type="button" className="btn btn-light" onClick={()=>{setShowForm(false);setEditId(null);}}>Cancel</button><button type="submit" className="btn btn-success" disabled={formLoading}>{formLoading?'Saving...':editId?'Update Unit':'Add Unit'}</button></div>
+            <div className="card-footer flex-between"><button type="button" className="btn btn-light" onClick={()=>{setShowForm(false);setEditId(null);}}>{tr("Cancel")}</button><button type="submit" className="btn btn-success" disabled={formLoading}>{formLoading?'Saving...':editId?'Update Unit':'Add Unit'}</button></div>
           </form>
         </div>
       )}
@@ -187,17 +189,17 @@ export default function ManageBuildingUnits() {
         <div className="card-header">
           <h3 className="card-title"><i className="fa-solid fa-list text-success" />Units ({units.length})</h3>
           <select className="form-select" style={{width:'160px'}} value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}>
-            <option value="">All Status</option>
+            <option value="">{tr("All Status")}</option>
             {['Available','Booked','Sold','Under Construction','Handed Over'].map(s=><option key={s} value={s}>{s}</option>)}
           </select>
         </div>
         <div className="card-body" style={{padding:0}}>
           <div className="table-wrapper">
             <table>
-              <thead><tr><th>Unit No.</th><th>Type</th><th>BHK</th><th>Carpet (sqft)</th><th>S.Built-up (sqft)</th><th>Car Parks</th><th>Sale Price (৳)</th><th>Allocation</th><th>Buyer/Owner</th><th>Status</th><th>Actions</th></tr></thead>
+              <thead><tr><th>{tr("Unit No.")}</th><th>{tr("Type")}</th><th>BHK</th><th>{tr("Carpet (sqft)")}</th><th>{tr("S.Built-up (sqft)")}</th><th>{tr("Car Parks")}</th><th>{tr("Sale Price (৳)")}</th><th>{tr("Allocation")}</th><th>{tr("Buyer/Owner")}</th><th>{tr("Status")}</th><th>{tr("Actions")}</th></tr></thead>
               <tbody>
-                {loading ? <tr><td colSpan={11} style={{textAlign:'center',padding:'40px'}}><div className="flex-center gap-2"><div className="spinner" />Loading...</div></td></tr>
-                : units.length===0 ? <tr><td colSpan={11}><div className="empty-state"><i className="fa-solid fa-home" /><h3>No Units</h3><p>Add units to this building</p></div></td></tr>
+                {loading ? <tr><td colSpan={11} style={{textAlign:'center',padding:'40px'}}><div className="flex-center gap-2"><div className="spinner" />{tr("Loading...")}</div></td></tr>
+                : units.length===0 ? <tr><td colSpan={11}><div className="empty-state"><i className="fa-solid fa-home" /><h3>{tr("No Units")}</h3><p>{tr("Add units to this building")}</p></div></td></tr>
                 : units.map(u => (
                   <tr key={u.id_units}>
                     <td className="fw-bold">{u.unit_no}</td>

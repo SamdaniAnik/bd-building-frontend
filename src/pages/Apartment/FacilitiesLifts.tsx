@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
 
 export default function FacilitiesLifts() {
+  useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
   const [data, setData] = useState<{ lifts: any[]; common_areas: any[] }>({ lifts: [], common_areas: [] });
   const [loading, setLoading] = useState(true);
 
@@ -25,22 +27,22 @@ export default function FacilitiesLifts() {
       <div className="page-header">
         <div>
           <div className="breadcrumb">
-            <span>Apartment System</span>
+            <span>{tr("Apartment System")}</span>
             <span className="breadcrumb-sep">/</span>
-            <span>Common Infrastructure</span>
+            <span>{tr("Common Infrastructure")}</span>
           </div>
           <h1 className="page-title">
-            <i className="fa-solid fa-elevator text-primary"></i> Lifts (2 Units) & Common Area Facilities
+            <i className="fa-solid fa-elevator text-primary"></i> {tr("Lifts (2 Units) & Common Area Facilities")}
           </h1>
         </div>
         <span className="badge badge-primary" style={{ padding: '6px 14px' }}>
-          Section 32 & 33 Compliance
+          {tr("Section 32 & 33 Compliance")}
         </span>
       </div>
 
       {/* SECTION 33: LIFT MANAGEMENT (2 Lifts) */}
       <div className="section-heading">
-        <i className="fa-solid fa-arrows-up-down"></i> Passenger & Service Lifts (2 Dedicated High-Speed Elevators)
+        <i className="fa-solid fa-arrows-up-down"></i> {tr("Passenger & Service Lifts (2 Dedicated High-Speed Elevators)")}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '20px', marginBottom: '30px' }}>
@@ -51,49 +53,49 @@ export default function FacilitiesLifts() {
                 <i className="fa-solid fa-elevator text-primary" style={{ marginRight: '8px' }}></i>
                 {l.lift_number}
               </div>
-              <span className="badge badge-success">Operational</span>
+              <span className="badge badge-success">{tr("Operational")}</span>
             </div>
             <div className="card-body">
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '0.85rem', marginBottom: '16px' }}>
                 <div>
-                  <span className="text-muted">Capacity:</span>
-                  <div className="fw-bold">{l.capacity_persons} Persons (630 KG)</div>
+                  <span className="text-muted">{tr("Capacity:")}</span>
+                  <div className="fw-bold">{l.capacity_persons} {tr("Persons (630 KG)")}</div>
                 </div>
                 <div>
-                  <span className="text-muted">Manufacturer:</span>
+                  <span className="text-muted">{tr("Manufacturer:")}</span>
                   <div className="fw-bold">{l.manufacturer}</div>
                 </div>
                 <div>
-                  <span className="text-muted">Installation Contractor:</span>
+                  <span className="text-muted">{tr("Installation Contractor:")}</span>
                   <div className="fw-bold text-primary">{l.vendor_name || 'Sigma Elevators'}</div>
                 </div>
                 <div>
-                  <span className="text-muted">Warranty Period:</span>
-                  <div className="fw-bold">{l.warranty_years} Years Complete</div>
+                  <span className="text-muted">{tr("Warranty Period:")}</span>
+                  <div className="fw-bold">{l.warranty_years} {tr("Years Complete")}</div>
                 </div>
               </div>
 
               {/* Lift Cost Schedule */}
               <div style={{ background: '#f1f5f9', padding: '12px 16px', borderRadius: '8px', fontSize: '0.85rem' }}>
-                <div className="text-xs text-muted uppercase fw-bold mb-2">Lift Cost Breakdown:</div>
+                <div className="text-xs text-muted uppercase fw-bold mb-2">{tr("Lift Cost Breakdown:")}</div>
                 <div className="flex-between py-1">
-                  <span>Equipment Purchase:</span>
+                  <span>{tr("Equipment Purchase:")}</span>
                   <span className="fw-bold">৳{parseFloat(l.purchase_cost).toLocaleString()}</span>
                 </div>
                 <div className="flex-between py-1">
-                  <span>Mechanical Installation:</span>
+                  <span>{tr("Mechanical Installation:")}</span>
                   <span className="fw-semibold">৳{parseFloat(l.installation_cost).toLocaleString()}</span>
                 </div>
                 <div className="flex-between py-1">
-                  <span>Hoistway Civil Works:</span>
+                  <span>{tr("Hoistway Civil Works:")}</span>
                   <span className="fw-semibold">৳{parseFloat(l.civil_work_cost).toLocaleString()}</span>
                 </div>
                 <div className="flex-between py-1">
-                  <span>Electrical Cabling & ARD:</span>
+                  <span>{tr("Electrical Cabling & ARD:")}</span>
                   <span className="fw-semibold">৳{parseFloat(l.electrical_cost).toLocaleString()}</span>
                 </div>
                 <div className="flex-between py-1" style={{ borderTop: '1px solid #cbd5e1', marginTop: '4px' }}>
-                  <span className="fw-bold">Total Capital Cost:</span>
+                  <span className="fw-bold">{tr("Total Capital Cost:")}</span>
                   <span className="fw-bold text-primary">৳{(parseFloat(l.purchase_cost) + parseFloat(l.installation_cost) + parseFloat(l.civil_work_cost) + parseFloat(l.electrical_cost)).toLocaleString()}
                   </span>
                 </div>
@@ -101,7 +103,7 @@ export default function FacilitiesLifts() {
 
               <div className="mt-3 text-xs text-muted">
                 <i className="fa-solid fa-shield" style={{ marginRight: '6px' }}></i>
-                AMC Contract: {l.maintenance_contract} (৳{l.monthly_maintenance_cost}/mo)
+                {tr("AMC Contract")}: {l.maintenance_contract} (৳{l.monthly_maintenance_cost}/mo)
               </div>
             </div>
           </div>
@@ -110,7 +112,7 @@ export default function FacilitiesLifts() {
 
       {/* SECTION 32: COMMON AREAS MANAGEMENT */}
       <div className="section-heading">
-        <i className="fa-solid fa-building-flag"></i> Common Areas & Facilities Maintenance
+        <i className="fa-solid fa-building-flag"></i> {tr("Common Areas & Facilities Maintenance")}
       </div>
 
       <div className="card mb-4">
@@ -118,12 +120,12 @@ export default function FacilitiesLifts() {
           <table>
             <thead>
               <tr>
-                <th>Area Name</th>
-                <th>Type</th>
-                <th className="text-right">Area (SFT)</th>
-                <th className="text-right">Construction Cost (৳)</th>
-                <th className="text-right">Monthly Maintenance (৳)</th>
-                <th>Specifications & Scope</th>
+                <th>{tr("Area Name")}</th>
+                <th>{tr("Type")}</th>
+                <th className="text-right">{tr("Area (SFT)")}</th>
+                <th className="text-right">{tr("Construction Cost (৳)")}</th>
+                <th className="text-right">{tr("Monthly Maintenance (৳)")}</th>
+                <th>{tr("Specifications & Scope")}</th>
               </tr>
             </thead>
             <tbody>
@@ -140,7 +142,7 @@ export default function FacilitiesLifts() {
             </tbody>
             <tfoot>
               <tr>
-                <td colSpan={2}>Total Common Facilities</td>
+                <td colSpan={2}>{tr("Total Common Facilities")}</td>
                 <td className="text-right fw-bold">
                   {data.common_areas.reduce((s, ca) => s + parseFloat(ca.area_sqft || 0), 0)} SFT
                 </td>

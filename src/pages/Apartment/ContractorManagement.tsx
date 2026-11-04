@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
 
 export default function ContractorManagement() {
+  useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
   const [contracts, setContracts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -72,10 +74,10 @@ export default function ContractorManagement() {
   };
 
   // Live calculation of net payable
-  const gross = parseFloat(billForm.gross_claim_amount || 0);
-  const advRec = parseFloat(billForm.advance_recovery_amount || 0);
-  const retAmt = parseFloat(billForm.retention_amount || 0);
-  const prevP = parseFloat(billForm.previous_payments || 0);
+  const gross = parseFloat(billForm.gross_claim_amount || '0');
+  const advRec = parseFloat(billForm.advance_recovery_amount || '0');
+  const retAmt = parseFloat(billForm.retention_amount || '0');
+  const prevP = parseFloat(billForm.previous_payments || '0');
   const calculatedNet = Math.max(0, gross - advRec - retAmt - prevP);
 
   return (
@@ -83,29 +85,29 @@ export default function ContractorManagement() {
       <div className="page-header">
         <div>
           <div className="breadcrumb">
-            <span>Apartment System</span>
+            <span>{tr("Apartment System")}</span>
             <span className="breadcrumb-sep">/</span>
-            <span>Contractors</span>
+            <span>{tr("Contractors")}</span>
           </div>
           <h1 className="page-title">
-            <i className="fa-solid fa-hard-hat text-primary"></i> Contractor Management & Progress Billing Engine (Sections 6–9)
+            <i className="fa-solid fa-hard-hat text-primary"></i> {tr("Contractor Management & Progress Billing Engine (Sections 6–9)")}
           </h1>
         </div>
         <span className="badge badge-primary" style={{ padding: '6px 14px' }}>
-          Advance Recovery & 5% Retention Money Engine
+          {tr("Advance Recovery & 5% Retention Money Engine")}
         </span>
       </div>
 
       {/* FORMULA HIGHLIGHT BOX (Section 7) */}
       <div className="card mb-4" style={{ background: '#f8fafc', border: '1.5px solid #cbd5e1' }}>
         <div className="card-body" style={{ padding: '16px 20px' }}>
-          <div className="text-xs text-muted uppercase fw-bold mb-2">Section 7 & 8 Construction Progress Billing Equation:</div>
+          <div className="text-xs text-muted uppercase fw-bold mb-2">{tr("Section 7 & 8 Construction Progress Billing Equation:")}</div>
           <div className="p-3 bg-white rounded border flex-between" style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b', flexWrap: 'wrap', gap: '10px' }}>
-            <span>Gross Certified Work Claim</span>
-            <span className="text-danger">- Advance Recovery</span>
-            <span className="text-warning">- 5% Retention Money</span>
-            <span className="text-muted">- Cumulative Previous Payments</span>
-            <span className="text-success">= Net Approved Contractor Payment</span>
+            <span>{tr("Gross Certified Work Claim")}</span>
+            <span className="text-danger">{tr("- Advance Recovery")}</span>
+            <span className="text-warning">{tr("- 5% Retention Money")}</span>
+            <span className="text-muted">{tr("- Cumulative Previous Payments")}</span>
+            <span className="text-success">{tr("= Net Approved Contractor Payment")}</span>
           </div>
         </div>
       </div>
@@ -120,41 +122,41 @@ export default function ContractorManagement() {
                 <span className="badge badge-success ml-2" style={{ marginLeft: '6px' }}>{c.status}</span>
               </div>
               <button className="btn btn-primary btn-sm" onClick={() => openBillModal(c)}>
-                <i className="fa-solid fa-calculator"></i> Progress Claim Bill
+                <i className="fa-solid fa-calculator"></i> {tr("Progress Claim Bill")}
               </button>
             </div>
             <div className="card-body">
               <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a' }}>{c.contract_title}</h3>
               <div className="text-sm fw-semibold text-primary mt-1">
-                Contractor: {c.company_name} &bull; {c.phone}
+                {tr("Contractor")}: {c.company_name} &bull; {c.phone}
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px', background: '#f8fafc', padding: '14px', borderRadius: '10px' }}>
                 <div>
-                  <span className="text-xs text-muted">Contract Value:</span>
+                  <span className="text-xs text-muted">{tr("Contract Value:")}</span>
                   <div className="fw-bold" style={{ fontSize: '1.2rem', color: '#1e1b4b' }}>৳{parseFloat(c.contract_value).toLocaleString()}</div>
                 </div>
                 <div>
-                  <span className="text-xs text-muted">Work Completed:</span>
+                  <span className="text-xs text-muted">{tr("Work Completed:")}</span>
                   <div className="fw-bold text-success" style={{ fontSize: '1.2rem' }}>{c.work_completed_percentage}%</div>
                 </div>
                 <div>
-                  <span className="text-xs text-muted">Advance Paid / Recovered:</span>
+                  <span className="text-xs text-muted">{tr("Advance Paid / Recovered:")}</span>
                   <div className="fw-semibold">৳{parseFloat(c.advance_paid).toLocaleString()} / <span className="text-success">৳{parseFloat(c.advance_recovered).toLocaleString()}</span></div>
                 </div>
                 <div>
-                  <span className="text-xs text-muted">Retention Held ({c.retention_percentage}%):</span>
+                  <span className="text-xs text-muted">{tr("Retention Held")} ({c.retention_percentage}%):</span>
                   <div className="fw-bold text-warning">৳{parseFloat(c.retention_held).toLocaleString()}</div>
                 </div>
               </div>
 
               <p className="text-xs text-muted mt-3">
-                <strong>Scope:</strong> {c.scope_of_work}
+                <strong>{tr("Scope:")}</strong> {c.scope_of_work}
               </p>
 
               {/* Progress Bills History */}
               <div className="section-heading" style={{ fontSize: '0.8rem', marginTop: '16px' }}>
-                <i className="fa-solid fa-receipt"></i> Certified Interim Progress Bills ({c.bills?.length || 0})
+                <i className="fa-solid fa-receipt"></i> {tr("Certified Interim Progress Bills")} ({c.bills?.length || 0})
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -180,9 +182,9 @@ export default function ContractorManagement() {
       {showBillModal && selectedContract && (
         <div className="modal-overlay" onClick={() => setShowBillModal(false)}>
           <div className="modal" style={{ maxWidth: '650px' }} onClick={e => e.stopPropagation()}>
-            <form onSubmit={handleCreateProgressBill}>
+            <form onSubmit={handleCreateBill}>
               <div className="modal-header">
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Certified Contractor Interim Progress Bill (IPC)</h3>
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 800 }}>{tr("Certified Contractor Interim Progress Bill (IPC)")}</h3>
                 <button type="button" className="btn btn-light btn-sm" onClick={() => setShowBillModal(false)}>
                   <i className="fa-solid fa-times"></i>
                 </button>
@@ -190,14 +192,14 @@ export default function ContractorManagement() {
               <div className="modal-body">
                 <div className="p-3 mb-3 rounded" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
                   <div className="flex-between text-sm">
-                    <span>Contract Value: <strong>৳{parseFloat(selectedContract.contract_value).toLocaleString()}</strong></span>
-                    <span>Retention Rate: <strong>{selectedContract.retention_percentage}%</strong></span>
+                    <span>{tr("Contract Value:")} <strong>৳{parseFloat(selectedContract.contract_value).toLocaleString()}</strong></span>
+                    <span>{tr("Retention Rate:")} <strong>{selectedContract.retention_percentage}%</strong></span>
                   </div>
                 </div>
 
                 <div className="form-row cols-2">
                   <div className="form-group">
-                    <label className="form-label required">Bill / Certificate #</label>
+                    <label className="form-label required">{tr("Bill / Certificate #")}</label>
                     <input
                       type="text"
                       className="form-control"
@@ -207,14 +209,14 @@ export default function ContractorManagement() {
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label required">Cumulative Completed %</label>
+                    <label className="form-label required">{tr("Cumulative Completed %")}</label>
                     <input
                       type="number"
                       step="0.01"
                       className="form-control"
                       value={billForm.cumulative_work_percent}
                       onChange={e => {
-                        const pct = parseFloat(e.target.value || 0);
+                        const pct = parseFloat(e.target.value || '0');
                         const cVal = parseFloat(selectedContract.contract_value);
                         const newGross = (cVal * (pct / 100));
                         const newRet = newGross * (parseFloat(selectedContract.retention_percentage) / 100);
@@ -232,7 +234,7 @@ export default function ContractorManagement() {
 
                 <div className="form-row cols-2">
                   <div className="form-group">
-                    <label className="form-label required">Gross Work Claim (৳)</label>
+                    <label className="form-label required">{tr("Gross Work Claim (৳)")}</label>
                     <input
                       type="number"
                       step="0.01"
@@ -243,7 +245,7 @@ export default function ContractorManagement() {
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label required">Advance Recovery (৳)</label>
+                    <label className="form-label required">{tr("Advance Recovery (৳)")}</label>
                     <input
                       type="number"
                       step="0.01"
@@ -257,7 +259,7 @@ export default function ContractorManagement() {
 
                 <div className="form-row cols-2">
                   <div className="form-group">
-                    <label className="form-label required">Retention Money Held (৳)</label>
+                    <label className="form-label required">{tr("Retention Money Held (৳)")}</label>
                     <input
                       type="number"
                       step="0.01"
@@ -268,7 +270,7 @@ export default function ContractorManagement() {
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label required">Previous Payments Deducted (৳)</label>
+                    <label className="form-label required">{tr("Previous Payments Deducted (৳)")}</label>
                     <input
                       type="number"
                       step="0.01"
@@ -283,7 +285,7 @@ export default function ContractorManagement() {
                 {/* Net Payment Output Box */}
                 <div className="p-3 rounded" style={{ background: '#f0fdf4', border: '1.5px solid #86efac', marginTop: '10px' }}>
                   <div className="flex-between">
-                    <span className="fw-bold" style={{ color: '#166534' }}>Net Payable Current Certificate:</span>
+                    <span className="fw-bold" style={{ color: '#166534' }}>{tr("Net Payable Current Certificate:")}</span>
                     <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#15803d' }}>৳{calculatedNet.toLocaleString()}
                     </span>
                   </div>
@@ -293,8 +295,8 @@ export default function ContractorManagement() {
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-light" onClick={() => setShowBillModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-success">Certify & Approve Progress Bill</button>
+                <button type="button" className="btn btn-light" onClick={() => setShowBillModal(false)}>{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-success">{tr("Certify & Approve Progress Bill")}</button>
               </div>
             </form>
           </div>

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
 
 export default function CashFlowForecasting() {
+  useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -25,7 +27,7 @@ export default function CashFlowForecasting() {
       <div className="loader-overlay">
         <div className="loader-spinner">
           <i className="fa-solid fa-spinner fa-spin text-primary" style={{ fontSize: '2rem' }}></i>
-          <p className="mt-2 text-muted">Calculating Project Cash Flow Projections...</p>
+          <p className="mt-2 text-muted">{tr("Calculating Project Cash Flow Projections...")}</p>
         </div>
       </div>
     );
@@ -40,12 +42,12 @@ export default function CashFlowForecasting() {
       <div className="page-header">
         <div>
           <div className="breadcrumb">
-            <span>Apartment System</span>
+            <span>{tr("Apartment System")}</span>
             <span className="breadcrumb-sep">/</span>
-            <span>Financial Planning</span>
+            <span>{tr("Financial Planning")}</span>
           </div>
           <h1 className="page-title">
-            <i className="fa-solid fa-chart-line text-primary"></i> Project Cash Flow Forecasting (Section 1)
+            <i className="fa-solid fa-chart-line text-primary"></i> {tr("Project Cash Flow Forecasting (Section 1)")}
           </h1>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
@@ -61,10 +63,10 @@ export default function CashFlowForecasting() {
           <i className="fa-solid fa-triangle-exclamation" style={{ fontSize: '1.4rem' }}></i>
           <div>
             <div className="fw-bold" style={{ fontSize: '0.95rem' }}>
-              ⚠ Projected Cash Shortage Warning Detected!
+              {tr("⚠ Projected Cash Shortage Warning Detected!")}
             </div>
             <p className="text-sm mt-1">
-              In <strong>{shortfalls[0].month}</strong>, projected construction expenditures (৳{shortfalls[0].projected_expense.toLocaleString()}) exceed total projected collections and loan inflows (৳{shortfalls[0].total_inflow.toLocaleString()}) by <span className="fw-bold">৳{shortfalls[0].shortfall_amount.toLocaleString()}</span>. Recommend issuing Owner Milestone Call Notice #03 or accelerating Bank Asia loan disbursement tranche.
+              {tr("In")} <strong>{shortfalls[0].month}</strong>, projected construction expenditures (৳{shortfalls[0].projected_expense.toLocaleString()}) exceed total projected collections and loan inflows (৳{shortfalls[0].total_inflow.toLocaleString()}) by <span className="fw-bold">৳{shortfalls[0].shortfall_amount.toLocaleString()}</span>{tr(". Recommend issuing Owner Milestone Call Notice #03 or accelerating Bank Asia loan disbursement tranche.")}
             </p>
           </div>
         </div>
@@ -77,34 +79,34 @@ export default function CashFlowForecasting() {
             <div className="kpi-title">
               <span>{f.month}</span>
               {f.has_shortfall ? (
-                <span className="badge badge-danger">Shortfall</span>
+                <span className="badge badge-danger">{tr("Shortfall")}</span>
               ) : (
-                <span className="badge badge-success">Surplus</span>
+                <span className="badge badge-success">{tr("Surplus")}</span>
               )}
             </div>
             <div style={{ marginTop: '8px', fontSize: '0.85rem' }}>
               <div className="flex-between py-1">
-                <span className="text-muted">Expected Expenses:</span>
+                <span className="text-muted">{tr("Expected Expenses:")}</span>
                 <span className="fw-bold text-danger">-${f.projected_expense.toLocaleString()}</span>
               </div>
               <div className="flex-between py-1">
-                <span className="text-muted">Owner Collections:</span>
+                <span className="text-muted">{tr("Owner Collections:")}</span>
                 <span className="fw-semibold text-success">+${f.projected_collection.toLocaleString()}</span>
               </div>
               {f.projected_loan_disbursed > 0 && (
                 <div className="flex-between py-1">
-                  <span className="text-muted">Bank Loan Inflow:</span>
+                  <span className="text-muted">{tr("Bank Loan Inflow:")}</span>
                   <span className="fw-semibold text-info">+${f.projected_loan_disbursed.toLocaleString()}</span>
                 </div>
               )}
               <div className="flex-between py-1 border-top mt-1">
-                <span className="fw-bold">Net Monthly Cash:</span>
+                <span className="fw-bold">{tr("Net Monthly Cash:")}</span>
                 <span className={`fw-bold ${f.net_cash >= 0 ? 'text-success' : 'text-danger'}`}>
                   {f.net_cash >= 0 ? '+' : ''}${f.net_cash.toLocaleString()}
                 </span>
               </div>
               <div className="flex-between py-1" style={{ background: '#f8fafc', padding: '4px 8px', borderRadius: '6px', marginTop: '6px' }}>
-                <span className="text-xs text-muted">Closing Reserve:</span>
+                <span className="text-xs text-muted">{tr("Closing Reserve:")}</span>
                 <span className="fw-bold text-primary">৳{f.projected_closing_balance.toLocaleString()}</span>
               </div>
             </div>
@@ -116,21 +118,21 @@ export default function CashFlowForecasting() {
       <div className="card mb-4">
         <div className="card-header">
           <div className="card-title">
-            <i className="fa-solid fa-table-list text-primary"></i> 6-Month Rolling Planned vs Actual Cash Flow Model
+            <i className="fa-solid fa-table-list text-primary"></i> {tr("6-Month Rolling Planned vs Actual Cash Flow Model")}
           </div>
         </div>
         <div className="table-wrapper">
           <table>
             <thead>
               <tr>
-                <th>Forecast Month</th>
-                <th className="text-right">Projected Expenses (৳)</th>
-                <th className="text-right">Owner Collections (৳)</th>
-                <th className="text-right">Loan Disbursements (৳)</th>
-                <th className="text-right">Total Inflows (৳)</th>
-                <th className="text-right">Net Flow (৳)</th>
-                <th className="text-right">Projected Closing Reserve (৳)</th>
-                <th>Liquidity Health</th>
+                <th>{tr("Forecast Month")}</th>
+                <th className="text-right">{tr("Projected Expenses (৳)")}</th>
+                <th className="text-right">{tr("Owner Collections (৳)")}</th>
+                <th className="text-right">{tr("Loan Disbursements (৳)")}</th>
+                <th className="text-right">{tr("Total Inflows (৳)")}</th>
+                <th className="text-right">{tr("Net Flow (৳)")}</th>
+                <th className="text-right">{tr("Projected Closing Reserve (৳)")}</th>
+                <th>{tr("Liquidity Health")}</th>
               </tr>
             </thead>
             <tbody>
@@ -157,7 +159,7 @@ export default function CashFlowForecasting() {
             </tbody>
             <tfoot>
               <tr>
-                <td>6-Month Totals</td>
+                <td>{tr("6-Month Totals")}</td>
                 <td className="text-right text-danger">
                   -${forecast.reduce((s: number, f: any) => s + f.projected_expense, 0).toLocaleString()}
                 </td>

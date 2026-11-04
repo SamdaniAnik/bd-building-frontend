@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
 
 export default function AuditApprovals() {
+  useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
   const [approvals, setApprovals] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,35 +46,35 @@ export default function AuditApprovals() {
       <div className="page-header">
         <div>
           <div className="breadcrumb">
-            <span>Apartment System</span>
+            <span>{tr("Apartment System")}</span>
             <span className="breadcrumb-sep">/</span>
-            <span>Governance & Security</span>
+            <span>{tr("Governance & Security")}</span>
           </div>
           <h1 className="page-title">
-            <i className="fa-solid fa-shield-halved text-primary"></i> Multi-Tier Approvals & Audit Trail
+            <i className="fa-solid fa-shield-halved text-primary"></i> {tr("Multi-Tier Approvals & Audit Trail")}
           </h1>
         </div>
         <span className="badge badge-primary" style={{ padding: '6px 14px' }}>
-          Section 36 & 38 Compliance
+          {tr("Section 36 & 38 Compliance")}
         </span>
       </div>
 
       {/* SECTION 36: APPROVAL LIMITS INFO */}
       <div className="card mb-4" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
         <div className="card-body" style={{ padding: '16px 20px' }}>
-          <div className="text-xs text-muted uppercase fw-bold mb-2">Configured Financial Approval Tiers:</div>
+          <div className="text-xs text-muted uppercase fw-bold mb-2">{tr("Configured Financial Approval Tiers:")}</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
             <div className="p-2 bg-white rounded border">
               <div className="text-xs text-muted">Tier 1 (&lt; ৳1,000):</div>
-              <div className="fw-bold text-primary">Project Manager Solo</div>
+              <div className="fw-bold text-primary">{tr("Project Manager Solo")}</div>
             </div>
             <div className="p-2 bg-white rounded border">
-              <div className="text-xs text-muted">Tier 2 (৳1,000 – ৳10,000):</div>
-              <div className="fw-bold" style={{ color: '#d97706' }}>Project Manager + Accountant</div>
+              <div className="text-xs text-muted">{tr("Tier 2 (৳1,000 – ৳10,000):")}</div>
+              <div className="fw-bold" style={{ color: '#d97706' }}>{tr("Project Manager + Accountant")}</div>
             </div>
             <div className="p-2 bg-white rounded border">
               <div className="text-xs text-muted">Tier 3 (&gt; ৳10,000):</div>
-              <div className="fw-bold text-danger">Building Committee Resolution</div>
+              <div className="fw-bold text-danger">{tr("Building Committee Resolution")}</div>
             </div>
           </div>
         </div>
@@ -80,10 +82,10 @@ export default function AuditApprovals() {
 
       <div className="pill-tabs">
         <button className={`pill-tab ${activeTab === 'approvals' ? 'active' : ''}`} onClick={() => setActiveTab('approvals')}>
-          <i className="fa-solid fa-stamp" style={{ marginRight: '6px' }}></i> Financial Approvals Inbox ({approvals.length})
+          <i className="fa-solid fa-stamp" style={{ marginRight: '6px' }}></i> {tr("Financial Approvals Inbox")} ({approvals.length})
         </button>
         <button className={`pill-tab ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>
-          <i className="fa-solid fa-clock-rotate-left" style={{ marginRight: '6px' }}></i> Full System Audit Logs ({auditLogs.length})
+          <i className="fa-solid fa-clock-rotate-left" style={{ marginRight: '6px' }}></i> {tr("Full System Audit Logs")} ({auditLogs.length})
         </button>
       </div>
 
@@ -94,13 +96,13 @@ export default function AuditApprovals() {
             <table>
               <thead>
                 <tr>
-                  <th>Action Request</th>
-                  <th className="text-right">Transaction Amount (৳)</th>
-                  <th>Required Governance Tier</th>
-                  <th>Requested By</th>
-                  <th>Approved By / Status</th>
-                  <th>Decision Comments</th>
-                  <th className="text-center">Action</th>
+                  <th>{tr("Action Request")}</th>
+                  <th className="text-right">{tr("Transaction Amount (৳)")}</th>
+                  <th>{tr("Required Governance Tier")}</th>
+                  <th>{tr("Requested By")}</th>
+                  <th>{tr("Approved By / Status")}</th>
+                  <th>{tr("Decision Comments")}</th>
+                  <th className="text-center">{tr("Action")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -127,14 +129,14 @@ export default function AuditApprovals() {
                       {app.status === 'PENDING' ? (
                         <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
                           <button className="btn btn-success btn-sm" onClick={() => handleDecision(app.id_approvals, 'APPROVED')}>
-                            Approve
+                            {tr("Approve")}
                           </button>
                           <button className="btn btn-danger btn-sm" onClick={() => handleDecision(app.id_approvals, 'REJECTED')}>
-                            Reject
+                            {tr("Reject")}
                           </button>
                         </div>
                       ) : (
-                        <span className="text-xs text-muted">Finalized</span>
+                        <span className="text-xs text-muted">{tr("Finalized")}</span>
                       )}
                     </td>
                   </tr>
@@ -152,12 +154,12 @@ export default function AuditApprovals() {
             <table>
               <thead>
                 <tr>
-                  <th>Timestamp</th>
-                  <th>Authorized User</th>
-                  <th>Action Performed</th>
-                  <th>Entity</th>
-                  <th>Previous State</th>
-                  <th>New State / Change</th>
+                  <th>{tr("Timestamp")}</th>
+                  <th>{tr("Authorized User")}</th>
+                  <th>{tr("Action Performed")}</th>
+                  <th>{tr("Entity")}</th>
+                  <th>{tr("Previous State")}</th>
+                  <th>{tr("New State / Change")}</th>
                 </tr>
               </thead>
               <tbody>

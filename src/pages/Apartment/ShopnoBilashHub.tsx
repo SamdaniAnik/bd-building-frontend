@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
 
 export default function ShopnoBilashHub() {
+  useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'towers' | 'shares' | 'works' | 'multiOwners'>('towers');
@@ -25,9 +27,9 @@ export default function ShopnoBilashHub() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/apartment/shopno-bilash/overview');
-      if (res.data?.success) {
-        setData(res.data);
+      const res: any = await api.get('/apartment/shopno-bilash/overview');
+      if (res.success) {
+        setData(res);
       }
     } catch (err: any) {
       console.error('Error fetching Shopno Bilash data:', err);
@@ -49,9 +51,9 @@ export default function ShopnoBilashHub() {
     setSelectedOwner(owner);
     setLoadingPortfolio(true);
     try {
-      const res = await api.get(`/apartment/shopno-bilash/owner-portfolio/${owner.id_owners}`);
-      if (res.data?.success) {
-        setOwnerPortfolio(res.data);
+      const res: any = await api.get(`/apartment/shopno-bilash/owner-portfolio/${owner.id_owners}`);
+      if (res.success) {
+        setOwnerPortfolio(res);
       }
     } catch (err: any) {
       showToast('error', 'Failed to fetch owner portfolio');
@@ -63,9 +65,9 @@ export default function ShopnoBilashHub() {
   const handleCreateWork = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await api.post('/apartment/shopno-bilash/works', newWork);
-      if (res.data?.success) {
-        showToast('success', res.data.message);
+      const res: any = await api.post('/apartment/shopno-bilash/works', newWork);
+      if (res.success) {
+        showToast('success', res.message);
         setShowWorkModal(false);
         setNewWork({
           work_name: '',
@@ -81,7 +83,7 @@ export default function ShopnoBilashHub() {
         fetchData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
@@ -89,7 +91,7 @@ export default function ShopnoBilashHub() {
     return (
       <div style={{ padding: '40px', textAlign: 'center' }}>
         <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '2rem', color: '#4f46e5' }}></i>
-        <p style={{ marginTop: '10px', color: '#64748b' }}>Loading Shopno Bilash Complex Matrix...</p>
+        <p style={{ marginTop: '10px', color: '#64748b' }}>{tr("Loading Shopno Bilash Complex Matrix...")}</p>
       </div>
     );
   }
@@ -132,14 +134,13 @@ export default function ShopnoBilashHub() {
         <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.15)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600, marginBottom: '8px' }}>
-              <i className="fa-solid fa-circle-nodes text-emerald-400"></i> 3 Connected Towers • 9 Floors • 108 Units
+              <i className="fa-solid fa-circle-nodes text-emerald-400"></i> {tr("3 Connected Towers • 9 Floors • 108 Units")}
             </div>
             <h1 style={{ fontSize: '2.2rem', fontWeight: 800, margin: '4px 0 8px 0', letterSpacing: '-0.5px' }}>
-              Shopno Bilash (স্বপ্ন বিলাস)
+              {tr("Shopno Bilash (স্বপ্ন বিলাস)")}
             </h1>
             <p style={{ margin: 0, opacity: 0.85, maxWidth: '780px', fontSize: '0.95rem', lineHeight: 1.5 }}>
-              Inter-connected luxury condominium campus with Central Podium, Juma Mosque, Executive Meeting Center & Rooftop Infinity Pool.
-              Full multi-tower cost allocation across 108 total shares (105 Personal + 3 Society Common Shares).
+              {tr("Inter-connected luxury condominium campus with Central Podium, Juma Mosque, Executive Meeting Center & Rooftop Infinity Pool. Full multi-tower cost allocation across 108 total shares (105 Personal + 3 Society Common Shares).")}
             </p>
           </div>
 
@@ -152,7 +153,7 @@ export default function ShopnoBilashHub() {
                 cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px'
               }}
             >
-              <i className="fa-solid fa-plus-circle"></i> Add Common / Tower Work
+              <i className="fa-solid fa-plus-circle"></i> {tr("Add Common / Tower Work")}
             </button>
             <button
               onClick={fetchData}
@@ -170,51 +171,51 @@ export default function ShopnoBilashHub() {
       {/* KPI Highlight Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
         <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px', boxShadow: '0 2px 4px rgba(0,0,0,0.04)' }}>
-          <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, display: 'block' }}>Total Campus Units</span>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#0f172a', margin: '4px 0' }}>108 Units</div>
-          <span style={{ fontSize: '0.78rem', color: '#4f46e5', fontWeight: 600 }}>3 Towers × 36 Units (9 Floors)</span>
+          <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, display: 'block' }}>{tr("Total Campus Units")}</span>
+          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#0f172a', margin: '4px 0' }}>{tr("108 Units")}</div>
+          <span style={{ fontSize: '0.78rem', color: '#4f46e5', fontWeight: 600 }}>{tr("3 Towers × 36 Units (9 Floors)")}</span>
         </div>
 
         <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px', boxShadow: '0 2px 4px rgba(0,0,0,0.04)' }}>
-          <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, display: 'block' }}>Share Breakdown</span>
+          <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, display: 'block' }}>{tr("Share Breakdown")}</span>
           <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#059669', margin: '4px 0' }}>
-            105 <span style={{ fontSize: '1rem', color: '#64748b', fontWeight: 500 }}>+ 3 Common</span>
+            105 <span style={{ fontSize: '1rem', color: '#64748b', fontWeight: 500 }}>{tr("+ 3 Common")}</span>
           </div>
-          <span style={{ fontSize: '0.78rem', color: '#059669', fontWeight: 600 }}>105 Personal • 3 Society Pool</span>
+          <span style={{ fontSize: '0.78rem', color: '#059669', fontWeight: 600 }}>{tr("105 Personal • 3 Society Pool")}</span>
         </div>
 
         <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px', boxShadow: '0 2px 4px rgba(0,0,0,0.04)' }}>
-          <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, display: 'block' }}>Campus Common Works</span>
+          <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, display: 'block' }}>{tr("Campus Common Works")}</span>
           <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#d97706', margin: '4px 0' }}>
             ৳{(stats.totalCampusCommonCost / 100000).toFixed(1)} L
           </div>
-          <span style={{ fontSize: '0.78rem', color: '#d97706', fontWeight: 600 }}>৳{Math.round(stats.campusCommonCostPerShare).toLocaleString()} / Share</span>
+          <span style={{ fontSize: '0.78rem', color: '#d97706', fontWeight: 600 }}>৳{Math.round(stats.campusCommonCostPerShare).toLocaleString()} / {tr("Share")}</span>
         </div>
 
         <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px', boxShadow: '0 2px 4px rgba(0,0,0,0.04)' }}>
-          <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, display: 'block' }}>Building-Specific Works</span>
+          <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, display: 'block' }}>{tr("Building-Specific Works")}</span>
           <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#2563eb', margin: '4px 0' }}>
             ৳{(stats.totalBuildingWorksCost / 100000).toFixed(1)} L
           </div>
-          <span style={{ fontSize: '0.78rem', color: '#64748b' }}>Tower A, B & C Exclusive</span>
+          <span style={{ fontSize: '0.78rem', color: '#64748b' }}>{tr("Tower A, B & C Exclusive")}</span>
         </div>
 
         <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px', boxShadow: '0 2px 4px rgba(0,0,0,0.04)' }}>
-          <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, display: 'block' }}>Multi-Building Owners</span>
+          <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, display: 'block' }}>{tr("Multi-Building Owners")}</span>
           <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#7c3aed', margin: '4px 0' }}>
-            {stats.multiBuildingOwnersCount} Members
+            {stats.multiBuildingOwnersCount} {tr("Members")}
           </div>
-          <span style={{ fontSize: '0.78rem', color: '#7c3aed', fontWeight: 600 }}>Shares in Multiple Towers</span>
+          <span style={{ fontSize: '0.78rem', color: '#7c3aed', fontWeight: 600 }}>{tr("Shares in Multiple Towers")}</span>
         </div>
       </div>
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '8px', borderBottom: '2px solid #e2e8f0', marginBottom: '24px' }}>
         {[
-          { key: 'towers', label: '3 Connected Towers (A, B, C)', icon: 'fa-solid fa-city', badge: '36 Units Each' },
-          { key: 'shares', label: '108 Shares Structure', icon: 'fa-solid fa-users-viewfinder', badge: '105 Person + 3 Common' },
-          { key: 'works', label: 'Common & Building Works', icon: 'fa-solid fa-kaaba', badge: 'Mosque, Pool, Meeting' },
-          { key: 'multiOwners', label: 'Multi-Tower Owner Portfolios', icon: 'fa-solid fa-id-card-clip', badge: `${multiOwners.length} Owners` }
+          { key: 'towers', label: tr("3 Connected Towers (A, B, C)"), icon: 'fa-solid fa-city', badge: '36 Units Each' },
+          { key: 'shares', label: tr("108 Shares Structure"), icon: 'fa-solid fa-users-viewfinder', badge: '105 Person + 3 Common' },
+          { key: 'works', label: tr("Common & Building Works"), icon: 'fa-solid fa-kaaba', badge: 'Mosque, Pool, Meeting' },
+          { key: 'multiOwners', label: tr("Multi-Tower Owner Portfolios"), icon: 'fa-solid fa-id-card-clip', badge: `${multiOwners.length} Owners` }
         ].map(tab => (
           <button
             key={tab.key}
@@ -259,11 +260,11 @@ export default function ShopnoBilashHub() {
           }}>
             <h4 style={{ margin: '0 0 8px 0', color: '#1e293b' }}>
               <i className="fa-solid fa-bridge text-indigo-600" style={{ marginRight: '8px' }}></i>
-              Connected Campus Architecture: Ground Podium & 5th Level Skywalks
+              {tr("Connected Campus Architecture: Ground Podium & 5th Level Skywalks")}
             </h4>
             <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b', maxWidth: '800px', marginInline: 'auto' }}>
-              All 3 towers share a <strong>Central Ground Plaza</strong> (reception, mosque, substation) and are connected via 
-              <strong> Structural Sky-Bridges at Floor 5</strong> allowing pedestrian transit between Tower A (Padma), Tower B (Meghna), and Tower C (Jamuna).
+              {tr("All 3 towers share a")} <strong>{tr("Central Ground Plaza")}</strong> {tr("(reception, mosque, substation) and are connected via")} 
+              <strong> {tr("Structural Sky-Bridges at Floor 5")}</strong> {tr("allowing pedestrian transit between Tower A (Padma), Tower B (Meghna), and Tower C (Jamuna).")}
             </p>
           </div>
 
@@ -295,7 +296,7 @@ export default function ShopnoBilashHub() {
                         {b.building_code}
                       </span>
                       <h3 style={{ margin: '6px 0 2px 0', fontSize: '1.25rem', color: '#0f172a' }}>{b.building_name}</h3>
-                      <span style={{ fontSize: '0.8rem', color: '#64748b' }}>9 Floors • 36 Total Units • 4 Units/Floor</span>
+                      <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{tr("9 Floors • 36 Total Units • 4 Units/Floor")}</span>
                     </div>
 
                     <div style={{
@@ -310,19 +311,19 @@ export default function ShopnoBilashHub() {
                   {/* Financial Metrics */}
                   <div style={{ background: '#f8fafc', borderRadius: '10px', padding: '14px', marginBottom: '16px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '0.85rem' }}>
-                      <span style={{ color: '#64748b' }}>Tower Specific Works:</span>
+                      <span style={{ color: '#64748b' }}>{tr("Tower Specific Works:")}</span>
                       <strong style={{ color: '#0f172a' }}>৳{bCost.totalCost.toLocaleString()}</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '0.85rem' }}>
-                      <span style={{ color: '#64748b' }}>Allocated per Flat (÷36):</span>
+                      <span style={{ color: '#64748b' }}>{tr("Allocated per Flat (÷36):")}</span>
                       <strong style={{ color: '#2563eb' }}>৳{Math.round(bCost.costPerUnit).toLocaleString()}</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', borderTop: '1px solid #e2e8f0', paddingTop: '6px' }}>
-                      <span style={{ color: '#64748b' }}>+ Campus Common Share:</span>
+                      <span style={{ color: '#64748b' }}>{tr("+ Campus Common Share:")}</span>
                       <strong style={{ color: '#d97706' }}>৳{Math.round(stats.campusCommonCostPerShare).toLocaleString()}</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', fontWeight: 800, marginTop: '8px', color: '#065f46' }}>
-                      <span>Total Share Liability:</span>
+                      <span>{tr("Total Share Liability:")}</span>
                       <span>৳{Math.round(bCost.costPerUnit + stats.campusCommonCostPerShare).toLocaleString()}</span>
                     </div>
                   </div>
@@ -330,10 +331,10 @@ export default function ShopnoBilashHub() {
                   {/* Tower Works List */}
                   <div>
                     <h5 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', marginBottom: '8px' }}>
-                      Building-Specific Scope:
+                      {tr("Building-Specific Scope:")}
                     </h5>
                     {towerSpecificWorks.length === 0 ? (
-                      <p style={{ fontSize: '0.8rem', color: '#94a3b8', fontStyle: 'italic' }}>No tower-exclusive works logged.</p>
+                      <p style={{ fontSize: '0.8rem', color: '#94a3b8', fontStyle: 'italic' }}>{tr("No tower-exclusive works logged.")}</p>
                     ) : (
                       towerSpecificWorks.map((tw: any) => (
                         <div key={tw.id_works} style={{
@@ -349,7 +350,7 @@ export default function ShopnoBilashHub() {
 
                   {/* Quick Unit Sample */}
                   <div style={{ marginTop: '14px', paddingTop: '10px', borderTop: '1px solid #f1f5f9', fontSize: '0.78rem', color: '#64748b' }}>
-                    <span>Unit Range: <strong>{towerPrefix}-101</strong> to <strong>{towerPrefix}-904</strong> (36 Units)</span>
+                    <span>{tr("Unit Range:")} <strong>{towerPrefix}-101</strong> {tr("to")} <strong>{towerPrefix}-904</strong> {tr("(36 Units)")}</span>
                   </div>
                 </div>
               );
@@ -368,7 +369,7 @@ export default function ShopnoBilashHub() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
               <div style={{ width: '8px', height: '24px', background: '#059669', borderRadius: '4px' }}></div>
               <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>
-                The 3 Common Shares (Owned in Trust by Shopno Bilash Owners Welfare Society)
+                {tr("The 3 Common Shares (Owned in Trust by Shopno Bilash Owners Welfare Society)")}
               </h3>
             </div>
 
@@ -401,13 +402,13 @@ export default function ShopnoBilashHub() {
                         </div>
                         <div>
                           <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#059669' }}>
-                            COMMON SHARE #{isMosque ? '1' : isMeeting ? '2' : '3'}
+                            {tr("COMMON SHARE #")}{isMosque ? '1' : isMeeting ? '2' : '3'}
                           </span>
                           <h4 style={{ margin: 0, fontSize: '1.1rem', color: '#0f172a' }}>Unit {cs.unit_number}</h4>
                         </div>
                       </div>
                       <span style={{ padding: '3px 8px', borderRadius: '12px', background: '#dcfce7', color: '#166534', fontSize: '0.75rem', fontWeight: 700 }}>
-                        Society Owned
+                        {tr("Society Owned")}
                       </span>
                     </div>
 
@@ -425,16 +426,16 @@ export default function ShopnoBilashHub() {
 
                     <div style={{ background: '#f8fafc', borderRadius: '8px', padding: '10px 14px', fontSize: '0.8rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                        <span style={{ color: '#64748b' }}>Unit Floor Area:</span>
+                        <span style={{ color: '#64748b' }}>{tr("Unit Floor Area:")}</span>
                         <strong>{cs.area_sqft} SFT</strong>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                        <span style={{ color: '#64748b' }}>Undivided Land Share:</span>
-                        <strong style={{ color: '#059669' }}>{cs.land_share_katha} Katha ({cs.land_share_sqft} SQFT)</strong>
+                        <span style={{ color: '#64748b' }}>{tr("Undivided Land Share:")}</span>
+                        <strong style={{ color: '#059669' }}>{cs.land_share_katha} {tr("Katha")} ({cs.land_share_sqft} SQFT)</strong>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ color: '#64748b' }}>Operational Funding:</span>
-                        <strong>Shared across 105 Personal Members</strong>
+                        <span style={{ color: '#64748b' }}>{tr("Operational Funding:")}</span>
+                        <strong>{tr("Shared across 105 Personal Members")}</strong>
                       </div>
                     </div>
                   </div>
@@ -448,10 +449,10 @@ export default function ShopnoBilashHub() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#0f172a' }}>
-                  105 Personal Member Shares Directory
+                  {tr("105 Personal Member Shares Directory")}
                 </h3>
                 <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                  Each share entitles the holder to 0.2083 Katha (150 SQFT) undivided land title.
+                  {tr("Each share entitles the holder to 0.2083 Katha (150 SQFT) undivided land title.")}
                 </span>
               </div>
             </div>
@@ -499,7 +500,7 @@ export default function ShopnoBilashHub() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
               <div style={{ width: '8px', height: '24px', background: '#4f46e5', borderRadius: '4px' }}></div>
               <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>
-                Campus-Wide Common Facilities (Mosque, Pool, Meeting Hall, Substation)
+                {tr("Campus-Wide Common Facilities (Mosque, Pool, Meeting Hall, Substation)")}
               </h3>
             </div>
 
@@ -507,13 +508,13 @@ export default function ShopnoBilashHub() {
               <table className="table table-hover" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', margin: 0 }}>
                 <thead style={{ background: '#f8fafc', color: '#475569', textAlign: 'left' }}>
                   <tr>
-                    <th style={{ padding: '12px' }}>Facility</th>
-                    <th style={{ padding: '12px' }}>Work Name & Scope</th>
-                    <th style={{ padding: '12px' }}>Category</th>
-                    <th style={{ padding: '12px', textAlign: 'right' }}>Actual Cost (BDT)</th>
-                    <th style={{ padding: '12px', textAlign: 'right' }}>Per Share (÷108)</th>
-                    <th style={{ padding: '12px', textAlign: 'center' }}>Progress</th>
-                    <th style={{ padding: '12px', textAlign: 'center' }}>Status</th>
+                    <th style={{ padding: '12px' }}>{tr("Facility")}</th>
+                    <th style={{ padding: '12px' }}>{tr("Work Name & Scope")}</th>
+                    <th style={{ padding: '12px' }}>{tr("Category")}</th>
+                    <th style={{ padding: '12px', textAlign: 'right' }}>{tr("Actual Cost (BDT)")}</th>
+                    <th style={{ padding: '12px', textAlign: 'right' }}>{tr("Per Share (÷108)")}</th>
+                    <th style={{ padding: '12px', textAlign: 'center' }}>{tr("Progress")}</th>
+                    <th style={{ padding: '12px', textAlign: 'center' }}>{tr("Status")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -564,7 +565,7 @@ export default function ShopnoBilashHub() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
               <div style={{ width: '8px', height: '24px', background: '#2563eb', borderRadius: '4px' }}></div>
               <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>
-                Building-Specific Exclusive Works (Allocated strictly to that Tower's 36 Units)
+                {tr("Building-Specific Exclusive Works (Allocated strictly to that Tower's 36 Units)")}
               </h3>
             </div>
 
@@ -572,13 +573,13 @@ export default function ShopnoBilashHub() {
               <table className="table table-hover" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', margin: 0 }}>
                 <thead style={{ background: '#f8fafc', color: '#475569', textAlign: 'left' }}>
                   <tr>
-                    <th style={{ padding: '12px' }}>Tower</th>
-                    <th style={{ padding: '12px' }}>Work Description</th>
-                    <th style={{ padding: '12px' }}>Category</th>
-                    <th style={{ padding: '12px', textAlign: 'right' }}>Actual Cost (BDT)</th>
-                    <th style={{ padding: '12px', textAlign: 'right' }}>Per Tower Flat (÷36)</th>
-                    <th style={{ padding: '12px', textAlign: 'center' }}>Progress</th>
-                    <th style={{ padding: '12px', textAlign: 'center' }}>Status</th>
+                    <th style={{ padding: '12px' }}>{tr("Tower")}</th>
+                    <th style={{ padding: '12px' }}>{tr("Work Description")}</th>
+                    <th style={{ padding: '12px' }}>{tr("Category")}</th>
+                    <th style={{ padding: '12px', textAlign: 'right' }}>{tr("Actual Cost (BDT)")}</th>
+                    <th style={{ padding: '12px', textAlign: 'right' }}>{tr("Per Tower Flat (÷36)")}</th>
+                    <th style={{ padding: '12px', textAlign: 'center' }}>{tr("Progress")}</th>
+                    <th style={{ padding: '12px', textAlign: 'center' }}>{tr("Status")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -627,11 +628,10 @@ export default function ShopnoBilashHub() {
         <div>
           <div style={{ marginBottom: '20px' }}>
             <h3 style={{ margin: '0 0 6px 0', fontSize: '1.2rem', color: '#0f172a' }}>
-              Owners with Shares Across Multiple Towers
+              {tr("Owners with Shares Across Multiple Towers")}
             </h3>
             <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>
-              In Shopno Bilash, members can own multiple shares across Tower A (Padma), Tower B (Meghna), and Tower C (Jamuna).
-              The system calculates combined liabilities, common shares, and consolidated land deeds.
+              {tr("In Shopno Bilash, members can own multiple shares across Tower A (Padma), Tower B (Meghna), and Tower C (Jamuna). The system calculates combined liabilities, common shares, and consolidated land deeds.")}
             </p>
           </div>
 
@@ -661,7 +661,7 @@ export default function ShopnoBilashHub() {
                       padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 800,
                       background: '#e0e7ff', color: '#3730a3'
                     }}>
-                      {owner.shares_count} Shares
+                      {owner.shares_count} {tr("Shares")}
                     </span>
                   </div>
 
@@ -680,7 +680,7 @@ export default function ShopnoBilashHub() {
                   {/* Units List */}
                   <div style={{ background: '#f8fafc', borderRadius: '8px', padding: '12px', marginBottom: '14px' }}>
                     <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>
-                      Owned Units & Shares:
+                      {tr("Owned Units & Shares:")}
                     </div>
                     {owner.units.map((u: any) => (
                       <div key={u.unit_number} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', fontSize: '0.82rem' }}>
@@ -690,7 +690,7 @@ export default function ShopnoBilashHub() {
                         </div>
                         <div style={{ textAlign: 'right' }}>
                           <span style={{ fontWeight: 600 }}>{u.area_sqft} SFT</span>
-                          <span style={{ fontSize: '0.75rem', color: '#059669', display: 'block' }}>{u.land_share_katha} Katha</span>
+                          <span style={{ fontSize: '0.75rem', color: '#059669', display: 'block' }}>{u.land_share_katha} {tr("Katha")}</span>
                         </div>
                       </div>
                     ))}
@@ -699,12 +699,12 @@ export default function ShopnoBilashHub() {
                   {/* Portfolio Totals */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', borderTop: '1px solid #f1f5f9', paddingTop: '10px', fontSize: '0.82rem' }}>
                     <div>
-                      <span style={{ color: '#64748b', display: 'block' }}>Combined SFT:</span>
+                      <span style={{ color: '#64748b', display: 'block' }}>{tr("Combined SFT:")}</span>
                       <strong>{owner.total_sft.toLocaleString()} SFT</strong>
                     </div>
                     <div>
-                      <span style={{ color: '#64748b', display: 'block' }}>Total Land Share:</span>
-                      <strong style={{ color: '#059669' }}>{owner.total_katha.toFixed(4)} Katha</strong>
+                      <span style={{ color: '#64748b', display: 'block' }}>{tr("Total Land Share:")}</span>
+                      <strong style={{ color: '#059669' }}>{owner.total_katha.toFixed(4)} {tr("Katha")}</strong>
                     </div>
                   </div>
                 </div>
@@ -717,7 +717,7 @@ export default function ShopnoBilashHub() {
                       background: '#ffffff', color: '#4f46e5', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer'
                     }}
                   >
-                    View Cross-Building Ledger & Liability
+                    {tr("View Cross-Building Ledger & Liability")}
                   </button>
                 </div>
               </div>
@@ -737,7 +737,7 @@ export default function ShopnoBilashHub() {
           <div style={{ background: '#ffffff', borderRadius: '14px', width: '90%', maxWidth: '600px', padding: '24px', maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>
-                Add New Campus Common or Tower-Specific Work
+                {tr("Add New Campus Common or Tower-Specific Work")}
               </h3>
               <button onClick={() => setShowWorkModal(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
             </div>
@@ -745,38 +745,38 @@ export default function ShopnoBilashHub() {
             <form onSubmit={handleCreateWork}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginBottom: '14px' }}>
                 <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Work / Facility Title</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Work / Facility Title")}</label>
                   <input
                     type="text"
                     className="form-control"
                     value={newWork.work_name}
                     onChange={e => setNewWork({ ...newWork, work_name: e.target.value })}
-                    placeholder="e.g. Mosque Air-Conditioning & Sound System Upgrade"
+                    placeholder={tr("e.g. Mosque Air-Conditioning & Sound System Upgrade")}
                     required
                   />
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Allocation Scope</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Allocation Scope")}</label>
                   <select
                     className="form-select"
                     value={newWork.scope_level}
                     onChange={e => setNewWork({ ...newWork, scope_level: e.target.value })}
                   >
-                    <option value="PROJECT_COMMON">Campus-Wide Common (Split across 108 Shares)</option>
-                    <option value="BUILDING_SPECIFIC">Building-Specific (Split across that Tower 36 Units)</option>
+                    <option value="PROJECT_COMMON">{tr("Campus-Wide Common (Split across 108 Shares)")}</option>
+                    <option value="BUILDING_SPECIFIC">{tr("Building-Specific (Split across that Tower 36 Units)")}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Target Tower (if specific)</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Target Tower (if specific)")}</label>
                   <select
                     className="form-select"
                     value={newWork.id_buildings}
                     onChange={e => setNewWork({ ...newWork, id_buildings: e.target.value })}
                     disabled={newWork.scope_level === 'PROJECT_COMMON'}
                   >
-                    <option value="">-- Select Tower --</option>
+                    <option value="">{tr("-- Select Tower --")}</option>
                     {buildings.map((b: any) => (
                       <option key={b.id_buildings} value={b.id_buildings}>
                         {b.building_name} ({b.building_code})
@@ -786,24 +786,24 @@ export default function ShopnoBilashHub() {
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Facility Tag</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Facility Tag")}</label>
                   <select
                     className="form-select"
                     value={newWork.facility_tag}
                     onChange={e => setNewWork({ ...newWork, facility_tag: e.target.value })}
                   >
-                    <option value="MOSQUE">Central Mosque (মসজিদ)</option>
-                    <option value="MEETING_ROOM">Meeting / Conference Room</option>
-                    <option value="SWIMMING_POOL">Swimming Pool & Club</option>
-                    <option value="SUBSTATION">Power Substation / Generator</option>
-                    <option value="CENTRAL_PODIUM">Podium & Connecting Skywalks</option>
-                    <option value="ELEVATOR">Elevator / Lifts</option>
-                    <option value="GENERAL">General Works</option>
+                    <option value="MOSQUE">{tr("Central Mosque (মসজিদ)")}</option>
+                    <option value="MEETING_ROOM">{tr("Meeting / Conference Room")}</option>
+                    <option value="SWIMMING_POOL">{tr("Swimming Pool & Club")}</option>
+                    <option value="SUBSTATION">{tr("Power Substation / Generator")}</option>
+                    <option value="CENTRAL_PODIUM">{tr("Podium & Connecting Skywalks")}</option>
+                    <option value="ELEVATOR">{tr("Elevator / Lifts")}</option>
+                    <option value="GENERAL">{tr("General Works")}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Estimated Budget (BDT)</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Estimated Budget (BDT)")}</label>
                   <input
                     type="number"
                     className="form-control"
@@ -814,20 +814,20 @@ export default function ShopnoBilashHub() {
                 </div>
 
                 <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Scope Description</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Scope Description")}</label>
                   <textarea
                     className="form-control"
                     rows={2}
                     value={newWork.description}
                     onChange={e => setNewWork({ ...newWork, description: e.target.value })}
-                    placeholder="Technical specifications and allocation rationale..."
+                    placeholder={tr("Technical specifications and allocation rationale...")}
                   />
                 </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setShowWorkModal(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Create & Auto-Allocate</button>
+                <button type="button" onClick={() => setShowWorkModal(false)} className="btn btn-secondary">{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Create & Auto-Allocate")}</button>
               </div>
             </form>
           </div>
@@ -846,11 +846,11 @@ export default function ShopnoBilashHub() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div>
                 <span style={{ fontSize: '0.78rem', color: '#4f46e5', fontWeight: 700, textTransform: 'uppercase' }}>
-                  Cross-Tower Member Portfolio
+                  {tr("Cross-Tower Member Portfolio")}
                 </span>
                 <h3 style={{ margin: 0, fontSize: '1.3rem', color: '#0f172a' }}>{selectedOwner.full_name}</h3>
                 <span style={{ fontSize: '0.82rem', color: '#64748b' }}>
-                  Owns {ownerPortfolio.totalSharesOwned} Shares Across Multiple Buildings
+                  {tr("Owns")} {ownerPortfolio.totalSharesOwned} {tr("Shares Across Multiple Buildings")}
                 </span>
               </div>
               <button onClick={() => { setSelectedOwner(null); setOwnerPortfolio(null); }} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
@@ -858,17 +858,17 @@ export default function ShopnoBilashHub() {
 
             <div style={{ background: '#f8fafc', borderRadius: '10px', padding: '14px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
               <div>
-                <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'block' }}>Total Shares:</span>
+                <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'block' }}>{tr("Total Shares:")}</span>
                 <strong style={{ fontSize: '1.1rem', color: '#0f172a' }}>{ownerPortfolio.totalSharesOwned} Units</strong>
               </div>
               <div>
-                <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'block' }}>Total Land Share:</span>
+                <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'block' }}>{tr("Total Land Share:")}</span>
                 <strong style={{ fontSize: '1.1rem', color: '#059669' }}>
-                  {(ownerPortfolio.totalSharesOwned * 0.2083).toFixed(4)} Katha
+                  {(ownerPortfolio.totalSharesOwned * 0.2083).toFixed(4)} {tr("Katha")}
                 </strong>
               </div>
               <div>
-                <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'block' }}>Total Financial Liability:</span>
+                <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'block' }}>{tr("Total Financial Liability:")}</span>
                 <strong style={{ fontSize: '1.2rem', color: '#b91c1c' }}>
                   ৳{Math.round(ownerPortfolio.grandTotalLiability).toLocaleString()}
                 </strong>
@@ -876,7 +876,7 @@ export default function ShopnoBilashHub() {
             </div>
 
             <h4 style={{ fontSize: '1rem', color: '#1e293b', marginBottom: '12px' }}>
-              Breakdown by Unit & Tower:
+              {tr("Breakdown by Unit & Tower:")}
             </h4>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
@@ -890,21 +890,21 @@ export default function ShopnoBilashHub() {
                       <strong style={{ color: '#0f172a' }}>{u.building_name}</strong>
                     </div>
                     <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                      {u.area_sqft} SFT • {u.land_share_katha} Katha
+                      {u.area_sqft} SFT • {u.land_share_katha} {tr("Katha")}
                     </span>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', background: '#f8fafc', padding: '10px', borderRadius: '6px', fontSize: '0.8rem' }}>
                     <div>
-                      <span style={{ color: '#64748b', display: 'block' }}>Campus Common:</span>
+                      <span style={{ color: '#64748b', display: 'block' }}>{tr("Campus Common:")}</span>
                       <strong>৳{Math.round(u.campusCommonCost).toLocaleString()}</strong>
                     </div>
                     <div>
-                      <span style={{ color: '#64748b', display: 'block' }}>Tower Specific:</span>
+                      <span style={{ color: '#64748b', display: 'block' }}>{tr("Tower Specific:")}</span>
                       <strong>৳{Math.round(u.buildingSpecificCost).toLocaleString()}</strong>
                     </div>
                     <div>
-                      <span style={{ color: '#64748b', display: 'block' }}>Unit Total:</span>
+                      <span style={{ color: '#64748b', display: 'block' }}>{tr("Unit Total:")}</span>
                       <strong style={{ color: '#b91c1c' }}>৳{Math.round(u.totalLiability).toLocaleString()}</strong>
                     </div>
                   </div>
@@ -918,7 +918,7 @@ export default function ShopnoBilashHub() {
                 className="btn btn-secondary"
                 style={{ padding: '8px 18px', borderRadius: '6px' }}
               >
-                Close
+                {tr("Close")}
               </button>
             </div>
           </div>

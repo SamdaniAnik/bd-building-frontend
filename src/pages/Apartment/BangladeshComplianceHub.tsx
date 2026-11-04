@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/client';
+import { useLang, tr } from '../../i18n/LanguageContext';
 
 export default function BangladeshComplianceHub() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(null);
-  const [isBangla, setIsBangla] = useState(false);
+  // Follows the app-wide language selector
+  const { lang, setLang } = useLang();
+  const isBangla = lang === 'bn';
+  const setIsBangla = (v: boolean) => setLang(v ? 'bn' : 'en');
   const [activeTab, setActiveTab] = useState<'land_jva' | 'approvals' | 'bnbc_fire' | 'utility' | 'handover' | 'baki_cheques'>('land_jva');
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
@@ -63,9 +67,9 @@ export default function BangladeshComplianceHub() {
   const fetchComplianceData = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/apartment/compliance/overview');
-      if (res.data?.success) {
-        setData(res.data);
+      const res: any = await api.get('/apartment/compliance/overview');
+      if (res.success) {
+        setData(res);
       }
     } catch (err: any) {
       console.error('Error fetching compliance data:', err);
@@ -86,56 +90,56 @@ export default function BangladeshComplianceHub() {
   const handleSaveApproval = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await api.post('/apartment/compliance/approvals', approvalForm);
-      if (res.data?.success) {
-        showToast('success', res.data.message);
+      const res: any = await api.post('/apartment/compliance/approvals', approvalForm);
+      if (res.success) {
+        showToast('success', res.message);
         setShowApprovalModal(false);
         fetchComplianceData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
   const handleSaveMeter = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await api.post('/apartment/compliance/meters', meterForm);
-      if (res.data?.success) {
-        showToast('success', res.data.message);
+      const res: any = await api.post('/apartment/compliance/meters', meterForm);
+      if (res.success) {
+        showToast('success', res.message);
         setShowMeterModal(false);
         fetchComplianceData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
   const handleSaveBaki = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await api.post('/apartment/compliance/baki', bakiForm);
-      if (res.data?.success) {
-        showToast('success', res.data.message);
+      const res: any = await api.post('/apartment/compliance/baki', bakiForm);
+      if (res.success) {
+        showToast('success', res.message);
         setShowBakiModal(false);
         fetchComplianceData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
   const handleSaveCheque = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await api.post('/apartment/compliance/cheques', chequeForm);
-      if (res.data?.success) {
-        showToast('success', res.data.message);
+      const res: any = await api.post('/apartment/compliance/cheques', chequeForm);
+      if (res.success) {
+        showToast('success', res.message);
         setShowChequeModal(false);
         fetchComplianceData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
@@ -190,7 +194,7 @@ export default function BangladeshComplianceHub() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700, marginBottom: '8px' }}>
-              <span>🇧🇩</span> Real Estate Development & Management Act 2010 • BNBC 2020 Compliant
+              <span>🇧🇩</span> {tr("Real Estate Development & Management Act 2010 • BNBC 2020 Compliant")}
             </div>
             <h1 style={{ fontSize: '1.9rem', fontWeight: 800, margin: '4px 0 6px 0' }}>
               {isBangla ? 'বাংলাদেশ রিয়েল এস্টেট কমপ্লায়েন্স ও প্রোপার্টি ম্যানেজমেন্ট' : 'Bangladesh Compliance & Property Management Layer'}
@@ -223,7 +227,7 @@ export default function BangladeshComplianceHub() {
                 background: 'rgba(255,255,255,0.25)', color: '#ffffff', border: 'none',
                 padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem'
               }}
-              title="Refresh"
+              title={tr("Refresh")}
             >
               <i className="fa-solid fa-rotate"></i>
             </button>
@@ -259,7 +263,7 @@ export default function BangladeshComplianceHub() {
             {metrics.approvedNOCs} / {metrics.totalNOCs} {isBangla ? 'অনুমোদিত' : 'Approved'}
           </div>
           <span style={{ fontSize: '0.75rem', color: '#059669', fontWeight: 600 }}>
-            RAJUK, Fire, DoE, CAAB, WASA
+            {tr("RAJUK, Fire, DoE, CAAB, WASA")}
           </span>
         </div>
 
@@ -269,17 +273,17 @@ export default function BangladeshComplianceHub() {
             ৳{((metrics.totalBaki || 0) / 100000).toFixed(2)} {isBangla ? 'লাখ' : 'Lakh'}
           </div>
           <span style={{ fontSize: '0.75rem', color: '#dc2626', fontWeight: 600 }}>
-            Shah Cement, BSRM Steel, Stone
+            {tr("Shah Cement, BSRM Steel, Stone")}
           </span>
         </div>
 
         <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 4px rgba(0,0,0,0.04)' }}>
           <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>{isBangla ? 'ক্লিয়ারিং চেক রেজিস্টার' : 'Cheques Register'}</span>
           <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#2563eb', margin: '2px 0' }}>
-            ৳{((metrics.totalChequesInward || 0) / 100000).toFixed(1)} L <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Inward</span>
+            ৳{((metrics.totalChequesInward || 0) / 100000).toFixed(1)} L <span style={{ fontSize: '0.85rem', color: '#64748b' }}>{tr("Inward")}</span>
           </div>
           <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
-            DBBL, Islami Bank, BRAC Bank
+            {tr("DBBL, Islami Bank, BRAC Bank")}
           </span>
         </div>
       </div>
@@ -358,7 +362,7 @@ export default function BangladeshComplianceHub() {
                 </div>
                 <div>
                   <span style={{ color: '#64748b', display: 'block' }}>{isBangla ? 'জমির পরিমাপ:' : 'Plot Area:'}</span>
-                  <strong style={{ color: '#059669' }}>{land.area_katha} Katha ({land.area_sqft} SQFT)</strong>
+                  <strong style={{ color: '#059669' }}>{land.area_katha} {tr("Katha")} ({land.area_sqft} SQFT)</strong>
                 </div>
                 <div>
                   <span style={{ color: '#64748b', display: 'block' }}>{isBangla ? 'দলিল নম্বর ও তারিখ:' : 'Deed No & Date:'}</span>
@@ -391,7 +395,7 @@ export default function BangladeshComplianceHub() {
                     </div>
                     <div>
                       <span style={{ fontWeight: 700, color: '#059669', marginRight: '8px' }}>{lo.share_percent}%</span>
-                      <span style={{ color: '#64748b' }}>({lo.katha} Katha)</span>
+                      <span style={{ color: '#64748b' }}>({lo.katha} {tr("Katha")})</span>
                     </div>
                   </div>
                 ))}
@@ -421,7 +425,7 @@ export default function BangladeshComplianceHub() {
                 </div>
                 <div>
                   <span style={{ color: '#64748b', display: 'block' }}>{isBangla ? 'মালিক ও ডেভেলপার অনুপাত:' : 'Allocation Ratio:'}</span>
-                  <strong style={{ color: '#4f46e5' }}>{jva.landowner_share_percent}% Landowner / {jva.developer_share_percent}% Developer</strong>
+                  <strong style={{ color: '#4f46e5' }}>{jva.landowner_share_percent}{tr("% Landowner")} / {jva.developer_share_percent}{tr("% Developer")}</strong>
                 </div>
                 <div>
                   <span style={{ color: '#64748b', display: 'block' }}>{isBangla ? 'সাইনিং মানি (অফেরতযোগ্য):' : 'Signing Money:'}</span>
@@ -433,7 +437,7 @@ export default function BangladeshComplianceHub() {
                 </div>
                 <div>
                   <span style={{ color: '#64748b', display: 'block' }}>{isBangla ? 'বিলম্ব জরিমানা (মাসিক):' : 'Delay Penalty (Monthly):'}</span>
-                  <strong style={{ color: '#dc2626' }}>৳{Number(jva.delay_penalty_per_month_bdt).toLocaleString()} / month</strong>
+                  <strong style={{ color: '#dc2626' }}>৳{Number(jva.delay_penalty_per_month_bdt).toLocaleString()} / {tr("month")}</strong>
                 </div>
               </div>
 
@@ -442,7 +446,7 @@ export default function BangladeshComplianceHub() {
                   {isBangla ? 'ফ্ল্যাট বণ্টন শর্তাবলী (রিয়েল এস্টেট আইন ২০১০ অনুযায়ী):' : 'Flat Allocation (Real Estate Act 2010):'}
                 </span>
                 <p style={{ margin: 0, color: '#64748b' }}>
-                  Total 108 Units: 54 flats to Landowners (Odd numbered floors 1, 3, 5, 7, 9) and 54 flats to Developer Co-Owners pool (Even numbered floors 2, 4, 6, 8 + Penthouses).
+                  {tr("Total 108 Units: 54 flats to Landowners (Odd numbered floors 1, 3, 5, 7, 9) and 54 flats to Developer Co-Owners pool (Even numbered floors 2, 4, 6, 8 + Penthouses).")}
                 </p>
               </div>
 
@@ -557,8 +561,8 @@ export default function BangladeshComplianceHub() {
                   <h4 style={{ margin: '0 0 6px 0', fontSize: '0.95rem', color: '#0f172a' }}>{item.requirement_name}</h4>
                   <p style={{ margin: '0 0 10px 0', fontSize: '0.8rem', color: '#64748b' }}>{item.specification_clause}</p>
                   <div style={{ background: '#f8fafc', padding: '8px 10px', borderRadius: '6px', fontSize: '0.78rem' }}>
-                    <div><span style={{ color: '#64748b' }}>Evidence:</span> <strong>{item.evidence_document}</strong></div>
-                    <div><span style={{ color: '#64748b' }}>Consultant:</span> <strong>{item.responsible_engineer}</strong></div>
+                    <div><span style={{ color: '#64748b' }}>{tr("Evidence:")}</span> <strong>{item.evidence_document}</strong></div>
+                    <div><span style={{ color: '#64748b' }}>{tr("Consultant:")}</span> <strong>{item.responsible_engineer}</strong></div>
                   </div>
                 </div>
               ))}
@@ -576,13 +580,13 @@ export default function BangladeshComplianceHub() {
               <table className="table table-hover" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', margin: 0 }}>
                 <thead style={{ background: '#f8fafc', color: '#475569', textAlign: 'left' }}>
                   <tr>
-                    <th style={{ padding: '12px' }}>Tag / ID</th>
-                    <th style={{ padding: '12px' }}>Equipment Type</th>
-                    <th style={{ padding: '12px' }}>Location</th>
-                    <th style={{ padding: '12px' }}>Last Inspection</th>
-                    <th style={{ padding: '12px' }}>Refill / Expiry Date</th>
-                    <th style={{ padding: '12px' }}>Inspector</th>
-                    <th style={{ padding: '12px', textAlign: 'center' }}>Status</th>
+                    <th style={{ padding: '12px' }}>{tr("Tag / ID")}</th>
+                    <th style={{ padding: '12px' }}>{tr("Equipment Type")}</th>
+                    <th style={{ padding: '12px' }}>{tr("Location")}</th>
+                    <th style={{ padding: '12px' }}>{tr("Last Inspection")}</th>
+                    <th style={{ padding: '12px' }}>{tr("Refill / Expiry Date")}</th>
+                    <th style={{ padding: '12px' }}>{tr("Inspector")}</th>
+                    <th style={{ padding: '12px', textAlign: 'center' }}>{tr("Status")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -626,7 +630,7 @@ export default function BangladeshComplianceHub() {
                 {isBangla ? 'ফ্ল্যাটভিত্তিক বিদ্যুৎ, পানি ও জেনারেটর সাব-মিটার' : 'Apartment Utility Sub-Meters & Billing Engine'}
               </h3>
               <span style={{ fontSize: '0.82rem', color: '#64748b' }}>
-                DESCO/DPDC 3-Phase digital meters & WASA consumption recorded monthly for billing.
+                {tr("DESCO/DPDC 3-Phase digital meters & WASA consumption recorded monthly for billing.")}
               </span>
             </div>
             <button
@@ -642,15 +646,15 @@ export default function BangladeshComplianceHub() {
             <table className="table table-hover" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', margin: 0 }}>
               <thead style={{ background: '#f8fafc', color: '#475569', textAlign: 'left' }}>
                 <tr>
-                  <th style={{ padding: '12px' }}>Unit / Scope</th>
-                  <th style={{ padding: '12px' }}>Utility Type</th>
-                  <th style={{ padding: '12px' }}>Meter No</th>
-                  <th style={{ padding: '12px', textAlign: 'right' }}>Previous Reading</th>
-                  <th style={{ padding: '12px', textAlign: 'right' }}>Current Reading</th>
-                  <th style={{ padding: '12px', textAlign: 'right' }}>Consumption</th>
-                  <th style={{ padding: '12px', textAlign: 'right' }}>Rate (BDT)</th>
-                  <th style={{ padding: '12px', textAlign: 'right' }}>Total Bill (৳)</th>
-                  <th style={{ padding: '12px', textAlign: 'center' }}>Billing Month</th>
+                  <th style={{ padding: '12px' }}>{tr("Unit / Scope")}</th>
+                  <th style={{ padding: '12px' }}>{tr("Utility Type")}</th>
+                  <th style={{ padding: '12px' }}>{tr("Meter No")}</th>
+                  <th style={{ padding: '12px', textAlign: 'right' }}>{tr("Previous Reading")}</th>
+                  <th style={{ padding: '12px', textAlign: 'right' }}>{tr("Current Reading")}</th>
+                  <th style={{ padding: '12px', textAlign: 'right' }}>{tr("Consumption")}</th>
+                  <th style={{ padding: '12px', textAlign: 'right' }}>{tr("Rate (BDT)")}</th>
+                  <th style={{ padding: '12px', textAlign: 'right' }}>{tr("Total Bill (৳)")}</th>
+                  <th style={{ padding: '12px', textAlign: 'center' }}>{tr("Billing Month")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -696,7 +700,7 @@ export default function BangladeshComplianceHub() {
               {isBangla ? 'ফ্ল্যাট হস্তান্তর, ত্রুটি সংশোধন (Snag List) ও আয়তন সমন্বয়' : 'Flat Handover, Snag List & Area Adjustment (Real Estate Act 2010)'}
             </h3>
             <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>
-              According to the Bangladesh Real Estate Development & Management Act 2010 Section 15: If the delivered flat area differs from the sanctioned plan, contractual price adjustments are settled prior to deed registration.
+              {tr("According to the Bangladesh Real Estate Development & Management Act 2010 Section 15: If the delivered flat area differs from the sanctioned plan, contractual price adjustments are settled prior to deed registration.")}
             </p>
           </div>
 
@@ -709,7 +713,7 @@ export default function BangladeshComplianceHub() {
                       Unit {h.unit_number}
                     </span>
                     <h4 style={{ margin: '6px 0 2px 0', fontSize: '1.05rem', color: '#0f172a' }}>{h.owner_name}</h4>
-                    <span style={{ fontSize: '0.78rem', color: '#64748b' }}>Possession: {h.possession_date} &bull; Ref: {h.possession_letter_ref}</span>
+                    <span style={{ fontSize: '0.78rem', color: '#64748b' }}>{tr("Possession")}: {h.possession_date} &bull; Ref: {h.possession_letter_ref}</span>
                   </div>
                   <span style={{ background: '#dcfce7', color: '#166534', padding: '3px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700 }}>
                     {h.handover_status}
@@ -720,15 +724,15 @@ export default function BangladeshComplianceHub() {
                 <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '10px', marginBottom: '12px' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', fontSize: '0.82rem', textAlign: 'center' }}>
                     <div>
-                      <span style={{ color: '#64748b', display: 'block' }}>Approved SFT</span>
+                      <span style={{ color: '#64748b', display: 'block' }}>{tr("Approved SFT")}</span>
                       <strong>{h.approved_area_sft}</strong>
                     </div>
                     <div>
-                      <span style={{ color: '#64748b', display: 'block' }}>Final Measured</span>
+                      <span style={{ color: '#64748b', display: 'block' }}>{tr("Final Measured")}</span>
                       <strong>{h.final_measured_area_sft}</strong>
                     </div>
                     <div>
-                      <span style={{ color: '#64748b', display: 'block' }}>Discrepancy</span>
+                      <span style={{ color: '#64748b', display: 'block' }}>{tr("Discrepancy")}</span>
                       <strong style={{ color: h.area_difference_sft >= 0 ? '#059669' : '#dc2626' }}>
                         {h.area_difference_sft > 0 ? `+${h.area_difference_sft}` : h.area_difference_sft} SFT
                       </strong>
@@ -736,7 +740,7 @@ export default function BangladeshComplianceHub() {
                   </div>
                   {h.area_difference_sft !== 0 && (
                     <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #e2e8f0', fontSize: '0.8rem', display: 'flex', justifyContent: 'space-between', color: '#065f46' }}>
-                      <span>Price Adjustment @ ৳{h.rate_per_sft_bdt}/SFT:</span>
+                      <span>{tr("Price Adjustment @ ৳")}{h.rate_per_sft_bdt}/SFT:</span>
                       <strong>৳{Number(h.area_adjustment_amount_bdt).toLocaleString()} ({h.adjustment_settlement})</strong>
                     </div>
                   )}
@@ -745,7 +749,7 @@ export default function BangladeshComplianceHub() {
                 {/* Snag List */}
                 <div>
                   <h5 style={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
-                    Snag List Inspection:
+                    {tr("Snag List Inspection:")}
                   </h5>
                   {(h.snag_list || []).map((snag: any, sIdx: number) => (
                     <div key={sIdx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '4px', padding: '4px 8px', background: '#f1f5f9', borderRadius: '4px' }}>
@@ -774,7 +778,7 @@ export default function BangladeshComplianceHub() {
                   {isBangla ? 'সাইট ম্যাটেরিয়াল ভেন্ডর বাকি (Credit) খাতা' : 'Site Material Vendor Baki (Credit) Ledger'}
                 </h3>
                 <span style={{ fontSize: '0.82rem', color: '#64748b' }}>
-                  Tracks credit purchases, payments, and outstanding balances with local cement, steel, and stone suppliers.
+                  {tr("Tracks credit purchases, payments, and outstanding balances with local cement, steel, and stone suppliers.")}
                 </span>
               </div>
               <button
@@ -790,13 +794,13 @@ export default function BangladeshComplianceHub() {
               <table className="table table-hover" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', margin: 0 }}>
                 <thead style={{ background: '#f8fafc', color: '#475569', textAlign: 'left' }}>
                   <tr>
-                    <th style={{ padding: '12px' }}>Supplier / Agency</th>
-                    <th style={{ padding: '12px' }}>Trade Specialty</th>
-                    <th style={{ padding: '12px', textAlign: 'right' }}>Total Purchased</th>
-                    <th style={{ padding: '12px', textAlign: 'right' }}>Total Paid</th>
-                    <th style={{ padding: '12px', textAlign: 'right' }}>Current Baki (৳)</th>
-                    <th style={{ padding: '12px', textAlign: 'right' }}>Credit Limit</th>
-                    <th style={{ padding: '12px' }}>Payment Terms</th>
+                    <th style={{ padding: '12px' }}>{tr("Supplier / Agency")}</th>
+                    <th style={{ padding: '12px' }}>{tr("Trade Specialty")}</th>
+                    <th style={{ padding: '12px', textAlign: 'right' }}>{tr("Total Purchased")}</th>
+                    <th style={{ padding: '12px', textAlign: 'right' }}>{tr("Total Paid")}</th>
+                    <th style={{ padding: '12px', textAlign: 'right' }}>{tr("Current Baki (৳)")}</th>
+                    <th style={{ padding: '12px', textAlign: 'right' }}>{tr("Credit Limit")}</th>
+                    <th style={{ padding: '12px' }}>{tr("Payment Terms")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -829,7 +833,7 @@ export default function BangladeshComplianceHub() {
                   {isBangla ? 'ব্যাংক চেক ব্যবস্থাপনা ও ক্লিয়ারিং রেজিস্টার' : 'Bank Cheque Register & Clearing House'}
                 </h3>
                 <span style={{ fontSize: '0.82rem', color: '#64748b' }}>
-                  Inward collections from flat buyers and outward payments to suppliers & contractors.
+                  {tr("Inward collections from flat buyers and outward payments to suppliers & contractors.")}
                 </span>
               </div>
               <button
@@ -845,14 +849,14 @@ export default function BangladeshComplianceHub() {
               <table className="table table-hover" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', margin: 0 }}>
                 <thead style={{ background: '#f8fafc', color: '#475569', textAlign: 'left' }}>
                   <tr>
-                    <th style={{ padding: '12px' }}>Cheque No</th>
-                    <th style={{ padding: '12px' }}>Bank & Branch</th>
-                    <th style={{ padding: '12px' }}>Payee / Drawer</th>
-                    <th style={{ padding: '12px' }}>Type</th>
-                    <th style={{ padding: '12px', textAlign: 'right' }}>Amount (৳)</th>
-                    <th style={{ padding: '12px' }}>Issue Date</th>
-                    <th style={{ padding: '12px' }}>Clearance Date</th>
-                    <th style={{ padding: '12px', textAlign: 'center' }}>Status</th>
+                    <th style={{ padding: '12px' }}>{tr("Cheque No")}</th>
+                    <th style={{ padding: '12px' }}>{tr("Bank & Branch")}</th>
+                    <th style={{ padding: '12px' }}>{tr("Payee / Drawer")}</th>
+                    <th style={{ padding: '12px' }}>{tr("Type")}</th>
+                    <th style={{ padding: '12px', textAlign: 'right' }}>{tr("Amount (৳)")}</th>
+                    <th style={{ padding: '12px' }}>{tr("Issue Date")}</th>
+                    <th style={{ padding: '12px' }}>{tr("Clearance Date")}</th>
+                    <th style={{ padding: '12px', textAlign: 'center' }}>{tr("Status")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -902,28 +906,28 @@ export default function BangladeshComplianceHub() {
         }}>
           <div style={{ background: '#ffffff', borderRadius: '14px', width: '90%', maxWidth: '600px', padding: '24px', maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>Add Authority Approval / NOC</h3>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>{tr("Add Authority Approval / NOC")}</h3>
               <button onClick={() => setShowApprovalModal(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
             </div>
             <form onSubmit={handleSaveApproval}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '14px' }}>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Authority</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Authority")}</label>
                   <select
                     className="form-select"
                     value={approvalForm.authority}
                     onChange={e => setApprovalForm({ ...approvalForm, authority: e.target.value })}
                   >
-                    <option value="RAJUK">RAJUK (রাজউক)</option>
-                    <option value="FIRE_SERVICE">Fire Service & Civil Defence</option>
-                    <option value="DOE_ENVIRONMENT">DoE (পরিবেশ অধিদপ্তর)</option>
-                    <option value="CIVIL_AVIATION">Civil Aviation (CAAB)</option>
-                    <option value="WASA">Dhaka WASA (ওয়াসা)</option>
-                    <option value="CITY_CORPORATION">City Corporation</option>
+                    <option value="RAJUK">{tr("RAJUK (রাজউক)")}</option>
+                    <option value="FIRE_SERVICE">{tr("Fire Service & Civil Defence")}</option>
+                    <option value="DOE_ENVIRONMENT">{tr("DoE (পরিবেশ অধিদপ্তর)")}</option>
+                    <option value="CIVIL_AVIATION">{tr("Civil Aviation (CAAB)")}</option>
+                    <option value="WASA">{tr("Dhaka WASA (ওয়াসা)")}</option>
+                    <option value="CITY_CORPORATION">{tr("City Corporation")}</option>
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Permit Type</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Permit Type")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -933,7 +937,7 @@ export default function BangladeshComplianceHub() {
                   />
                 </div>
                 <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Title / Description</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Title / Description")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -943,7 +947,7 @@ export default function BangladeshComplianceHub() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Application No</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Application No")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -953,7 +957,7 @@ export default function BangladeshComplianceHub() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Approval Ref No</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Approval Ref No")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -962,7 +966,7 @@ export default function BangladeshComplianceHub() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Approval Date</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Approval Date")}</label>
                   <input
                     type="date"
                     className="form-control"
@@ -971,7 +975,7 @@ export default function BangladeshComplianceHub() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Expiry Date</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Expiry Date")}</label>
                   <input
                     type="date"
                     className="form-control"
@@ -981,8 +985,8 @@ export default function BangladeshComplianceHub() {
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setShowApprovalModal(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Approval</button>
+                <button type="button" onClick={() => setShowApprovalModal(false)} className="btn btn-secondary">{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Save Approval")}</button>
               </div>
             </form>
           </div>
@@ -999,36 +1003,36 @@ export default function BangladeshComplianceHub() {
         }}>
           <div style={{ background: '#ffffff', borderRadius: '14px', width: '90%', maxWidth: '550px', padding: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>Record Utility Meter Reading</h3>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>{tr("Record Utility Meter Reading")}</h3>
               <button onClick={() => setShowMeterModal(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
             </div>
             <form onSubmit={handleSaveMeter}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '14px' }}>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Flat / Unit</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Flat / Unit")}</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="e.g. A-301 or Generator"
+                    placeholder={tr("e.g. A-301 or Generator")}
                     value={meterForm.unit_number}
                     onChange={e => setMeterForm({ ...meterForm, unit_number: e.target.value })}
                     required
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Utility Type</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Utility Type")}</label>
                   <select
                     className="form-select"
                     value={meterForm.utility_type}
                     onChange={e => setMeterForm({ ...meterForm, utility_type: e.target.value })}
                   >
-                    <option value="ELECTRICITY">Electricity (DESCO)</option>
-                    <option value="WATER">Water (Dhaka WASA)</option>
-                    <option value="GENERATOR_BACKUP">Generator Backup</option>
+                    <option value="ELECTRICITY">{tr("Electricity (DESCO)")}</option>
+                    <option value="WATER">{tr("Water (Dhaka WASA)")}</option>
+                    <option value="GENERATOR_BACKUP">{tr("Generator Backup")}</option>
                   </select>
                 </div>
                 <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Meter Serial No</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Meter Serial No")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -1038,7 +1042,7 @@ export default function BangladeshComplianceHub() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Previous Reading</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Previous Reading")}</label>
                   <input
                     type="number"
                     className="form-control"
@@ -1047,7 +1051,7 @@ export default function BangladeshComplianceHub() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Current Reading</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Current Reading")}</label>
                   <input
                     type="number"
                     className="form-control"
@@ -1056,7 +1060,7 @@ export default function BangladeshComplianceHub() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Rate per Unit (BDT)</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Rate per Unit (BDT)")}</label>
                   <input
                     type="number"
                     step="0.1"
@@ -1066,7 +1070,7 @@ export default function BangladeshComplianceHub() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Billing Month</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Billing Month")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -1076,8 +1080,8 @@ export default function BangladeshComplianceHub() {
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setShowMeterModal(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Save & Calculate Bill</button>
+                <button type="button" onClick={() => setShowMeterModal(false)} className="btn btn-secondary">{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Save & Calculate Bill")}</button>
               </div>
             </form>
           </div>
@@ -1094,24 +1098,24 @@ export default function BangladeshComplianceHub() {
         }}>
           <div style={{ background: '#ffffff', borderRadius: '14px', width: '90%', maxWidth: '550px', padding: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>Add Vendor Baki Entry</h3>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>{tr("Add Vendor Baki Entry")}</h3>
               <button onClick={() => setShowBakiModal(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
             </div>
             <form onSubmit={handleSaveBaki}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '14px' }}>
                 <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Supplier Name</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Supplier Name")}</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="e.g. Shah Cement Agency Uttara"
+                    placeholder={tr("e.g. Shah Cement Agency Uttara")}
                     value={bakiForm.vendor_name}
                     onChange={e => setBakiForm({ ...bakiForm, vendor_name: e.target.value })}
                     required
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Trade Specialty</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Trade Specialty")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -1120,7 +1124,7 @@ export default function BangladeshComplianceHub() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Credit Limit (BDT)</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Credit Limit (BDT)")}</label>
                   <input
                     type="number"
                     className="form-control"
@@ -1129,7 +1133,7 @@ export default function BangladeshComplianceHub() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Total Purchased (BDT)</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Total Purchased (BDT)")}</label>
                   <input
                     type="number"
                     className="form-control"
@@ -1139,7 +1143,7 @@ export default function BangladeshComplianceHub() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Total Paid (BDT)</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Total Paid (BDT)")}</label>
                   <input
                     type="number"
                     className="form-control"
@@ -1149,7 +1153,7 @@ export default function BangladeshComplianceHub() {
                   />
                 </div>
                 <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Payment Terms</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Payment Terms")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -1159,8 +1163,8 @@ export default function BangladeshComplianceHub() {
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setShowBakiModal(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Baki Record</button>
+                <button type="button" onClick={() => setShowBakiModal(false)} className="btn btn-secondary">{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Save Baki Record")}</button>
               </div>
             </form>
           </div>
@@ -1177,49 +1181,49 @@ export default function BangladeshComplianceHub() {
         }}>
           <div style={{ background: '#ffffff', borderRadius: '14px', width: '90%', maxWidth: '580px', padding: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>Cheque Register Entry</h3>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>{tr("Cheque Register Entry")}</h3>
               <button onClick={() => setShowChequeModal(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
             </div>
             <form onSubmit={handleSaveCheque}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '14px' }}>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Cheque Number</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Cheque Number")}</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="e.g. DBBL-CQ-109281"
+                    placeholder={tr("e.g. DBBL-CQ-109281")}
                     value={chequeForm.cheque_number}
                     onChange={e => setChequeForm({ ...chequeForm, cheque_number: e.target.value })}
                     required
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Bank Name</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Bank Name")}</label>
                   <select
                     className="form-select"
                     value={chequeForm.bank_name}
                     onChange={e => setChequeForm({ ...chequeForm, bank_name: e.target.value })}
                   >
-                    <option value="Dutch-Bangla Bank Ltd">Dutch-Bangla Bank Ltd (DBBL)</option>
-                    <option value="Islami Bank Bangladesh Ltd">Islami Bank Bangladesh Ltd (IBBL)</option>
-                    <option value="BRAC Bank Ltd">BRAC Bank Ltd</option>
-                    <option value="City Bank Ltd">City Bank Ltd</option>
-                    <option value="Sonali Bank PLC">Sonali Bank PLC</option>
+                    <option value="Dutch-Bangla Bank Ltd">{tr("Dutch-Bangla Bank Ltd (DBBL)")}</option>
+                    <option value="Islami Bank Bangladesh Ltd">{tr("Islami Bank Bangladesh Ltd (IBBL)")}</option>
+                    <option value="BRAC Bank Ltd">{tr("BRAC Bank Ltd")}</option>
+                    <option value="City Bank Ltd">{tr("City Bank Ltd")}</option>
+                    <option value="Sonali Bank PLC">{tr("Sonali Bank PLC")}</option>
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Cheque Type</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Cheque Type")}</label>
                   <select
                     className="form-select"
                     value={chequeForm.cheque_type}
                     onChange={e => setChequeForm({ ...chequeForm, cheque_type: e.target.value })}
                   >
-                    <option value="INWARD_COLLECTION">Inward (Collection from Member)</option>
-                    <option value="OUTWARD_PAYMENT">Outward (Payment to Vendor/Worker)</option>
+                    <option value="INWARD_COLLECTION">{tr("Inward (Collection from Member)")}</option>
+                    <option value="OUTWARD_PAYMENT">{tr("Outward (Payment to Vendor/Worker)")}</option>
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Amount (BDT)</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Amount (BDT)")}</label>
                   <input
                     type="number"
                     className="form-control"
@@ -1229,7 +1233,7 @@ export default function BangladeshComplianceHub() {
                   />
                 </div>
                 <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Payee / Drawer Party Name</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Payee / Drawer Party Name")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -1239,7 +1243,7 @@ export default function BangladeshComplianceHub() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Issue Date</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Issue Date")}</label>
                   <input
                     type="date"
                     className="form-control"
@@ -1249,23 +1253,23 @@ export default function BangladeshComplianceHub() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>Status</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600 }}>{tr("Status")}</label>
                   <select
                     className="form-select"
                     value={chequeForm.status}
                     onChange={e => setChequeForm({ ...chequeForm, status: e.target.value })}
                   >
-                    <option value="ISSUED">ISSUED</option>
-                    <option value="DEPOSITED">DEPOSITED</option>
-                    <option value="CLEARED">CLEARED</option>
-                    <option value="BOUNCED">BOUNCED</option>
-                    <option value="CANCELLED">CANCELLED</option>
+                    <option value="ISSUED">{tr("ISSUED")}</option>
+                    <option value="DEPOSITED">{tr("DEPOSITED")}</option>
+                    <option value="CLEARED">{tr("CLEARED")}</option>
+                    <option value="BOUNCED">{tr("BOUNCED")}</option>
+                    <option value="CANCELLED">{tr("CANCELLED")}</option>
                   </select>
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setShowChequeModal(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Cheque</button>
+                <button type="button" onClick={() => setShowChequeModal(false)} className="btn btn-secondary">{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Save Cheque")}</button>
               </div>
             </form>
           </div>

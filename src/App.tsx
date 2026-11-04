@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
+import { LanguageProvider } from './i18n/LanguageContext';
 
 // Apartment System Core Modules
 const ExecutiveDashboard = lazy(() => import('./pages/Apartment/ExecutiveDashboard'));
@@ -28,6 +29,18 @@ const PostHandoverMaintenance = lazy(() => import('./pages/Apartment/PostHandove
 const MasterManagement = lazy(() => import('./pages/Apartment/MasterManagement'));
 const ShopnoBilashHub = lazy(() => import('./pages/Apartment/ShopnoBilashHub'));
 const BangladeshComplianceHub = lazy(() => import('./pages/Apartment/BangladeshComplianceHub'));
+const BangladeshToolkit = lazy(() => import('./pages/Apartment/BangladeshToolkit'));
+const CollectionsCenter = lazy(() => import('./pages/Apartment/CollectionsCenter'));
+const ReceiptPrint = lazy(() => import('./pages/Apartment/ReceiptPrint'));
+
+// Building operations (after handover)
+const TenantsRent = lazy(() => import('./pages/Operations/TenantsRent'));
+const TenantFormPrint = lazy(() => import('./pages/Operations/TenantFormPrint'));
+const ServiceBilling = lazy(() => import('./pages/Operations/ServiceBilling'));
+const BuildingStaff = lazy(() => import('./pages/Operations/BuildingStaff'));
+const GateParking = lazy(() => import('./pages/Operations/GateParking'));
+const Helpdesk = lazy(() => import('./pages/Operations/Helpdesk'));
+const Automation = lazy(() => import('./pages/Operations/Automation'));
 
 // Auth & Classic
 const Login = lazy(() => import('./pages/Login'));
@@ -49,15 +62,25 @@ const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   return token ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
+const HomeRedirect = () => {
+  const { user, isStaff } = useAuth();
+  if (!user) return <Loader />;
+  return <Navigate to={isStaff ? '/apartment/dashboard' : '/apartment/owner-portal'} replace />;
+};
+
 export default function App() {
   return (
+    <LanguageProvider>
     <AuthProvider>
       <BrowserRouter>
         <Suspense fallback={<Loader />}>
           <Routes>
             <Route path="/login" element={<Login />} />
+            {/* Print view sits outside the app shell so the page prints cleanly */}
+            <Route path="/print/receipt/:id" element={<PrivateRoute><ReceiptPrint /></PrivateRoute>} />
+            <Route path="/print/tenant-form/:id" element={<PrivateRoute><TenantFormPrint /></PrivateRoute>} />
             <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
-              <Route index element={<Navigate to="/apartment/dashboard" replace />} />
+              <Route index element={<HomeRedirect />} />
               
               {/* CORE APARTMENT MODULES */}
               <Route path="apartment/dashboard" element={<ExecutiveDashboard />} />
@@ -85,6 +108,14 @@ export default function App() {
               <Route path="apartment/masters" element={<MasterManagement />} />
               <Route path="apartment/shopno-bilash" element={<ShopnoBilashHub />} />
               <Route path="apartment/compliance" element={<BangladeshComplianceHub />} />
+              <Route path="apartment/bd-toolkit" element={<BangladeshToolkit />} />
+              <Route path="apartment/collections" element={<CollectionsCenter />} />
+              <Route path="operations/tenants" element={<TenantsRent />} />
+              <Route path="operations/billing" element={<ServiceBilling />} />
+              <Route path="operations/staff" element={<BuildingStaff />} />
+              <Route path="operations/gate" element={<GateParking />} />
+              <Route path="operations/helpdesk" element={<Helpdesk />} />
+              <Route path="operations/automation" element={<Automation />} />
 
               {/* ORIGINAL GENERAL MODULES */}
               <Route path="buildings" element={<ListBuilding />} />
@@ -92,10 +123,11 @@ export default function App() {
               <Route path="buildings/edit/:id" element={<CreateEditBuilding />} />
               <Route path="buildings/details/:id" element={<BuildingDetails />} />
             </Route>
-            <Route path="*" element={<Navigate to="/apartment/dashboard" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
       </BrowserRouter>
     </AuthProvider>
+    </LanguageProvider>
   );
 }

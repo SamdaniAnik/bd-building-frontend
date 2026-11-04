@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { tr, useLang } from '../../i18n/LanguageContext';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import api from '../../api/client';
 
@@ -16,6 +17,7 @@ const init = {
 };
 
 export default function CreateEditBuilding() {
+  useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
   const { id } = useParams<{id:string}>();
   const navigate = useNavigate();
   const isEdit = Boolean(id);
@@ -87,7 +89,7 @@ export default function CreateEditBuilding() {
   return (
     <div>
       <div className="breadcrumb mb-3">
-        <Link to="/buildings">Buildings</Link><span className="breadcrumb-sep">/</span>
+        <Link to="/buildings">{tr("Buildings")}</Link><span className="breadcrumb-sep">/</span>
         <span>{isEdit ? 'Edit Building' : 'New Building'}</span>
       </div>
       <h1 className="page-title mb-5"><i className={`fa-solid ${isEdit?'fa-pen-to-square text-warning':'fa-plus-circle text-primary'}`} />{isEdit ? 'Edit Building' : 'Create New Building'}</h1>
@@ -98,19 +100,19 @@ export default function CreateEditBuilding() {
       <form onSubmit={handleSubmit}>
         {/* BASIC INFO */}
         <div className="card mb-4">
-          <div className="card-header"><h3 className="card-title"><i className="fa-solid fa-info-circle text-primary" />Basic Information</h3></div>
+          <div className="card-header"><h3 className="card-title"><i className="fa-solid fa-info-circle text-primary" />{tr("Basic Information")}</h3></div>
           <div className="card-body">
             <div className="form-row cols-4">
               <div className="form-group" style={{gridColumn:'span 2'}}>
-                <label className="form-label required">Building Name (ভবনের নাম)</label>
-                <input type="text" name="buildingName" className="form-control" value={form.buildingName} onChange={h} required placeholder="e.g. Green Valley Apartment" />
+                <label className="form-label required">{tr("Building Name (ভবনের নাম)")}</label>
+                <input type="text" name="buildingName" className="form-control" value={form.buildingName} onChange={h} required placeholder={tr("e.g. Green Valley Apartment")} />
               </div>
               <div className="form-group">
-                <label className="form-label">Building Code</label>
-                <input type="text" name="buildingCode" className="form-control" value={form.buildingCode} onChange={h} placeholder="e.g. GVA-2024" />
+                <label className="form-label">{tr("Building Code")}</label>
+                <input type="text" name="buildingCode" className="form-control" value={form.buildingCode} onChange={h} placeholder={tr("e.g. GVA-2024")} />
               </div>
               <div className="form-group">
-                <label className="form-label required">Status</label>
+                <label className="form-label required">{tr("Status")}</label>
                 <select name="status" className="form-select" value={form.status} onChange={h}>
                   {['Planning','Under Construction','Completed','Cancelled'].map(s=><option key={s} value={s}>{s}</option>)}
                 </select>
@@ -118,19 +120,19 @@ export default function CreateEditBuilding() {
             </div>
             <div className="form-row cols-3">
               <div className="form-group">
-                <label className="form-label required">Building Type (ধরন)</label>
+                <label className="form-label required">{tr("Building Type (ধরন)")}</label>
                 <select name="buildingType" className="form-select" value={form.buildingType} onChange={h} required>
-                  <option value="Residential">Residential (আবাসিক)</option>
-                  <option value="Commercial">Commercial (বাণিজ্যিক)</option>
-                  <option value="Mixed">Mixed (মিশ্র)</option>
+                  <option value="Residential">{tr("Residential (আবাসিক)")}</option>
+                  <option value="Commercial">{tr("Commercial (বাণিজ্যিক)")}</option>
+                  <option value="Mixed">{tr("Mixed (মিশ্র)")}</option>
                 </select>
               </div>
               <div className="form-group">
-                <label className="form-label">Start Date</label>
+                <label className="form-label">{tr("Start Date")}</label>
                 <input type="date" name="startDate" className="form-control" value={form.startDate} onChange={h} />
               </div>
               <div className="form-group">
-                <label className="form-label">Expected Completion</label>
+                <label className="form-label">{tr("Expected Completion")}</label>
                 <input type="date" name="completionDate" className="form-control" value={form.completionDate} onChange={h} />
               </div>
             </div>
@@ -139,67 +141,67 @@ export default function CreateEditBuilding() {
 
         {/* LAND */}
         <div className="card mb-4">
-          <div className="card-header"><h3 className="card-title"><i className="fa-solid fa-map text-success" />Land Information (ভূমি তথ্য)</h3></div>
+          <div className="card-header"><h3 className="card-title"><i className="fa-solid fa-map text-success" />{tr("Land Information (ভূমি তথ্য)")}</h3></div>
           <div className="card-body">
             <div className="form-row cols-4">
               <div className="form-group">
-                <label className="form-label required">Land Area (কাঠা)</label>
+                <label className="form-label required">{tr("Land Area (কাঠা)")}</label>
                 <div className="input-group">
-                  <input type="number" step="0.0001" name="totalLandAreaKatha" className="form-control" value={form.totalLandAreaKatha} onChange={h} required placeholder="e.g. 5.50" />
+                  <input type="number" step="0.0001" name="totalLandAreaKatha" className="form-control" value={form.totalLandAreaKatha} onChange={h} required placeholder={tr("e.g. 5.50")} />
                   <span className="input-group-text">কাঠা</span>
                 </div>
-                <div className="form-text">1 কাঠা = 720 sqft (Bangladesh standard)</div>
+                <div className="form-text">{tr("1 কাঠা = 720 sqft (Bangladesh standard)")}</div>
               </div>
               <div className="form-group">
-                <label className="form-label">Land Area (Sqft) <span className="text-muted">(Auto)</span></label>
+                <label className="form-label">{tr("Land Area (Sqft)")} <span className="text-muted">{tr("(Auto)")}</span></label>
                 <div className="input-group">
                   <input type="number" name="totalLandAreaSqft" className="form-control" value={form.totalLandAreaSqft} onChange={h} />
-                  <span className="input-group-text">sqft</span>
+                  <span className="input-group-text">{tr("sqft")}</span>
                 </div>
               </div>
               <div className="form-group">
-                <label className="form-label">FAR Ratio (RAJUK)</label>
-                <input type="number" step="0.01" name="farRatio" className="form-control" value={form.farRatio} onChange={h} placeholder="e.g. 3.5" />
-                <div className="form-text">Floor Area Ratio (DAP approved)</div>
+                <label className="form-label">{tr("FAR Ratio (RAJUK)")}</label>
+                <input type="number" step="0.01" name="farRatio" className="form-control" value={form.farRatio} onChange={h} placeholder={tr("e.g. 3.5")} />
+                <div className="form-text">{tr("Floor Area Ratio (DAP approved)")}</div>
               </div>
               <div className="form-group">
-                <label className="form-label">Total Buildable Area</label>
+                <label className="form-label">{tr("Total Buildable Area")}</label>
                 <div className="input-group">
-                  <input type="number" step="0.01" name="totalBuildableAreaSqft" className="form-control" value={form.totalBuildableAreaSqft} onChange={h} placeholder="Land × FAR" />
-                  <span className="input-group-text">sqft</span>
+                  <input type="number" step="0.01" name="totalBuildableAreaSqft" className="form-control" value={form.totalBuildableAreaSqft} onChange={h} placeholder={tr("Land × FAR")} />
+                  <span className="input-group-text">{tr("sqft")}</span>
                 </div>
               </div>
             </div>
-            <div className="section-heading"><i className="fa-solid fa-file-contract" />Legal Land Details</div>
+            <div className="section-heading"><i className="fa-solid fa-file-contract" />{tr("Legal Land Details")}</div>
             <div className="form-row cols-4">
               <div className="form-group">
-                <label className="form-label">Mouza (মৌজা)</label>
-                <input type="text" name="mouza" className="form-control" value={form.mouza} onChange={h} placeholder="CS Mouza Name" />
+                <label className="form-label">{tr("Mouza (মৌজা)")}</label>
+                <input type="text" name="mouza" className="form-control" value={form.mouza} onChange={h} placeholder={tr("CS Mouza Name")} />
               </div>
               <div className="form-group">
-                <label className="form-label">Dag No. (দাগ নং)</label>
-                <input type="text" name="dagNo" className="form-control" value={form.dagNo} onChange={h} placeholder="CS/RS Dag" />
+                <label className="form-label">{tr("Dag No. (দাগ নং)")}</label>
+                <input type="text" name="dagNo" className="form-control" value={form.dagNo} onChange={h} placeholder={tr("CS/RS Dag")} />
               </div>
               <div className="form-group">
-                <label className="form-label">Khatian No. (খতিয়ান)</label>
-                <input type="text" name="khatianNo" className="form-control" value={form.khatianNo} onChange={h} placeholder="RS/BS Khatian" />
+                <label className="form-label">{tr("Khatian No. (খতিয়ান)")}</label>
+                <input type="text" name="khatianNo" className="form-control" value={form.khatianNo} onChange={h} placeholder={tr("RS/BS Khatian")} />
               </div>
               <div className="form-group">
-                <label className="form-label">District (জেলা)</label>
+                <label className="form-label">{tr("District (জেলা)")}</label>
                 <select name="district" className="form-select" value={form.district} onChange={h}>
-                  <option value="">Select District</option>
+                  <option value="">{tr("Select District")}</option>
                   {BD_DISTRICTS.map(d=><option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
             </div>
             <div className="form-row cols-2">
               <div className="form-group">
-                <label className="form-label">Upazila (উপজেলা)</label>
+                <label className="form-label">{tr("Upazila (উপজেলা)")}</label>
                 <input type="text" name="upazila" className="form-control" value={form.upazila} onChange={h} />
               </div>
               <div className="form-group">
-                <label className="form-label">Full Address</label>
-                <input type="text" name="address" className="form-control" value={form.address} onChange={h} placeholder="House/Plot, Road, Block, Area" />
+                <label className="form-label">{tr("Full Address")}</label>
+                <input type="text" name="address" className="form-control" value={form.address} onChange={h} placeholder={tr("House/Plot, Road, Block, Area")} />
               </div>
             </div>
           </div>
@@ -207,36 +209,36 @@ export default function CreateEditBuilding() {
 
         {/* SPECS */}
         <div className="card mb-4">
-          <div className="card-header"><h3 className="card-title"><i className="fa-solid fa-layer-group text-warning" />Building Specifications</h3></div>
+          <div className="card-header"><h3 className="card-title"><i className="fa-solid fa-layer-group text-warning" />{tr("Building Specifications")}</h3></div>
           <div className="card-body">
             <div className="form-row cols-4">
               <div className="form-group">
-                <label className="form-label">Floors (Above Ground)</label>
-                <input type="number" name="totalFloors" className="form-control" value={form.totalFloors} onChange={h} placeholder="e.g. 10" />
+                <label className="form-label">{tr("Floors (Above Ground)")}</label>
+                <input type="number" name="totalFloors" className="form-control" value={form.totalFloors} onChange={h} placeholder={tr("e.g. 10")} />
               </div>
               <div className="form-group">
-                <label className="form-label">Basement Floors</label>
-                <input type="number" name="basementFloors" className="form-control" value={form.basementFloors} onChange={h} placeholder="e.g. 1" />
+                <label className="form-label">{tr("Basement Floors")}</label>
+                <input type="number" name="basementFloors" className="form-control" value={form.basementFloors} onChange={h} placeholder={tr("e.g. 1")} />
               </div>
               <div className="form-group">
-                <label className="form-label">Total Units</label>
-                <input type="number" name="totalUnits" className="form-control" value={form.totalUnits} onChange={h} placeholder="Total flats/shops" />
+                <label className="form-label">{tr("Total Units")}</label>
+                <input type="number" name="totalUnits" className="form-control" value={form.totalUnits} onChange={h} placeholder={tr("Total flats/shops")} />
               </div>
               <div className="form-group">
-                <label className="form-label">Approval Authority</label>
+                <label className="form-label">{tr("Approval Authority")}</label>
                 <select name="approvalAuthority" className="form-select" value={form.approvalAuthority} onChange={h}>
-                  <option value="">Select</option>
+                  <option value="">{tr("Select")}</option>
                   {['RAJUK','KDA','CDA','RDA','Other'].map(a=><option key={a} value={a}>{a}</option>)}
                 </select>
               </div>
             </div>
             <div className="form-row cols-3">
               <div className="form-group">
-                <label className="form-label">Approval No.</label>
-                <input type="text" name="rajukApprovalNo" className="form-control" value={form.rajukApprovalNo} onChange={h} placeholder="RAJUK/KDA Plan Approval No." />
+                <label className="form-label">{tr("Approval No.")}</label>
+                <input type="text" name="rajukApprovalNo" className="form-control" value={form.rajukApprovalNo} onChange={h} placeholder={tr("RAJUK/KDA Plan Approval No.")} />
               </div>
               <div className="form-group">
-                <label className="form-label">Approval Date</label>
+                <label className="form-label">{tr("Approval Date")}</label>
                 <input type="date" name="rajukApprovalDate" className="form-control" value={form.rajukApprovalDate} onChange={h} />
               </div>
             </div>
@@ -245,21 +247,21 @@ export default function CreateEditBuilding() {
 
         {/* FINANCIAL */}
         <div className="card mb-4">
-          <div className="card-header"><h3 className="card-title"><i className="fa-solid fa-bangladeshi-taka-sign text-danger" />Financial Information (BDT)</h3></div>
+          <div className="card-header"><h3 className="card-title"><i className="fa-solid fa-bangladeshi-taka-sign text-danger" />{tr("Financial Information (BDT)")}</h3></div>
           <div className="card-body">
             <div className="form-row cols-2">
               <div className="form-group">
-                <label className="form-label">Land Purchase Cost (৳)</label>
+                <label className="form-label">{tr("Land Purchase Cost (৳)")}</label>
                 <div className="input-group input-group-prepend">
                   <span className="input-group-text">৳</span>
-                  <input type="number" step="0.01" name="landPurchaseCost" className="form-control" value={form.landPurchaseCost} onChange={h} placeholder="Total land cost in BDT" />
+                  <input type="number" step="0.01" name="landPurchaseCost" className="form-control" value={form.landPurchaseCost} onChange={h} placeholder={tr("Total land cost in BDT")} />
                 </div>
               </div>
               <div className="form-group">
-                <label className="form-label">Estimated Construction Cost (৳)</label>
+                <label className="form-label">{tr("Estimated Construction Cost (৳)")}</label>
                 <div className="input-group input-group-prepend">
                   <span className="input-group-text">৳</span>
-                  <input type="number" step="0.01" name="estimatedConstructionCost" className="form-control" value={form.estimatedConstructionCost} onChange={h} placeholder="Total estimated cost in BDT" />
+                  <input type="number" step="0.01" name="estimatedConstructionCost" className="form-control" value={form.estimatedConstructionCost} onChange={h} placeholder={tr("Total estimated cost in BDT")} />
                 </div>
               </div>
             </div>
@@ -270,16 +272,16 @@ export default function CreateEditBuilding() {
         <div className="card mb-4">
           <div className="card-body">
             <div className="form-group">
-              <label className="form-label">Notes / Remarks</label>
-              <textarea name="notes" className="form-control" rows={3} value={form.notes} onChange={h} placeholder="Any additional notes..." />
+              <label className="form-label">{tr("Notes / Remarks")}</label>
+              <textarea name="notes" className="form-control" rows={3} value={form.notes} onChange={h} placeholder={tr("Any additional notes...")} />
             </div>
           </div>
         </div>
 
         <div className="card-footer flex-between">
-          <Link to="/buildings" className="btn btn-light"><i className="fa-solid fa-arrow-left" /> Back to List</Link>
+          <Link to="/buildings" className="btn btn-light"><i className="fa-solid fa-arrow-left" /> {tr("Back to List")}</Link>
           <button type="submit" className="btn btn-primary btn-lg" disabled={loading}>
-            {loading ? <><div className="spinner" style={{width:'18px',height:'18px'}} />Saving...</> : <><i className={`fa-solid ${isEdit?'fa-floppy-disk':'fa-plus'}`} />{isEdit?'Update Building':'Create Building'}</>}
+            {loading ? <><div className="spinner" style={{width:'18px',height:'18px'}} />{tr("Saving...")}</> : <><i className={`fa-solid ${isEdit?'fa-floppy-disk':'fa-plus'}`} />{isEdit?'Update Building':'Create Building'}</>}
           </button>
         </div>
       </form>

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
 
 export default function RoomLevelCosting() {
+  useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
   const [units, setUnits] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
@@ -31,7 +33,7 @@ export default function RoomLevelCosting() {
       <div className="loader-overlay">
         <div className="loader-spinner">
           <i className="fa-solid fa-spinner fa-spin text-primary" style={{ fontSize: '2rem' }}></i>
-          <p className="mt-2 text-muted">Calculating Room-Level Finishes Costing...</p>
+          <p className="mt-2 text-muted">{tr("Calculating Room-Level Finishes Costing...")}</p>
         </div>
       </div>
     );
@@ -45,16 +47,16 @@ export default function RoomLevelCosting() {
       <div className="page-header">
         <div>
           <div className="breadcrumb">
-            <span>Apartment System</span>
+            <span>{tr("Apartment System")}</span>
             <span className="breadcrumb-sep">/</span>
-            <span>Finishing Costing</span>
+            <span>{tr("Finishing Costing")}</span>
           </div>
           <h1 className="page-title">
-            <i className="fa-solid fa-layer-group text-primary"></i> Room-Level Costing & Hierarchy (Section 3)
+            <i className="fa-solid fa-layer-group text-primary"></i> {tr("Room-Level Costing & Hierarchy (Section 3)")}
           </h1>
         </div>
         <span className="badge badge-primary" style={{ padding: '6px 14px' }}>
-          Room → Unit → Owner → Project
+          {tr("Room → Unit → Owner → Project")}
         </span>
       </div>
 
@@ -77,7 +79,7 @@ export default function RoomLevelCosting() {
         <div className="card-header flex-between">
           <div className="card-title">
             <i className="fa-solid fa-brush text-primary"></i>
-            Finishing Cost Breakdown for {currentUnit.unit_number}
+            {tr("Finishing Cost Breakdown for")} {currentUnit.unit_number}
           </div>
           <span className="badge badge-success" style={{ fontSize: '0.85rem' }}>
             Total Room Finishes: ৳${currentUnit.total_finishing_cost?.toLocaleString()}
@@ -87,13 +89,13 @@ export default function RoomLevelCosting() {
           <table>
             <thead>
               <tr>
-                <th>Room Name</th>
-                <th>Room Type</th>
-                <th>Dimensions (L × W)</th>
-                <th className="text-right">Area (SFT)</th>
-                <th className="text-right">Finish Rate / SFT (৳)</th>
-                <th className="text-right">Estimated Cost (৳)</th>
-                <th>Finishing Materials & Scope</th>
+                <th>{tr("Room Name")}</th>
+                <th>{tr("Room Type")}</th>
+                <th>{tr("Dimensions (L × W)")}</th>
+                <th className="text-right">{tr("Area (SFT)")}</th>
+                <th className="text-right">{tr("Finish Rate / SFT (৳)")}</th>
+                <th className="text-right">{tr("Estimated Cost (৳)")}</th>
+                <th>{tr("Finishing Materials & Scope")}</th>
               </tr>
             </thead>
             <tbody>
@@ -112,7 +114,7 @@ export default function RoomLevelCosting() {
             </tbody>
             <tfoot>
               <tr>
-                <td colSpan={3}>Total Unit Rooms Area & Finishes Cost</td>
+                <td colSpan={3}>{tr("Total Unit Rooms Area & Finishes Cost")}</td>
                 <td className="text-right fw-bold text-primary">
                   {rooms.reduce((s: number, r: any) => s + parseFloat(r.area_sqft || 0), 0).toFixed(2)} SFT
                 </td>

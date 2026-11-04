@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { tr, useLang } from '../../i18n/LanguageContext';
 import { Link } from 'react-router-dom';
 import api from '../../api/client';
 
 export default function ExecutiveDashboard() {
+  useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'charts' | 'budget'>('overview');
@@ -30,7 +32,7 @@ export default function ExecutiveDashboard() {
       <div className="loader-overlay">
         <div className="loader-spinner">
           <i className="fa-solid fa-spinner fa-spin text-primary" style={{ fontSize: '2.5rem' }}></i>
-          <p className="mt-3 text-muted fw-semibold">Loading Apartment Management Analytics...</p>
+          <p className="mt-3 text-muted fw-semibold">{tr("Loading Apartment Management Analytics...")}</p>
         </div>
       </div>
     );
@@ -50,8 +52,8 @@ export default function ExecutiveDashboard() {
                 <span className="badge" style={{ background: 'rgba(255,255,255,0.2)', color: 'white', padding: '4px 10px' }}>
                   {project.project_code || 'SHOPNO-BILASH-108'}
                 </span>
-                <span className="badge badge-success">ACTIVE MULTI-TOWER CAMPUS</span>
-                <span className="badge" style={{ background: '#10b981', color: 'white' }}>3 TOWERS • 108 SHARES</span>
+                <span className="badge badge-success">{tr("ACTIVE MULTI-TOWER CAMPUS")}</span>
+                <span className="badge" style={{ background: '#10b981', color: 'white' }}>{tr("3 TOWERS • 108 SHARES")}</span>
               </div>
               <h1 style={{ fontSize: '1.75rem', fontWeight: 800, marginTop: '8px', color: 'white' }}>
                 {project.project_name || 'Shopno Bilash (স্বপ্ন বিলাস)'}
@@ -63,16 +65,16 @@ export default function ExecutiveDashboard() {
             </div>
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
               <Link to="/apartment/shopno-bilash" className="btn btn-success btn-sm" style={{ fontWeight: 700 }}>
-                <i className="fa-solid fa-circle-nodes"></i> Shopno Bilash (108 Shares) Hub
+                <i className="fa-solid fa-circle-nodes"></i> {tr("Shopno Bilash (108 Shares) Hub")}
               </Link>
               <Link to="/apartment/works" className="btn btn-warning btn-sm">
-                <i className="fa-solid fa-plus-circle"></i> Add Work & Allocate
+                <i className="fa-solid fa-plus-circle"></i> {tr("Add Work & Allocate")}
               </Link>
               <Link to="/apartment/finances" className="btn btn-success btn-sm">
-                <i className="fa-solid fa-money-bill-wave"></i> Record Payment
+                <i className="fa-solid fa-money-bill-wave"></i> {tr("Record Payment")}
               </Link>
               <Link to="/apartment/reports" className="btn btn-light btn-sm">
-                <i className="fa-solid fa-file-pdf"></i> Reports
+                <i className="fa-solid fa-file-pdf"></i> {tr("Reports")}
               </Link>
             </div>
           </div>
@@ -84,67 +86,67 @@ export default function ExecutiveDashboard() {
         {/* 1. TOTAL PROJECT COST */}
         <div className="kpi-card" style={{ '--kpi-color': '#4f46e5' } as any}>
           <div className="kpi-title">
-            <span>Total Project Cost</span>
+            <span>{tr("Total Project Cost")}</span>
             <i className="fa-solid fa-calculator text-primary"></i>
           </div>
           <div className="kpi-value text-primary">৳{kpis.total_project_cost?.toLocaleString()}</div>
-          <div className="kpi-subtitle">Combined + Individual Work</div>
+          <div className="kpi-subtitle">{tr("Combined + Individual Work")}</div>
         </div>
 
         {/* 2. TOTAL PAID */}
         <div className="kpi-card" style={{ '--kpi-color': '#10b981' } as any}>
           <div className="kpi-title">
-            <span>Total Paid by Owners</span>
+            <span>{tr("Total Paid by Owners")}</span>
             <i className="fa-solid fa-circle-check text-success"></i>
           </div>
           <div className="kpi-value text-success">৳{kpis.total_paid?.toLocaleString()}</div>
-          <div className="kpi-subtitle">Equity + Loan-funded receipts</div>
+          <div className="kpi-subtitle">{tr("Equity + Loan-funded receipts")}</div>
         </div>
 
         {/* 3. TOTAL OUTSTANDING / RECEIVABLE */}
         <div className="kpi-card" style={{ '--kpi-color': '#ef4444' } as any}>
           <div className="kpi-title">
-            <span>Owner Receivable</span>
+            <span>{tr("Owner Receivable")}</span>
             <i className="fa-solid fa-hand-holding-dollar text-danger"></i>
           </div>
           <div className="kpi-value text-danger">৳{kpis.total_outstanding?.toLocaleString()}</div>
-          <div className="kpi-subtitle">Total Owner Dues Remaining</div>
+          <div className="kpi-subtitle">{tr("Total Owner Dues Remaining")}</div>
         </div>
 
         {/* 4. VENDOR PAYABLE */}
         <div className="kpi-card" style={{ '--kpi-color': '#f59e0b' } as any}>
           <div className="kpi-title">
-            <span>Vendor Payable</span>
+            <span>{tr("Vendor Payable")}</span>
             <i className="fa-solid fa-truck-ramp-box text-warning"></i>
           </div>
           <div className="kpi-value text-warning">৳{kpis.vendor_payable?.toLocaleString()}</div>
-          <div className="kpi-subtitle">Invoiced but unpaid to vendors</div>
+          <div className="kpi-subtitle">{tr("Invoiced but unpaid to vendors")}</div>
         </div>
 
         {/* 5. COMBINED COST */}
         <div className="kpi-card" style={{ '--kpi-color': '#8b5cf6' } as any}>
           <div className="kpi-title">
-            <span>Combined Cost</span>
+            <span>{tr("Combined Cost")}</span>
             <i className="fa-solid fa-building text-info"></i>
           </div>
           <div className="kpi-value" style={{ color: '#7c3aed' }}>৳{kpis.combined_cost?.toLocaleString()}</div>
-          <div className="kpi-subtitle">Shared Common Facilities</div>
+          <div className="kpi-subtitle">{tr("Shared Common Facilities")}</div>
         </div>
 
         {/* 6. INDIVIDUAL COST */}
         <div className="kpi-card" style={{ '--kpi-color': '#06b6d4' } as any}>
           <div className="kpi-title">
-            <span>Individual Cost</span>
+            <span>{tr("Individual Cost")}</span>
             <i className="fa-solid fa-door-open" style={{ color: '#0891b2' }}></i>
           </div>
           <div className="kpi-value" style={{ color: '#0891b2' }}>৳{kpis.individual_cost?.toLocaleString()}</div>
-          <div className="kpi-subtitle">Unit-Specific Upgrades</div>
+          <div className="kpi-subtitle">{tr("Unit-Specific Upgrades")}</div>
         </div>
 
         {/* 7. TOTAL BANK LOANS */}
         <div className="kpi-card" style={{ '--kpi-color': '#0ea5e9' } as any}>
           <div className="kpi-title">
-            <span>Bank Loans Disbursed</span>
+            <span>{tr("Bank Loans Disbursed")}</span>
             <i className="fa-solid fa-landmark text-info"></i>
           </div>
           <div className="kpi-value" style={{ color: '#0284c7' }}>৳{kpis.total_loan_disbursed?.toLocaleString()}</div>
@@ -154,7 +156,7 @@ export default function ExecutiveDashboard() {
         {/* 8. CONSTRUCTION PROGRESS */}
         <div className="kpi-card" style={{ '--kpi-color': '#10b981' } as any}>
           <div className="kpi-title">
-            <span>Overall Progress</span>
+            <span>{tr("Overall Progress")}</span>
             <i className="fa-solid fa-chart-line text-success"></i>
           </div>
           <div className="kpi-value text-success">{kpis.overall_progress}%</div>
@@ -167,13 +169,13 @@ export default function ExecutiveDashboard() {
       {/* NAVIGATION TABS */}
       <div className="pill-tabs">
         <button className={`pill-tab ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>
-          <i className="fa-solid fa-table-cells-large" style={{ marginRight: '6px' }}></i> Financial Matrix by Unit (Units A–F)
+          <i className="fa-solid fa-table-cells-large" style={{ marginRight: '6px' }}></i> {tr("Financial Matrix by Unit (Units A–F)")}
         </button>
         <button className={`pill-tab ${activeTab === 'charts' ? 'active' : ''}`} onClick={() => setActiveTab('charts')}>
-          <i className="fa-solid fa-chart-pie" style={{ marginRight: '6px' }}></i> Cost Category Breakdown
+          <i className="fa-solid fa-chart-pie" style={{ marginRight: '6px' }}></i> {tr("Cost Category Breakdown")}
         </button>
         <button className={`pill-tab ${activeTab === 'budget' ? 'active' : ''}`} onClick={() => setActiveTab('budget')}>
-          <i className="fa-solid fa-scale-balanced" style={{ marginRight: '6px' }}></i> Budget vs Actual Variance
+          <i className="fa-solid fa-scale-balanced" style={{ marginRight: '6px' }}></i> {tr("Budget vs Actual Variance")}
         </button>
       </div>
 
@@ -183,23 +185,23 @@ export default function ExecutiveDashboard() {
           <div className="card-header">
             <div className="card-title">
               <i className="fa-solid fa-building-user text-primary"></i>
-              Unit-wise Financial Liability, Combined Share & Balance (Units A–F)
+              {tr("Unit-wise Financial Liability, Combined Share & Balance (Units A–F)")}
             </div>
-            <span className="badge badge-primary">6 Units Configured</span>
+            <span className="badge badge-primary">{tr("6 Units Configured")}</span>
           </div>
           <div className="table-wrapper">
             <table>
               <thead>
                 <tr>
-                  <th>Unit Number</th>
-                  <th>Area (SFT)</th>
-                  <th className="text-right">Combined Share (৳)</th>
-                  <th className="text-right">Individual Upgrades (৳)</th>
-                  <th className="text-right">Total Liability (৳)</th>
-                  <th className="text-right">Total Paid (৳)</th>
-                  <th className="text-right">Outstanding Due (৳)</th>
-                  <th>Payment Status</th>
-                  <th className="text-center">Action</th>
+                  <th>{tr("Unit Number")}</th>
+                  <th>{tr("Area (SFT)")}</th>
+                  <th className="text-right">{tr("Combined Share (৳)")}</th>
+                  <th className="text-right">{tr("Individual Upgrades (৳)")}</th>
+                  <th className="text-right">{tr("Total Liability (৳)")}</th>
+                  <th className="text-right">{tr("Total Paid (৳)")}</th>
+                  <th className="text-right">{tr("Outstanding Due (৳)")}</th>
+                  <th>{tr("Payment Status")}</th>
+                  <th className="text-center">{tr("Action")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -230,7 +232,7 @@ export default function ExecutiveDashboard() {
                       </td>
                       <td className="text-center">
                         <Link to={`/apartment/units/${u.unit_id}`} className="btn btn-outline btn-sm">
-                          Details <i className="fa-solid fa-arrow-right"></i>
+                          {tr("Details")} <i className="fa-solid fa-arrow-right"></i>
                         </Link>
                       </td>
                     </tr>
@@ -239,8 +241,8 @@ export default function ExecutiveDashboard() {
               </tbody>
               <tfoot>
                 <tr>
-                  <td>Total (6 Units)</td>
-                  <td>6,960 SFT</td>
+                  <td>{tr("Total (6 Units)")}</td>
+                  <td>{tr("6,960 SFT")}</td>
                   <td className="text-right">৳{kpis.combined_cost?.toLocaleString()}</td>
                   <td className="text-right">৳{kpis.individual_cost?.toLocaleString()}</td>
                   <td className="text-right">৳{kpis.total_project_cost?.toLocaleString()}</td>
@@ -260,7 +262,7 @@ export default function ExecutiveDashboard() {
           <div className="card">
             <div className="card-header">
               <div className="card-title">
-                <i className="fa-solid fa-chart-pie text-primary"></i> Cost by Construction Category
+                <i className="fa-solid fa-chart-pie text-primary"></i> {tr("Cost by Construction Category")}
               </div>
             </div>
             <div className="card-body">
@@ -284,7 +286,7 @@ export default function ExecutiveDashboard() {
           <div className="card">
             <div className="card-header">
               <div className="card-title">
-                <i className="fa-solid fa-code-compare text-success"></i> Combined Work vs Individual Upgrades
+                <i className="fa-solid fa-code-compare text-success"></i> {tr("Combined Work vs Individual Upgrades")}
               </div>
             </div>
             <div className="card-body">
@@ -292,15 +294,15 @@ export default function ExecutiveDashboard() {
                 <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#4f46e5' }}>
                   {kpis.total_project_cost > 0 ? ((kpis.combined_cost / kpis.total_project_cost) * 100).toFixed(1) : 0}%
                 </div>
-                <div className="text-muted text-sm">Combined / Common Construction Facilities</div>
+                <div className="text-muted text-sm">{tr("Combined / Common Construction Facilities")}</div>
               </div>
               <hr style={{ borderColor: 'var(--gray-200)', margin: '14px 0' }} />
               <div className="flex-between mb-2">
-                <span className="tag-badge tag-combined">Combined Share:</span>
+                <span className="tag-badge tag-combined">{tr("Combined Share:")}</span>
                 <span className="fw-bold">৳{kpis.combined_cost?.toLocaleString()}</span>
               </div>
               <div className="flex-between">
-                <span className="tag-badge tag-individual">Individual Flat Upgrades:</span>
+                <span className="tag-badge tag-individual">{tr("Individual Flat Upgrades:")}</span>
                 <span className="fw-bold">৳{kpis.individual_cost?.toLocaleString()}</span>
               </div>
             </div>
@@ -313,20 +315,20 @@ export default function ExecutiveDashboard() {
         <div className="card mb-4">
           <div className="card-header">
             <div className="card-title">
-              <i className="fa-solid fa-chart-simple text-primary"></i> Budget vs Actual Variance Report
+              <i className="fa-solid fa-chart-simple text-primary"></i> {tr("Budget vs Actual Variance Report")}
             </div>
-            <Link to="/apartment/finances" className="btn btn-outline btn-sm">Manage Budgets & Change Orders</Link>
+            <Link to="/apartment/finances" className="btn btn-outline btn-sm">{tr("Manage Budgets & Change Orders")}</Link>
           </div>
           <div className="table-wrapper">
             <table>
               <thead>
                 <tr>
-                  <th>Category</th>
-                  <th className="text-right">Revised Budget (৳)</th>
-                  <th className="text-right">Actual Spent (৳)</th>
-                  <th className="text-right">Variance (৳)</th>
-                  <th className="text-right">Variance %</th>
-                  <th>Budget Health</th>
+                  <th>{tr("Category")}</th>
+                  <th className="text-right">{tr("Revised Budget (৳)")}</th>
+                  <th className="text-right">{tr("Actual Spent (৳)")}</th>
+                  <th className="text-right">{tr("Variance (৳)")}</th>
+                  <th className="text-right">{tr("Variance %")}</th>
+                  <th>{tr("Budget Health")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -358,9 +360,9 @@ export default function ExecutiveDashboard() {
         <div className="card">
           <div className="card-header">
             <div className="card-title">
-              <i className="fa-solid fa-shield-halved text-primary"></i> Recent Audit Log
+              <i className="fa-solid fa-shield-halved text-primary"></i> {tr("Recent Audit Log")}
             </div>
-            <Link to="/apartment/audit" className="text-sm text-primary fw-semibold">View All Logs</Link>
+            <Link to="/apartment/audit" className="text-sm text-primary fw-semibold">{tr("View All Logs")}</Link>
           </div>
           <div className="card-body" style={{ padding: '12px 20px' }}>
             {(data?.recentAudits || []).map((a: any) => (
@@ -388,9 +390,9 @@ export default function ExecutiveDashboard() {
         <div className="card">
           <div className="card-header">
             <div className="card-title">
-              <i className="fa-solid fa-bell text-warning"></i> Notifications & Alerts
+              <i className="fa-solid fa-bell text-warning"></i> {tr("Notifications & Alerts")}
             </div>
-            <span className="badge badge-warning">Active Alerts</span>
+            <span className="badge badge-warning">{tr("Active Alerts")}</span>
           </div>
           <div className="card-body" style={{ padding: '12px 20px' }}>
             {(data?.notifications || []).map((n: any) => (

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
 
 export default function ProcurementVendors() {
+  useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
   const [vendors, setVendors] = useState<any[]>([]);
   const [invoices, setInvoices] = useState<any[]>([]);
   const [works, setWorks] = useState<any[]>([]);
@@ -111,30 +113,30 @@ export default function ProcurementVendors() {
       <div className="page-header">
         <div>
           <div className="breadcrumb">
-            <span>Apartment System</span>
+            <span>{tr("Apartment System")}</span>
             <span className="breadcrumb-sep">/</span>
-            <span>Procurement</span>
+            <span>{tr("Procurement")}</span>
           </div>
           <h1 className="page-title">
-            <i className="fa-solid fa-truck-ramp-box text-primary"></i> Vendors, Invoices & Vendor Ledgers
+            <i className="fa-solid fa-truck-ramp-box text-primary"></i> {tr("Vendors, Invoices & Vendor Ledgers")}
           </h1>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button className="btn btn-outline" onClick={() => setShowInvoiceModal(true)}>
-            <i className="fa-solid fa-file-invoice-dollar"></i> New Vendor Invoice
+            <i className="fa-solid fa-file-invoice-dollar"></i> {tr("New Vendor Invoice")}
           </button>
           <button className="btn btn-success" onClick={() => setShowPaymentModal(true)}>
-            <i className="fa-solid fa-money-bill-transfer"></i> Record Vendor Payment
+            <i className="fa-solid fa-money-bill-transfer"></i> {tr("Record Vendor Payment")}
           </button>
         </div>
       </div>
 
       <div className="pill-tabs">
         <button className={`pill-tab ${activeTab === 'vendors' ? 'active' : ''}`} onClick={() => setActiveTab('vendors')}>
-          <i className="fa-solid fa-handshake" style={{ marginRight: '6px' }}></i> Registered Vendors & Balances ({vendors.length})
+          <i className="fa-solid fa-handshake" style={{ marginRight: '6px' }}></i> {tr("Registered Vendors & Balances")} ({vendors.length})
         </button>
         <button className={`pill-tab ${activeTab === 'invoices' ? 'active' : ''}`} onClick={() => setActiveTab('invoices')}>
-          <i className="fa-solid fa-receipt" style={{ marginRight: '6px' }}></i> Vendor Invoices & Due Payments ({invoices.length})
+          <i className="fa-solid fa-receipt" style={{ marginRight: '6px' }}></i> {tr("Vendor Invoices & Due Payments")} ({invoices.length})
         </button>
       </div>
 
@@ -145,14 +147,14 @@ export default function ProcurementVendors() {
             <table>
               <thead>
                 <tr>
-                  <th>Vendor & Trade</th>
-                  <th>Category</th>
-                  <th>Contact Person & Phone</th>
-                  <th className="text-right">Total Invoiced (৳)</th>
-                  <th className="text-right">Total Paid (৳)</th>
-                  <th className="text-right">Vendor Payable (৳)</th>
-                  <th>Terms</th>
-                  <th className="text-center">Action</th>
+                  <th>{tr("Vendor & Trade")}</th>
+                  <th>{tr("Category")}</th>
+                  <th>{tr("Contact Person & Phone")}</th>
+                  <th className="text-right">{tr("Total Invoiced (৳)")}</th>
+                  <th className="text-right">{tr("Total Paid (৳)")}</th>
+                  <th className="text-right">{tr("Vendor Payable (৳)")}</th>
+                  <th>{tr("Terms")}</th>
+                  <th className="text-center">{tr("Action")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -176,7 +178,7 @@ export default function ProcurementVendors() {
                     <td><span className="badge badge-gray">{v.payment_terms}</span></td>
                     <td className="text-center">
                       <button className="btn btn-outline btn-sm" onClick={() => openLedger(v.id_vendors)}>
-                        <i className="fa-solid fa-book"></i> Ledger
+                        <i className="fa-solid fa-book"></i> {tr("Ledger")}
                       </button>
                     </td>
                   </tr>
@@ -194,15 +196,15 @@ export default function ProcurementVendors() {
             <table>
               <thead>
                 <tr>
-                  <th>Invoice #</th>
-                  <th>Vendor</th>
-                  <th>Associated Work</th>
-                  <th>Date / Due</th>
-                  <th className="text-right">Total Amount (৳)</th>
-                  <th className="text-right">Paid Amount (৳)</th>
-                  <th className="text-right">Outstanding (৳)</th>
-                  <th>Status</th>
-                  <th className="text-center">Payment</th>
+                  <th>{tr("Invoice #")}</th>
+                  <th>{tr("Vendor")}</th>
+                  <th>{tr("Associated Work")}</th>
+                  <th>{tr("Date / Due")}</th>
+                  <th className="text-right">{tr("Total Amount (৳)")}</th>
+                  <th className="text-right">{tr("Paid Amount (৳)")}</th>
+                  <th className="text-right">{tr("Outstanding (৳)")}</th>
+                  <th>{tr("Status")}</th>
+                  <th className="text-center">{tr("Payment")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -228,10 +230,10 @@ export default function ProcurementVendors() {
                     <td className="text-center">
                       {parseFloat(inv.outstanding_amount || 0) > 0 ? (
                         <button className="btn btn-success btn-sm" onClick={() => openPaymentForInvoice(inv)}>
-                          <i className="fa-solid fa-hand-holding-dollar"></i> Pay Due
+                          <i className="fa-solid fa-hand-holding-dollar"></i> {tr("Pay Due")}
                         </button>
                       ) : (
-                        <span className="badge badge-success">Fully Cleared</span>
+                        <span className="badge badge-success">{tr("Fully Cleared")}</span>
                       )}
                     </td>
                   </tr>
@@ -248,7 +250,7 @@ export default function ProcurementVendors() {
           <div className="modal" style={{ maxWidth: '800px' }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <div>
-                <div className="text-xs text-muted uppercase fw-bold">Official Vendor Financial Statement</div>
+                <div className="text-xs text-muted uppercase fw-bold">{tr("Official Vendor Financial Statement")}</div>
                 <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>{selectedLedger.vendor?.company_name}</h3>
               </div>
               <button className="btn btn-light btn-sm" onClick={() => setSelectedLedger(null)}>
@@ -258,33 +260,33 @@ export default function ProcurementVendors() {
             <div className="modal-body">
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px', marginBottom: '20px' }}>
                 <div className="p-3 rounded" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                  <div className="text-xs text-muted">Total Invoiced:</div>
+                  <div className="text-xs text-muted">{tr("Total Invoiced:")}</div>
                   <div className="fw-bold" style={{ fontSize: '1.1rem' }}>৳{selectedLedger.total_invoiced?.toLocaleString()}</div>
                 </div>
                 <div className="p-3 rounded" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
-                  <div className="text-xs text-muted">Total Paid:</div>
+                  <div className="text-xs text-muted">{tr("Total Paid:")}</div>
                   <div className="fw-bold text-success" style={{ fontSize: '1.1rem' }}>৳{selectedLedger.total_paid?.toLocaleString()}</div>
                 </div>
                 <div className="p-3 rounded" style={{ background: '#fef2f2', border: '1px solid #fecaca' }}>
-                  <div className="text-xs text-muted">Total Outstanding Due:</div>
+                  <div className="text-xs text-muted">{tr("Total Outstanding Due:")}</div>
                   <div className="fw-bold text-danger" style={{ fontSize: '1.1rem' }}>৳{selectedLedger.outstanding?.toLocaleString()}</div>
                 </div>
               </div>
 
               <div className="section-heading">
-                <i className="fa-solid fa-timeline"></i> Chronological Invoices & Payments Ledger
+                <i className="fa-solid fa-timeline"></i> {tr("Chronological Invoices & Payments Ledger")}
               </div>
 
               <div className="table-wrapper">
                 <table>
                   <thead>
                     <tr>
-                      <th>Date</th>
-                      <th>Entry Type</th>
-                      <th>Reference / Details</th>
-                      <th className="text-right">Invoiced / Billed (৳)</th>
-                      <th className="text-right">Paid to Vendor (৳)</th>
-                      <th className="text-right">Net Due Balance (৳)</th>
+                      <th>{tr("Date")}</th>
+                      <th>{tr("Entry Type")}</th>
+                      <th>{tr("Reference / Details")}</th>
+                      <th className="text-right">{tr("Invoiced / Billed (৳)")}</th>
+                      <th className="text-right">{tr("Paid to Vendor (৳)")}</th>
+                      <th className="text-right">{tr("Net Due Balance (৳)")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -313,10 +315,10 @@ export default function ProcurementVendors() {
             </div>
             <div className="modal-footer flex-between">
               <button className="btn btn-outline btn-sm" onClick={() => window.print()}>
-                <i className="fa-solid fa-print"></i> Print Vendor Statement
+                <i className="fa-solid fa-print"></i> {tr("Print Vendor Statement")}
               </button>
               <button className="btn btn-light btn-sm" onClick={() => setSelectedLedger(null)}>
-                Close
+                {tr("Close")}
               </button>
             </div>
           </div>
@@ -329,7 +331,7 @@ export default function ProcurementVendors() {
           <div className="modal" style={{ maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
             <form onSubmit={handleCreateInvoice}>
               <div className="modal-header">
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Create Vendor Invoice</h3>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>{tr("Create Vendor Invoice")}</h3>
                 <button type="button" className="btn btn-light btn-sm" onClick={() => setShowInvoiceModal(false)}>
                   <i className="fa-solid fa-times"></i>
                 </button>
@@ -337,25 +339,25 @@ export default function ProcurementVendors() {
               <div className="modal-body">
                 <div className="form-row cols-2">
                   <div className="form-group">
-                    <label className="form-label required">Invoice Number</label>
+                    <label className="form-label required">{tr("Invoice Number")}</label>
                     <input
                       type="text"
                       className="form-control"
-                      placeholder="e.g. INV-2026-003"
+                      placeholder={tr("e.g. INV-2026-003")}
                       value={invForm.invoice_number}
                       onChange={e => setInvForm({ ...invForm, invoice_number: e.target.value })}
                       required
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label required">Vendor</label>
+                    <label className="form-label required">{tr("Vendor")}</label>
                     <select
                       className="form-select"
                       value={invForm.id_vendors}
                       onChange={e => setInvForm({ ...invForm, id_vendors: e.target.value })}
                       required
                     >
-                      <option value="">Select Vendor</option>
+                      <option value="">{tr("Select Vendor")}</option>
                       {vendors.map(v => (
                         <option key={v.id_vendors} value={v.id_vendors}>{v.company_name}</option>
                       ))}
@@ -364,25 +366,25 @@ export default function ProcurementVendors() {
                 </div>
                 <div className="form-row cols-2">
                   <div className="form-group">
-                    <label className="form-label required">Total Invoice Amount (৳)</label>
+                    <label className="form-label required">{tr("Total Invoice Amount (৳)")}</label>
                     <input
                       type="number"
                       step="0.01"
                       className="form-control"
-                      placeholder="e.g. 25000"
+                      placeholder={tr("e.g. 25000")}
                       value={invForm.total_amount}
                       onChange={e => setInvForm({ ...invForm, total_amount: e.target.value })}
                       required
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Associated Work</label>
+                    <label className="form-label">{tr("Associated Work")}</label>
                     <select
                       className="form-select"
                       value={invForm.id_works}
                       onChange={e => setInvForm({ ...invForm, id_works: e.target.value })}
                     >
-                      <option value="">Select Work (Optional)</option>
+                      <option value="">{tr("Select Work (Optional)")}</option>
                       {works.map(w => (
                         <option key={w.id_works} value={w.id_works}>{w.work_name}</option>
                       ))}
@@ -391,7 +393,7 @@ export default function ProcurementVendors() {
                 </div>
                 <div className="form-row cols-2">
                   <div className="form-group">
-                    <label className="form-label">Invoice Date</label>
+                    <label className="form-label">{tr("Invoice Date")}</label>
                     <input
                       type="date"
                       className="form-control"
@@ -400,7 +402,7 @@ export default function ProcurementVendors() {
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Payment Due Date</label>
+                    <label className="form-label">{tr("Payment Due Date")}</label>
                     <input
                       type="date"
                       className="form-control"
@@ -411,8 +413,8 @@ export default function ProcurementVendors() {
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-light" onClick={() => setShowInvoiceModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Invoice</button>
+                <button type="button" className="btn btn-light" onClick={() => setShowInvoiceModal(false)}>{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Save Invoice")}</button>
               </div>
             </form>
           </div>
@@ -425,7 +427,7 @@ export default function ProcurementVendors() {
           <div className="modal" style={{ maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
             <form onSubmit={handleCreatePayment}>
               <div className="modal-header">
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Record Payment to Vendor</h3>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>{tr("Record Payment to Vendor")}</h3>
                 <button type="button" className="btn btn-light btn-sm" onClick={() => setShowPaymentModal(false)}>
                   <i className="fa-solid fa-times"></i>
                 </button>
@@ -433,26 +435,26 @@ export default function ProcurementVendors() {
               <div className="modal-body">
                 <div className="form-row cols-2">
                   <div className="form-group">
-                    <label className="form-label required">Vendor</label>
+                    <label className="form-label required">{tr("Vendor")}</label>
                     <select
                       className="form-select"
                       value={paymentForm.id_vendors}
                       onChange={e => setPaymentForm({ ...paymentForm, id_vendors: e.target.value })}
                       required
                     >
-                      <option value="">Select Vendor</option>
+                      <option value="">{tr("Select Vendor")}</option>
                       {vendors.map(v => (
                         <option key={v.id_vendors} value={v.id_vendors}>{v.company_name}</option>
                       ))}
                     </select>
                   </div>
                   <div className="form-group">
-                    <label className="form-label required">Payment Amount (৳)</label>
+                    <label className="form-label required">{tr("Payment Amount (৳)")}</label>
                     <input
                       type="number"
                       step="0.01"
                       className="form-control"
-                      placeholder="e.g. 10000"
+                      placeholder={tr("e.g. 10000")}
                       value={paymentForm.amount}
                       onChange={e => setPaymentForm({ ...paymentForm, amount: e.target.value })}
                       required
@@ -461,46 +463,46 @@ export default function ProcurementVendors() {
                 </div>
                 <div className="form-row cols-2">
                   <div className="form-group">
-                    <label className="form-label">Payment Milestone Type</label>
+                    <label className="form-label">{tr("Payment Milestone Type")}</label>
                     <select
                       className="form-select"
                       value={paymentForm.payment_type}
                       onChange={e => setPaymentForm({ ...paymentForm, payment_type: e.target.value })}
                     >
-                      <option value="ADVANCE">Advance Payment</option>
-                      <option value="PARTIAL">Partial Payment</option>
-                      <option value="MILESTONE">Milestone Progress Payment</option>
-                      <option value="FINAL">Final Handover Settlement</option>
-                      <option value="RETENTION">Retention Money Release</option>
+                      <option value="ADVANCE">{tr("Advance Payment")}</option>
+                      <option value="PARTIAL">{tr("Partial Payment")}</option>
+                      <option value="MILESTONE">{tr("Milestone Progress Payment")}</option>
+                      <option value="FINAL">{tr("Final Handover Settlement")}</option>
+                      <option value="RETENTION">{tr("Retention Money Release")}</option>
                     </select>
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Payment Method</label>
+                    <label className="form-label">{tr("Payment Method")}</label>
                     <select
                       className="form-select"
                       value={paymentForm.payment_method}
                       onChange={e => setPaymentForm({ ...paymentForm, payment_method: e.target.value })}
                     >
-                      <option value="BANK_TRANSFER">Bank Wire / EFT Transfer</option>
-                      <option value="CHEQUE">Bank Cheque</option>
-                      <option value="CASH">Site Cash</option>
-                      <option value="ONLINE">RTGS / Online Transfer</option>
+                      <option value="BANK_TRANSFER">{tr("Bank Wire / EFT Transfer")}</option>
+                      <option value="CHEQUE">{tr("Bank Cheque")}</option>
+                      <option value="CASH">{tr("Site Cash")}</option>
+                      <option value="ONLINE">{tr("RTGS / Online Transfer")}</option>
                     </select>
                   </div>
                 </div>
                 <div className="form-row cols-2">
                   <div className="form-group">
-                    <label className="form-label">Cheque / EFT Reference</label>
+                    <label className="form-label">{tr("Cheque / EFT Reference")}</label>
                     <input
                       type="text"
                       className="form-control"
-                      placeholder="e.g. EFT-992144"
+                      placeholder={tr("e.g. EFT-992144")}
                       value={paymentForm.reference_number}
                       onChange={e => setPaymentForm({ ...paymentForm, reference_number: e.target.value })}
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Payment Date</label>
+                    <label className="form-label">{tr("Payment Date")}</label>
                     <input
                       type="date"
                       className="form-control"
@@ -511,8 +513,8 @@ export default function ProcurementVendors() {
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-light" onClick={() => setShowPaymentModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-success">Confirm Vendor Payment</button>
+                <button type="button" className="btn btn-light" onClick={() => setShowPaymentModal(false)}>{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-success">{tr("Confirm Vendor Payment")}</button>
               </div>
             </form>
           </div>

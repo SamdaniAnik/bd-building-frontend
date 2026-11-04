@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
+import LateFeeMaster from './LateFeeMaster';
+import ReceiptItemsMaster from './ReceiptItemsMaster';
 
 // -------------------------------------------------------------
 // 12 UNIVERSAL MASTER DATA INTERFACES (ZERO HARDCODED DATA)
@@ -171,9 +174,10 @@ export type MasterTab =
   | 'items' 
   | 'works' 
   | 'vendors' 
-  | 'snags';
+  | 'snags' | 'latefees' | 'receiptitems';
 
 export default function MasterManagement() {
+  useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
   const [activeTab, setActiveTab] = useState<MasterTab>('templates');
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -240,13 +244,13 @@ export default function MasterManagement() {
   const fetchAllData = async () => {
     setLoading(true);
     try {
-      const [univRes, shareRes] = await Promise.all([
+      const [univRes, shareRes]: any[] = await Promise.all([
         api.get('/apartment/universal-masters'),
         api.get('/apartment/masters/shares')
       ]);
 
-      if (univRes.data?.success && univRes.data.data) {
-        const d = univRes.data.data;
+      if (univRes.success && univRes.data) {
+        const d = univRes.data;
         setTemplates(d.unitTemplates || []);
         setShareConfig(d.sharesConfig || {});
         setFacilities(d.commonFacilities || []);
@@ -261,8 +265,8 @@ export default function MasterManagement() {
         setSnagCategories(d.snagCategories || []);
       }
 
-      if (shareRes.data?.success) {
-        if (shareRes.data.allUnits) setAllUnits(shareRes.data.allUnits);
+      if (shareRes.success) {
+        if (shareRes.allUnits) setAllUnits(shareRes.allUnits);
       }
     } catch (err: any) {
       console.error('Error fetching master data:', err);
@@ -284,14 +288,14 @@ export default function MasterManagement() {
   const handleSaveTemplate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await api.post('/apartment/masters/unit-templates', selectedTemplate);
-      if (res.data?.success) {
+      const res: any = await api.post('/apartment/masters/unit-templates', selectedTemplate);
+      if (res.success) {
         showToast('success', 'Master Unit Template saved successfully!');
         setShowTemplateModal(false);
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
@@ -299,41 +303,41 @@ export default function MasterManagement() {
   const handleUpdateShareConfig = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await api.post('/apartment/masters/shares', shareConfig);
-      if (res.data?.success) {
+      const res: any = await api.post('/apartment/masters/shares', shareConfig);
+      if (res.success) {
         showToast('success', 'Master Shares configuration saved in database!');
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
   const handleRecalculateShares = async () => {
     if (!window.confirm('Recalculate Undivided Land Share (Katha & SQFT) across all 108 units based on updated master formula?')) return;
     try {
-      const res = await api.post('/apartment/masters/recalculate-shares');
-      if (res.data?.success) {
-        showToast('success', res.data.message);
+      const res: any = await api.post('/apartment/masters/recalculate-shares');
+      if (res.success) {
+        showToast('success', res.message);
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
   const handleGenerateFloor6Units = async () => {
     try {
-      const res = await api.post('/apartment/masters/generate-floor-6-units', {
+      const res: any = await api.post('/apartment/masters/generate-floor-6-units', {
         floor_number: newFloorNum,
         floor_name: `Floor ${newFloorNum} (Standard 6 Units)`
       });
-      if (res.data?.success) {
-        showToast('success', res.data.message);
+      if (res.success) {
+        showToast('success', res.message);
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
@@ -341,27 +345,27 @@ export default function MasterManagement() {
   const handleSaveFacility = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await api.post('/apartment/masters/common-facilities', selectedFacility);
-      if (res.data?.success) {
+      const res: any = await api.post('/apartment/masters/common-facilities', selectedFacility);
+      if (res.success) {
         showToast('success', 'Common Facility Master saved successfully!');
         setShowFacilityModal(false);
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
   const handleDeleteFacility = async (id: number) => {
     if (!window.confirm('Are you sure you want to delete this common facility?')) return;
     try {
-      const res = await api.delete(`/apartment/masters/common-facilities/${id}`);
-      if (res.data?.success) {
+      const res: any = await api.delete(`/apartment/masters/common-facilities/${id}`);
+      if (res.success) {
         showToast('success', 'Facility deleted from master database.');
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
@@ -369,27 +373,27 @@ export default function MasterManagement() {
   const handleSaveLabour = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await api.post('/apartment/masters/labour-trades', selectedLabour);
-      if (res.data?.success) {
+      const res: any = await api.post('/apartment/masters/labour-trades', selectedLabour);
+      if (res.success) {
         showToast('success', 'Labour Trade Master saved successfully!');
         setShowLabourModal(false);
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
   const handleDeleteLabour = async (id: number) => {
     if (!window.confirm('Delete this labour trade from master repository?')) return;
     try {
-      const res = await api.delete(`/apartment/masters/labour-trades/${id}`);
-      if (res.data?.success) {
+      const res: any = await api.delete(`/apartment/masters/labour-trades/${id}`);
+      if (res.success) {
         showToast('success', 'Labour trade deleted.');
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
@@ -397,27 +401,27 @@ export default function MasterManagement() {
   const handleSaveUtility = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await api.post('/apartment/masters/utility-services', selectedUtility);
-      if (res.data?.success) {
+      const res: any = await api.post('/apartment/masters/utility-services', selectedUtility);
+      if (res.success) {
         showToast('success', 'Utility Service Master saved!');
         setShowUtilityModal(false);
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
   const handleDeleteUtility = async (id: number) => {
     if (!window.confirm('Delete this utility service from database?')) return;
     try {
-      const res = await api.delete(`/apartment/masters/utility-services/${id}`);
-      if (res.data?.success) {
+      const res: any = await api.delete(`/apartment/masters/utility-services/${id}`);
+      if (res.success) {
         showToast('success', 'Utility service removed.');
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
@@ -425,27 +429,27 @@ export default function MasterManagement() {
   const handleSaveCharge = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await api.post('/apartment/masters/service-charge-heads', selectedCharge);
-      if (res.data?.success) {
+      const res: any = await api.post('/apartment/masters/service-charge-heads', selectedCharge);
+      if (res.success) {
         showToast('success', 'Service Charge Head saved in database!');
         setShowChargeModal(false);
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
   const handleDeleteCharge = async (id: number) => {
     if (!window.confirm('Delete this service charge head?')) return;
     try {
-      const res = await api.delete(`/apartment/masters/service-charge-heads/${id}`);
-      if (res.data?.success) {
+      const res: any = await api.delete(`/apartment/masters/service-charge-heads/${id}`);
+      if (res.success) {
         showToast('success', 'Service charge head deleted.');
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
@@ -453,27 +457,27 @@ export default function MasterManagement() {
   const handleSaveBank = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await api.post('/apartment/masters/bank-accounts', selectedBank);
-      if (res.data?.success) {
+      const res: any = await api.post('/apartment/masters/bank-accounts', selectedBank);
+      if (res.success) {
         showToast('success', 'Bank Account Master saved!');
         setShowBankModal(false);
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
   const handleDeleteBank = async (id: number) => {
     if (!window.confirm('Delete this bank account master?')) return;
     try {
-      const res = await api.delete(`/apartment/masters/bank-accounts/${id}`);
-      if (res.data?.success) {
+      const res: any = await api.delete(`/apartment/masters/bank-accounts/${id}`);
+      if (res.success) {
         showToast('success', 'Bank account deleted.');
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
@@ -481,27 +485,27 @@ export default function MasterManagement() {
   const handleSaveTax = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await api.post('/apartment/masters/tax-rules', selectedTax);
-      if (res.data?.success) {
+      const res: any = await api.post('/apartment/masters/tax-rules', selectedTax);
+      if (res.success) {
         showToast('success', 'Tax/VAT Rule saved successfully!');
         setShowTaxModal(false);
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
   const handleDeleteTax = async (id: number) => {
     if (!window.confirm('Delete this Tax/VAT rule?')) return;
     try {
-      const res = await api.delete(`/apartment/masters/tax-rules/${id}`);
-      if (res.data?.success) {
+      const res: any = await api.delete(`/apartment/masters/tax-rules/${id}`);
+      if (res.success) {
         showToast('success', 'Tax rule deleted.');
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
@@ -509,27 +513,27 @@ export default function MasterManagement() {
   const handleSaveItem = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await api.post('/apartment/masters/items', selectedItem);
-      if (res.data?.success) {
+      const res: any = await api.post('/apartment/masters/items', selectedItem);
+      if (res.success) {
         showToast('success', 'Item Catalogue Master saved successfully!');
         setShowItemModal(false);
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
   const handleDeleteItem = async (id: number) => {
     if (!window.confirm('Delete this item from catalogue master?')) return;
     try {
-      const res = await api.delete(`/apartment/masters/items/${id}`);
-      if (res.data?.success) {
+      const res: any = await api.delete(`/apartment/masters/items/${id}`);
+      if (res.success) {
         showToast('success', 'Item deleted.');
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
@@ -537,27 +541,27 @@ export default function MasterManagement() {
   const handleSaveWork = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await api.post('/apartment/masters/works', selectedWork);
-      if (res.data?.success) {
+      const res: any = await api.post('/apartment/masters/works', selectedWork);
+      if (res.success) {
         showToast('success', 'Work WBS Master saved successfully!');
         setShowWorkModal(false);
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
   const handleDeleteWork = async (id: number) => {
     if (!window.confirm('Delete this Work WBS entry?')) return;
     try {
-      const res = await api.delete(`/apartment/masters/works/${id}`);
-      if (res.data?.success) {
+      const res: any = await api.delete(`/apartment/masters/works/${id}`);
+      if (res.success) {
         showToast('success', 'Work item deleted.');
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
@@ -565,27 +569,27 @@ export default function MasterManagement() {
   const handleSaveVendorCat = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await api.post('/apartment/masters/vendor-categories', selectedVendorCat);
-      if (res.data?.success) {
+      const res: any = await api.post('/apartment/masters/vendor-categories', selectedVendorCat);
+      if (res.success) {
         showToast('success', 'Vendor Category Master saved!');
         setShowVendorCatModal(false);
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
   const handleDeleteVendorCat = async (id: number) => {
     if (!window.confirm('Delete this vendor category?')) return;
     try {
-      const res = await api.delete(`/apartment/masters/vendor-categories/${id}`);
-      if (res.data?.success) {
+      const res: any = await api.delete(`/apartment/masters/vendor-categories/${id}`);
+      if (res.success) {
         showToast('success', 'Vendor category deleted.');
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
@@ -593,27 +597,27 @@ export default function MasterManagement() {
   const handleSaveSnag = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await api.post('/apartment/masters/snag-categories', selectedSnag);
-      if (res.data?.success) {
+      const res: any = await api.post('/apartment/masters/snag-categories', selectedSnag);
+      if (res.success) {
         showToast('success', 'Snag Inspection Category saved!');
         setShowSnagModal(false);
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
   const handleDeleteSnag = async (id: number) => {
     if (!window.confirm('Delete this snag category?')) return;
     try {
-      const res = await api.delete(`/apartment/masters/snag-categories/${id}`);
-      if (res.data?.success) {
+      const res: any = await api.delete(`/apartment/masters/snag-categories/${id}`);
+      if (res.success) {
         showToast('success', 'Snag category deleted.');
         fetchAllData();
       }
     } catch (err: any) {
-      showToast('error', err.response?.data?.message || err.message);
+      showToast('error', err?.message || 'Request failed');
     }
   };
 
@@ -663,15 +667,15 @@ export default function MasterManagement() {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <h1 style={{ fontSize: '1.85rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>
-                  Universal Master Control Center
+                  {tr("Universal Master Control Center")}
                 </h1>
                 <span style={{ background: '#dcfce7', color: '#166534', padding: '3px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700 }}>
                   <i className="fa-solid fa-shield-halved" style={{ marginRight: '4px' }}></i>
-                  100% Database Driven
+                  {tr("100% Database Driven")}
                 </span>
               </div>
               <p style={{ margin: 0, color: '#64748b', fontSize: '0.92rem' }}>
-                সার্বিক মাস্টার ডাটাবেজ: 12 System Master Repositories • 0 Hardcoded / 0 Static Values • Real Bangladeshi Currency (৳)
+                {tr("সার্বিক মাস্টার ডাটাবেজ: 12 System Master Repositories • 0 Hardcoded / 0 Static Values • Real Bangladeshi Currency (৳)")}
               </p>
             </div>
           </div>
@@ -680,13 +684,13 @@ export default function MasterManagement() {
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div>
-              <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: '#64748b', fontWeight: 700 }}>Total Master Records</div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#059669' }}>{totalMasterRecords} Active Entries</div>
+              <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: '#64748b', fontWeight: 700 }}>{tr("Total Master Records")}</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#059669' }}>{totalMasterRecords} {tr("Active Entries")}</div>
             </div>
             <div style={{ width: '1px', height: '30px', background: '#cbd5e1' }}></div>
             <div>
-              <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: '#64748b', fontWeight: 700 }}>Active Modules</div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0284c7' }}>12 Repositories</div>
+              <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: '#64748b', fontWeight: 700 }}>{tr("Active Modules")}</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0284c7' }}>{tr("12 Repositories")}</div>
             </div>
           </div>
 
@@ -694,10 +698,10 @@ export default function MasterManagement() {
             onClick={fetchAllData}
             className="btn btn-secondary"
             style={{ padding: '10px 16px', borderRadius: '8px', background: '#ffffff', border: '1px solid #cbd5e1' }}
-            title="Refresh All Database Masters"
+            title={tr("Refresh All Database Masters")}
           >
             <i className={`fa-solid fa-rotate ${loading ? 'fa-spin' : ''}`} style={{ marginRight: '6px' }}></i>
-            Sync DB
+            {tr("Sync DB")}
           </button>
         </div>
       </div>
@@ -724,12 +728,12 @@ export default function MasterManagement() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 600 }}>Standard Land Rule:</span>
+          <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 600 }}>{tr("Standard Land Rule:")}</span>
           <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '3px 8px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 700 }}>
-            1 Katha = 720 SQFT
+            {tr("1 Katha = 720 SQFT")}
           </span>
           <span style={{ background: '#fef3c7', color: '#92400e', padding: '3px 8px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 700 }}>
-            Currency = BDT (৳)
+            {tr("Currency = BDT (৳)")}
           </span>
         </div>
       </div>
@@ -739,18 +743,20 @@ export default function MasterManagement() {
         display: 'flex', gap: '8px', borderBottom: '2px solid #e2e8f0', marginBottom: '24px', overflowX: 'auto', paddingBottom: '4px'
       }}>
         {[
-          { key: 'templates', label: '6-Unit Floor Architecture', icon: 'fa-table-cells-large', badge: `${templates.length} Slots (A–F)` },
-          { key: 'shares', label: 'Land & Shares Formula', icon: 'fa-chart-pie', badge: '108 Shares' },
-          { key: 'facilities', label: 'Common Facilities', icon: 'fa-mosque', badge: `${facilities.length} Amenities` },
-          { key: 'labour', label: 'Labour Trades & Wages', icon: 'fa-person-digging', badge: `${labourTrades.length} Trades` },
-          { key: 'utilities', label: 'Utility Tariffs', icon: 'fa-bolt', badge: `${utilityServices.length} Services` },
-          { key: 'charges', label: 'Service Charge Heads', icon: 'fa-hand-holding-dollar', badge: `${chargeHeads.length} Heads` },
-          { key: 'banks', label: 'Bank & Society Accounts', icon: 'fa-building-columns', badge: `${bankAccounts.length} A/Cs` },
-          { key: 'tax', label: 'Tax & VAT Withholding', icon: 'fa-scale-balanced', badge: `${taxRules.length} Rules` },
-          { key: 'items', label: 'Materials Catalogue', icon: 'fa-boxes-stacked', badge: `${items.length} Items` },
-          { key: 'works', label: 'WBS & Scope Works', icon: 'fa-trowel-bricks', badge: `${works.length} Works` },
-          { key: 'vendors', label: 'Vendor Categories', icon: 'fa-handshake', badge: `${vendorCats.length} Trades` },
-          { key: 'snags', label: 'Handover Snags & SLA', icon: 'fa-clipboard-check', badge: `${snagCategories.length} Types` }
+          { key: 'templates', label: tr("6-Unit Floor Architecture"), icon: 'fa-table-cells-large', badge: `${templates.length} Slots (A–F)` },
+          { key: 'shares', label: tr("Land & Shares Formula"), icon: 'fa-chart-pie', badge: '108 Shares' },
+          { key: 'facilities', label: tr("Common Facilities"), icon: 'fa-mosque', badge: `${facilities.length} Amenities` },
+          { key: 'labour', label: tr("Labour Trades & Wages"), icon: 'fa-person-digging', badge: `${labourTrades.length} Trades` },
+          { key: 'utilities', label: tr("Utility Tariffs"), icon: 'fa-bolt', badge: `${utilityServices.length} Services` },
+          { key: 'charges', label: tr("Service Charge Heads"), icon: 'fa-hand-holding-dollar', badge: `${chargeHeads.length} Heads` },
+          { key: 'banks', label: tr("Bank & Society Accounts"), icon: 'fa-building-columns', badge: `${bankAccounts.length} A/Cs` },
+          { key: 'tax', label: tr("Tax & VAT Withholding"), icon: 'fa-scale-balanced', badge: `${taxRules.length} Rules` },
+          { key: 'items', label: tr("Materials Catalogue"), icon: 'fa-boxes-stacked', badge: `${items.length} Items` },
+          { key: 'works', label: tr("WBS & Scope Works"), icon: 'fa-trowel-bricks', badge: `${works.length} Works` },
+          { key: 'vendors', label: tr("Vendor Categories"), icon: 'fa-handshake', badge: `${vendorCats.length} Trades` },
+          { key: 'snags', label: tr("Handover Snags & SLA"), icon: 'fa-clipboard-check', badge: `${snagCategories.length} Types` },
+          { key: 'latefees', label: tr("Late Payment Fines"), icon: 'fa-gavel', badge: 'Fine rules' },
+          { key: 'receiptitems', label: tr("Receipt Items"), icon: 'fa-list-check', badge: 'Items & amounts' }
         ].map(tab => (
           <button
             key={tab.key}
@@ -797,15 +803,15 @@ export default function MasterManagement() {
             <div>
               <h3 style={{ margin: '0 0 6px 0', fontSize: '1.15rem', color: '#1e293b' }}>
                 <i className="fa-solid fa-layer-group text-primary" style={{ marginRight: '8px' }}></i>
-                6-Units Per Floor Standard Master Architecture (Slots A through F)
+                {tr("6-Units Per Floor Standard Master Architecture (Slots A through F)")}
               </h3>
               <p style={{ margin: 0, color: '#475569', fontSize: '0.88rem', maxWidth: '780px' }}>
-                Database templates defining gross SQFT, carpet SQFT, and undivided land share in Katha. Any new floor generated pulls directly from these master slot rules.
+                {tr("Database templates defining gross SQFT, carpet SQFT, and undivided land share in Katha. Any new floor generated pulls directly from these master slot rules.")}
               </p>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#ffffff', padding: '6px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#475569' }}>Auto-Generate Floor:</span>
+              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#475569' }}>{tr("Auto-Generate Floor:")}</span>
               <input
                 type="number"
                 min="1"
@@ -820,7 +826,7 @@ export default function MasterManagement() {
                 style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 600 }}
               >
                 <i className="fa-solid fa-plus-circle" style={{ marginRight: '6px' }}></i>
-                Create 6 Units
+                {tr("Create 6 Units")}
               </button>
             </div>
           </div>
@@ -852,7 +858,7 @@ export default function MasterManagement() {
                         <div>
                           <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>{tmpl.template_name}</h4>
                           <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                            Facing: <strong>{tmpl.facing_direction}</strong> {tmpl.is_corner_unit ? '• Corner Unit' : ''}
+                            {tr("Facing:")} <strong>{tmpl.facing_direction}</strong> {tmpl.is_corner_unit ? '• Corner Unit' : ''}
                           </span>
                         </div>
                       </div>
@@ -861,38 +867,38 @@ export default function MasterManagement() {
                         className="btn btn-sm btn-outline-secondary"
                         style={{ padding: '4px 10px', fontSize: '0.8rem' }}
                       >
-                        <i className="fa-solid fa-pen-to-square"></i> Edit
+                        <i className="fa-solid fa-pen-to-square"></i> {tr("Edit")}
                       </button>
                     </div>
 
                     <div style={{ background: '#f8fafc', borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', textAlign: 'center' }}>
                         <div>
-                          <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Gross SFT</div>
+                          <div style={{ fontSize: '0.7rem', color: '#64748b' }}>{tr("Gross SFT")}</div>
                           <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>{tmpl.gross_area_sqft}</div>
                         </div>
                         <div>
-                          <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Carpet SFT</div>
+                          <div style={{ fontSize: '0.7rem', color: '#64748b' }}>{tr("Carpet SFT")}</div>
                           <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#059669' }}>{tmpl.carpet_area_sqft}</div>
                         </div>
                         <div>
-                          <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Common SFT</div>
+                          <div style={{ fontSize: '0.7rem', color: '#64748b' }}>{tr("Common SFT")}</div>
                           <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#d97706' }}>{tmpl.common_area_sqft}</div>
                         </div>
                       </div>
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: '#ecfdf5', borderRadius: '8px', marginBottom: '10px' }}>
-                      <span style={{ fontSize: '0.8rem', color: '#065f46', fontWeight: 600 }}>Undivided Land Share:</span>
+                      <span style={{ fontSize: '0.8rem', color: '#065f46', fontWeight: 600 }}>{tr("Undivided Land Share:")}</span>
                       <span style={{ fontSize: '0.82rem', color: '#065f46', fontWeight: 800 }}>
-                        {Number(tmpl.default_land_share_katha).toFixed(4)} Katha ({Number(tmpl.default_land_share_sqft).toFixed(2)} SQFT)
+                        {Number(tmpl.default_land_share_katha).toFixed(4)} {tr("Katha")} ({Number(tmpl.default_land_share_sqft).toFixed(2)} SQFT)
                       </span>
                     </div>
 
                     <div style={{ display: 'flex', gap: '16px', fontSize: '0.82rem', color: '#475569', marginBottom: '10px' }}>
-                      <span><i className="fa-solid fa-bed" style={{ marginRight: '4px', color: '#6366f1' }}></i>{tmpl.bedrooms} Beds</span>
-                      <span><i className="fa-solid fa-bath" style={{ marginRight: '4px', color: '#06b6d4' }}></i>{tmpl.bathrooms} Baths</span>
-                      <span><i className="fa-solid fa-door-open" style={{ marginRight: '4px', color: '#10b981' }}></i>{tmpl.balconies} Balconies</span>
+                      <span><i className="fa-solid fa-bed" style={{ marginRight: '4px', color: '#6366f1' }}></i>{tmpl.bedrooms} {tr("Beds")}</span>
+                      <span><i className="fa-solid fa-bath" style={{ marginRight: '4px', color: '#06b6d4' }}></i>{tmpl.bathrooms} {tr("Baths")}</span>
+                      <span><i className="fa-solid fa-door-open" style={{ marginRight: '4px', color: '#10b981' }}></i>{tmpl.balconies} {tr("Balconies")}</span>
                     </div>
 
                     <p style={{ fontSize: '0.8rem', color: '#64748b', margin: 0, fontStyle: 'italic' }}>
@@ -916,22 +922,22 @@ export default function MasterManagement() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
-                  Project Land Ownership & Ratio Configurations (বাংলাদেশ ভূমি ও হিস্যা নীতি)
+                  {tr("Project Land Ownership & Ratio Configurations (বাংলাদেশ ভূমি ও হিস্যা নীতি)")}
                 </h3>
                 <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '0.88rem' }}>
-                  Standard formula configured in database: Total Katha × 720 = Total SQFT. Distributed across 108 shares (105 Personal + 3 Campus Common).
+                  {tr("Standard formula configured in database: Total Katha × 720 = Total SQFT. Distributed across 108 shares (105 Personal + 3 Campus Common).")}
                 </p>
               </div>
               <button onClick={handleRecalculateShares} className="btn btn-outline-primary" style={{ fontWeight: 600 }}>
                 <i className="fa-solid fa-calculator" style={{ marginRight: '6px' }}></i>
-                Recalculate 108 Unit Allocations
+                {tr("Recalculate 108 Unit Allocations")}
               </button>
             </div>
 
             <form onSubmit={handleUpdateShareConfig}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '20px' }}>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>Project Title</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>{tr("Project Title")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -940,7 +946,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>Total Land Area (কাঠা / Katha)</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>{tr("Total Land Area (কাঠা / Katha)")}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -957,7 +963,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>Total Land Area (SQFT @ 720 sqft/katha)</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>{tr("Total Land Area (SQFT @ 720 sqft/katha)")}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -968,7 +974,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>Total Connected Buildings</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>{tr("Total Connected Buildings")}</label>
                   <input
                     type="number"
                     className="form-control"
@@ -977,7 +983,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>Total Project Shares</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>{tr("Total Project Shares")}</label>
                   <input
                     type="number"
                     className="form-control"
@@ -986,7 +992,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>Personal Shares</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>{tr("Personal Shares")}</label>
                   <input
                     type="number"
                     className="form-control"
@@ -995,7 +1001,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>Common Shares (Mosque, Pool, Hall)</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>{tr("Common Shares (Mosque, Pool, Hall)")}</label>
                   <input
                     type="number"
                     className="form-control"
@@ -1004,7 +1010,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>Common Space Percentage (%)</label>
+                  <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>{tr("Common Space Percentage (%)")}</label>
                   <input
                     type="number"
                     step="0.1"
@@ -1017,7 +1023,7 @@ export default function MasterManagement() {
 
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <button type="submit" className="btn btn-primary" style={{ padding: '8px 24px', fontWeight: 600 }}>
-                  <i className="fa-solid fa-floppy-disk" style={{ marginRight: '6px' }}></i> Save Land Master Configuration
+                  <i className="fa-solid fa-floppy-disk" style={{ marginRight: '6px' }}></i> {tr("Save Land Master Configuration")}
                 </button>
               </div>
             </form>
@@ -1033,10 +1039,10 @@ export default function MasterManagement() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <div>
               <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
-                Campus Common Facilities & Amenities Master (ক্যাম্পাস কমন সুবিধাসমূহ)
+                {tr("Campus Common Facilities & Amenities Master (ক্যাম্পাস কমন সুবিধাসমূহ)")}
               </h3>
               <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '0.88rem' }}>
-                Configurable master for tri-tower shared spaces: Central Mosque, Community Hall, Swimming Pool, Substation, Skywalk Bridges, Gym.
+                {tr("Configurable master for tri-tower shared spaces: Central Mosque, Community Hall, Swimming Pool, Substation, Skywalk Bridges, Gym.")}
               </p>
             </div>
             <button
@@ -1044,7 +1050,7 @@ export default function MasterManagement() {
               className="btn btn-primary"
               style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              <i className="fa-solid fa-plus-circle"></i> Add New Common Facility
+              <i className="fa-solid fa-plus-circle"></i> {tr("Add New Common Facility")}
             </button>
           </div>
 
@@ -1052,14 +1058,14 @@ export default function MasterManagement() {
             <table className="table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
               <thead>
                 <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left', color: '#475569' }}>
-                  <th style={{ padding: '12px 16px' }}>Facility Code</th>
-                  <th style={{ padding: '12px 16px' }}>Facility Name</th>
-                  <th style={{ padding: '12px 16px' }}>Category</th>
-                  <th style={{ padding: '12px 16px' }}>Capacity</th>
-                  <th style={{ padding: '12px 16px' }}>Allocated Unit</th>
-                  <th style={{ padding: '12px 16px' }}>Monthly Budget (৳)</th>
-                  <th style={{ padding: '12px 16px' }}>Status</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>Actions</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Facility Code")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Facility Name")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Category")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Capacity")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Allocated Unit")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Monthly Budget (৳)")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Status")}</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>{tr("Actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1125,10 +1131,10 @@ export default function MasterManagement() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <div>
               <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
-                Labour Trades & Standard Daily Wages Master (শ্রমিক ট্রেড ও দৈনিক মজুরি মাস্টার)
+                {tr("Labour Trades & Standard Daily Wages Master (শ্রমিক ট্রেড ও দৈনিক মজুরি মাস্টার)")}
               </h3>
               <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '0.88rem' }}>
-                Pre-configured Bangladeshi construction trade daily wages and overtime rates in ৳ (রাজমিস্ত্রি, রড মিস্ত্রি, শাটারিং, ইলেকট্রিশিয়ান, প্লাম্বার, যোগালী).
+                {tr("Pre-configured Bangladeshi construction trade daily wages and overtime rates in ৳ (রাজমিস্ত্রি, রড মিস্ত্রি, শাটারিং, ইলেকট্রিশিয়ান, প্লাম্বার, যোগালী).")}
               </p>
             </div>
             <button
@@ -1136,7 +1142,7 @@ export default function MasterManagement() {
               className="btn btn-primary"
               style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              <i className="fa-solid fa-plus-circle"></i> Add Labour Trade
+              <i className="fa-solid fa-plus-circle"></i> {tr("Add Labour Trade")}
             </button>
           </div>
 
@@ -1144,13 +1150,13 @@ export default function MasterManagement() {
             <table className="table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
               <thead>
                 <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left', color: '#475569' }}>
-                  <th style={{ padding: '12px 16px' }}>Trade Code</th>
-                  <th style={{ padding: '12px 16px' }}>Trade Name (English)</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Trade Code")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Trade Name (English)")}</th>
                   <th style={{ padding: '12px 16px' }}>বাংলা পদবী</th>
-                  <th style={{ padding: '12px 16px' }}>Skill Level</th>
-                  <th style={{ padding: '12px 16px' }}>Daily Wage (দৈনিক মজুরি)</th>
-                  <th style={{ padding: '12px 16px' }}>Overtime (ওভারটাইম/ঘণ্টা)</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>Actions</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Skill Level")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Daily Wage (দৈনিক মজুরি)")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Overtime (ওভারটাইম/ঘণ্টা)")}</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>{tr("Actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1210,10 +1216,10 @@ export default function MasterManagement() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <div>
               <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
-                Utility Services & Tariffs Master (ইউটিলিটি ও ট্যারিফ মাস্টার)
+                {tr("Utility Services & Tariffs Master (ইউটিলিটি ও ট্যারিফ মাস্টার)")}
               </h3>
               <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '0.88rem' }}>
-                Authority utility tariffs: DESCO 3-Phase Grid Electricity, Dhaka WASA Water & Sewerage, Central Reticulated LPG, Standby Cummins DG.
+                {tr("Authority utility tariffs: DESCO 3-Phase Grid Electricity, Dhaka WASA Water & Sewerage, Central Reticulated LPG, Standby Cummins DG.")}
               </p>
             </div>
             <button
@@ -1221,7 +1227,7 @@ export default function MasterManagement() {
               className="btn btn-primary"
               style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              <i className="fa-solid fa-plus-circle"></i> Add Utility Service
+              <i className="fa-solid fa-plus-circle"></i> {tr("Add Utility Service")}
             </button>
           </div>
 
@@ -1229,14 +1235,14 @@ export default function MasterManagement() {
             <table className="table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
               <thead>
                 <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left', color: '#475569' }}>
-                  <th style={{ padding: '12px 16px' }}>Service Code</th>
-                  <th style={{ padding: '12px 16px' }}>Service Name</th>
-                  <th style={{ padding: '12px 16px' }}>Provider Authority</th>
-                  <th style={{ padding: '12px 16px' }}>Unit (UOM)</th>
-                  <th style={{ padding: '12px 16px' }}>Tariff Rate (৳ / Unit)</th>
-                  <th style={{ padding: '12px 16px' }}>Demand Charge (৳ / Mo)</th>
-                  <th style={{ padding: '12px 16px' }}>Connection Type</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>Actions</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Service Code")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Service Name")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Provider Authority")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Unit (UOM)")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Tariff Rate (৳ / Unit)")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Demand Charge (৳ / Mo)")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Connection Type")}</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>{tr("Actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1293,10 +1299,10 @@ export default function MasterManagement() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <div>
               <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
-                Service Charge & Maintenance Heads Master (সার্ভিস চার্জ ও রক্ষণাবেক্ষণ খাত)
+                {tr("Service Charge & Maintenance Heads Master (সার্ভিস চার্জ ও রক্ষণাবেক্ষণ খাত)")}
               </h3>
               <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '0.88rem' }}>
-                Formula heads for flat owners association monthly bill: Security, Cleaning, Lift AMC, Generator, Common Electricity, Sinking Reserve.
+                {tr("Formula heads for flat owners association monthly bill: Security, Cleaning, Lift AMC, Generator, Common Electricity, Sinking Reserve.")}
               </p>
             </div>
             <button
@@ -1304,7 +1310,7 @@ export default function MasterManagement() {
               className="btn btn-primary"
               style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              <i className="fa-solid fa-plus-circle"></i> Add Charge Head
+              <i className="fa-solid fa-plus-circle"></i> {tr("Add Charge Head")}
             </button>
           </div>
 
@@ -1312,13 +1318,13 @@ export default function MasterManagement() {
             <table className="table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
               <thead>
                 <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left', color: '#475569' }}>
-                  <th style={{ padding: '12px 16px' }}>Head Code</th>
-                  <th style={{ padding: '12px 16px' }}>Head Description (English)</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Head Code")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Head Description (English)")}</th>
                   <th style={{ padding: '12px 16px' }}>বাংলা খাত বিবরণ</th>
-                  <th style={{ padding: '12px 16px' }}>Calculation Basis</th>
-                  <th style={{ padding: '12px 16px' }}>Default Rate (৳)</th>
-                  <th style={{ padding: '12px 16px' }}>Frequency</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>Actions</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Calculation Basis")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Default Rate (৳)")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Frequency")}</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>{tr("Actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1376,10 +1382,10 @@ export default function MasterManagement() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <div>
               <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
-                Bank & Society Collection Accounts Master (ব্যাংক ও এমএফএস হিসাব মাস্টার)
+                {tr("Bank & Society Collection Accounts Master (ব্যাংক ও এমএফএস হিসাব মাস্টার)")}
               </h3>
               <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '0.88rem' }}>
-                DBBL Construction Master CD, IBBL Escrow Reserve, BRAC Owners Collection, City Bank Procurement, bKash Merchant.
+                {tr("DBBL Construction Master CD, IBBL Escrow Reserve, BRAC Owners Collection, City Bank Procurement, bKash Merchant.")}
               </p>
             </div>
             <button
@@ -1387,7 +1393,7 @@ export default function MasterManagement() {
               className="btn btn-primary"
               style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              <i className="fa-solid fa-plus-circle"></i> Add Bank Account
+              <i className="fa-solid fa-plus-circle"></i> {tr("Add Bank Account")}
             </button>
           </div>
 
@@ -1407,7 +1413,7 @@ export default function MasterManagement() {
                       <div>
                         <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#0284c7', textTransform: 'uppercase' }}>{b.account_code}</span>
                         <h4 style={{ margin: '2px 0 0 0', fontSize: '1.1rem', fontWeight: 800, color: '#0f172a' }}>{b.bank_name}</h4>
-                        <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Branch: {b.branch_name}</span>
+                        <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{tr("Branch")}: {b.branch_name}</span>
                       </div>
                       <span style={{
                         background: '#e0e7ff', color: '#3730a3', padding: '3px 8px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700
@@ -1417,20 +1423,20 @@ export default function MasterManagement() {
                     </div>
 
                     <div style={{ background: '#f8fafc', borderRadius: '8px', padding: '12px', marginBottom: '14px' }}>
-                      <div style={{ fontSize: '0.74rem', color: '#64748b' }}>Account Title:</div>
+                      <div style={{ fontSize: '0.74rem', color: '#64748b' }}>{tr("Account Title:")}</div>
                       <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1e293b', marginBottom: '6px' }}>{b.account_title}</div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem' }}>
-                        <span style={{ color: '#64748b' }}>A/C Number:</span>
+                        <span style={{ color: '#64748b' }}>{tr("A/C Number:")}</span>
                         <span style={{ fontWeight: 800, color: '#0f172a' }}>{b.account_number}</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem' }}>
-                        <span style={{ color: '#64748b' }}>Routing No:</span>
+                        <span style={{ color: '#64748b' }}>{tr("Routing No:")}</span>
                         <span style={{ fontWeight: 600, color: '#475569' }}>{b.routing_number || 'N/A'}</span>
                       </div>
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: '#ecfdf5', borderRadius: '8px', marginBottom: '14px' }}>
-                      <span style={{ fontSize: '0.8rem', color: '#065f46', fontWeight: 600 }}>Current Ledger Balance:</span>
+                      <span style={{ fontSize: '0.8rem', color: '#065f46', fontWeight: 600 }}>{tr("Current Ledger Balance:")}</span>
                       <span style={{ fontSize: '1.1rem', color: '#065f46', fontWeight: 900 }}>
                         ৳ {Number(b.current_balance_bdt).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                       </span>
@@ -1443,14 +1449,14 @@ export default function MasterManagement() {
                       className="btn btn-sm btn-outline-secondary"
                       style={{ padding: '4px 12px' }}
                     >
-                      <i className="fa-solid fa-pen-to-square"></i> Edit
+                      <i className="fa-solid fa-pen-to-square"></i> {tr("Edit")}
                     </button>
                     <button
                       onClick={() => handleDeleteBank(b.id_bank_accounts)}
                       className="btn btn-sm btn-outline-danger"
                       style={{ padding: '4px 12px' }}
                     >
-                      <i className="fa-solid fa-trash-can"></i> Delete
+                      <i className="fa-solid fa-trash-can"></i> {tr("Delete")}
                     </button>
                   </div>
                 </div>
@@ -1467,10 +1473,10 @@ export default function MasterManagement() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <div>
               <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
-                Tax & VAT Withholding Rules Master (এনবিআর ভ্যাট ও উৎসে কর বিধিমালা)
+                {tr("Tax & VAT Withholding Rules Master (এনবিআর ভ্যাট ও উৎসে কর বিধিমালা)")}
               </h3>
               <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '0.88rem' }}>
-                NBR Statutory compliance rules: Real Estate Flat Sales VAT (7.5%), Registration AIT (5%), Stamp Duty (1.5%), City Corp (2%), Construction VDS (7.5%).
+                {tr("NBR Statutory compliance rules: Real Estate Flat Sales VAT (7.5%), Registration AIT (5%), Stamp Duty (1.5%), City Corp (2%), Construction VDS (7.5%).")}
               </p>
             </div>
             <button
@@ -1478,7 +1484,7 @@ export default function MasterManagement() {
               className="btn btn-primary"
               style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              <i className="fa-solid fa-plus-circle"></i> Add Tax Rule
+              <i className="fa-solid fa-plus-circle"></i> {tr("Add Tax Rule")}
             </button>
           </div>
 
@@ -1486,14 +1492,14 @@ export default function MasterManagement() {
             <table className="table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
               <thead>
                 <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left', color: '#475569' }}>
-                  <th style={{ padding: '12px 16px' }}>Rule Code</th>
-                  <th style={{ padding: '12px 16px' }}>Tax / Duty Name</th>
-                  <th style={{ padding: '12px 16px' }}>Type</th>
-                  <th style={{ padding: '12px 16px' }}>Rate (%)</th>
-                  <th style={{ padding: '12px 16px' }}>Withholding Mandatory</th>
-                  <th style={{ padding: '12px 16px' }}>Min Threshold (৳)</th>
-                  <th style={{ padding: '12px 16px' }}>Statutory Reference</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>Actions</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Rule Code")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Tax / Duty Name")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Type")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Rate (%)")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Withholding Mandatory")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Min Threshold (৳)")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Statutory Reference")}</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>{tr("Actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1560,10 +1566,10 @@ export default function MasterManagement() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <div>
               <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
-                Standard Materials Catalogue & Standard Rates Master (নির্মাণ সামগ্রী মাস্টার)
+                {tr("Standard Materials Catalogue & Standard Rates Master (নির্মাণ সামগ্রী মাস্টার)")}
               </h3>
               <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '0.88rem' }}>
-                Catalogued materials: Cement, Steel 72.5G Rebar, Sylhet Sand, Stone Chips, Bricks, RAK Tiles, BBS Cables with standard rates in ৳.
+                {tr("Catalogued materials: Cement, Steel 72.5G Rebar, Sylhet Sand, Stone Chips, Bricks, RAK Tiles, BBS Cables with standard rates in ৳.")}
               </p>
             </div>
             <button
@@ -1571,7 +1577,7 @@ export default function MasterManagement() {
               className="btn btn-primary"
               style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              <i className="fa-solid fa-plus-circle"></i> Add Catalogue Item
+              <i className="fa-solid fa-plus-circle"></i> {tr("Add Catalogue Item")}
             </button>
           </div>
 
@@ -1579,14 +1585,14 @@ export default function MasterManagement() {
             <table className="table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
               <thead>
                 <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left', color: '#475569' }}>
-                  <th style={{ padding: '12px 16px' }}>Item Code</th>
-                  <th style={{ padding: '12px 16px' }}>Item Name</th>
-                  <th style={{ padding: '12px 16px' }}>Category</th>
-                  <th style={{ padding: '12px 16px' }}>Unit</th>
-                  <th style={{ padding: '12px 16px' }}>Standard Rate (৳)</th>
-                  <th style={{ padding: '12px 16px' }}>Min Stock Alert</th>
-                  <th style={{ padding: '12px 16px' }}>Technical Specs</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>Actions</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Item Code")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Item Name")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Category")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Unit")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Standard Rate (৳)")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Min Stock Alert")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Technical Specs")}</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>{tr("Actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1645,10 +1651,10 @@ export default function MasterManagement() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <div>
               <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
-                Works Breakdown Structure (WBS) Master (কাজের ধাপ ও বিভাজন মাস্টার)
+                {tr("Works Breakdown Structure (WBS) Master (কাজের ধাপ ও বিভাজন মাস্টার)")}
               </h3>
               <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '0.88rem' }}>
-                Civil & Finishing WBS activities: Piling, Substructure, Superstructure, Masonry, Finishing, Electrical & Sanitary with allocation rules.
+                {tr("Civil & Finishing WBS activities: Piling, Substructure, Superstructure, Masonry, Finishing, Electrical & Sanitary with allocation rules.")}
               </p>
             </div>
             <button
@@ -1656,7 +1662,7 @@ export default function MasterManagement() {
               className="btn btn-primary"
               style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              <i className="fa-solid fa-plus-circle"></i> Add Master Work
+              <i className="fa-solid fa-plus-circle"></i> {tr("Add Master Work")}
             </button>
           </div>
 
@@ -1664,13 +1670,13 @@ export default function MasterManagement() {
             <table className="table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
               <thead>
                 <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left', color: '#475569' }}>
-                  <th style={{ padding: '12px 16px' }}>WBS Code</th>
-                  <th style={{ padding: '12px 16px' }}>Work Description</th>
-                  <th style={{ padding: '12px 16px' }}>Category</th>
-                  <th style={{ padding: '12px 16px' }}>Scope Level</th>
-                  <th style={{ padding: '12px 16px' }}>Allocation Rule</th>
-                  <th style={{ padding: '12px 16px' }}>Standard Budget (৳)</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>Actions</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("WBS Code")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Work Description")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Category")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Scope Level")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Allocation Rule")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Standard Budget (৳)")}</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>{tr("Actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1732,10 +1738,10 @@ export default function MasterManagement() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <div>
               <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
-                Vendor & Contractor Trade Categories Master (ভেন্ডর ও সরবরাহকারী ক্যাটাগরি)
+                {tr("Vendor & Contractor Trade Categories Master (ভেন্ডর ও সরবরাহকারী ক্যাটাগরি)")}
               </h3>
               <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '0.88rem' }}>
-                Trade categories: Steel mills, Ready-mix batching plants, Ceramic tiles, Substation MEP, Lift vendors with default retention & credit terms.
+                {tr("Trade categories: Steel mills, Ready-mix batching plants, Ceramic tiles, Substation MEP, Lift vendors with default retention & credit terms.")}
               </p>
             </div>
             <button
@@ -1743,7 +1749,7 @@ export default function MasterManagement() {
               className="btn btn-primary"
               style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              <i className="fa-solid fa-plus-circle"></i> Add Vendor Category
+              <i className="fa-solid fa-plus-circle"></i> {tr("Add Vendor Category")}
             </button>
           </div>
 
@@ -1751,12 +1757,12 @@ export default function MasterManagement() {
             <table className="table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
               <thead>
                 <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left', color: '#475569' }}>
-                  <th style={{ padding: '12px 16px' }}>Category Code</th>
-                  <th style={{ padding: '12px 16px' }}>Category Name</th>
-                  <th style={{ padding: '12px 16px' }}>Trade Type</th>
-                  <th style={{ padding: '12px 16px' }}>Default Retention (%)</th>
-                  <th style={{ padding: '12px 16px' }}>Payment Terms</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>Actions</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Category Code")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Category Name")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Trade Type")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Default Retention (%)")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Payment Terms")}</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>{tr("Actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1804,15 +1810,20 @@ export default function MasterManagement() {
       {/* ─────────────────────────────────────────────────────────────
           TAB 12: HANDOVER SNAG & DEFECT SLA CATEGORIES MASTER
       ───────────────────────────────────────────────────────────── */}
+      {/* TAB 13: LATE PAYMENT FINE RULES */}
+      {activeTab === 'latefees' && <LateFeeMaster notify={showToast} />}
+      {/* TAB 14: RECEIPT ITEMS (particulars & default amounts) */}
+      {activeTab === 'receiptitems' && <ReceiptItemsMaster notify={showToast} />}
+
       {activeTab === 'snags' && (
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <div>
               <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
-                Handover Snag & Defect Inspection Master (হ্যান্ডওভার ত্রুটি ও ওয়ারেন্টি মাস্টার)
+                {tr("Handover Snag & Defect Inspection Master (হ্যান্ডওভার ত্রুটি ও ওয়ারেন্টি মাস্টার)")}
               </h3>
               <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '0.88rem' }}>
-                Apartment handover defect inspection checklist: Carpentry, Hollow Tiles, Plumbing Leakage, Electrical Breaker, Thai Sliding Windows, Paint with SLA days.
+                {tr("Apartment handover defect inspection checklist: Carpentry, Hollow Tiles, Plumbing Leakage, Electrical Breaker, Thai Sliding Windows, Paint with SLA days.")}
               </p>
             </div>
             <button
@@ -1820,7 +1831,7 @@ export default function MasterManagement() {
               className="btn btn-primary"
               style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              <i className="fa-solid fa-plus-circle"></i> Add Snag Category
+              <i className="fa-solid fa-plus-circle"></i> {tr("Add Snag Category")}
             </button>
           </div>
 
@@ -1828,12 +1839,12 @@ export default function MasterManagement() {
             <table className="table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
               <thead>
                 <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left', color: '#475569' }}>
-                  <th style={{ padding: '12px 16px' }}>Category Code</th>
-                  <th style={{ padding: '12px 16px' }}>Defect Scope (English)</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Category Code")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Defect Scope (English)")}</th>
                   <th style={{ padding: '12px 16px' }}>বাংলা ত্রুটি বিবরণ</th>
-                  <th style={{ padding: '12px 16px' }}>Remedy SLA</th>
-                  <th style={{ padding: '12px 16px' }}>Responsible Trade Contractor</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>Actions</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Remedy SLA")}</th>
+                  <th style={{ padding: '12px 16px' }}>{tr("Responsible Trade Contractor")}</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>{tr("Actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1896,7 +1907,7 @@ export default function MasterManagement() {
             <form onSubmit={handleSaveTemplate}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginBottom: '16px' }}>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Unit Slot (A to F)</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Unit Slot (A to F)")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -1906,7 +1917,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Template Name</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Template Name")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -1916,7 +1927,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Gross Area (SQFT)</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Gross Area (SQFT)")}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -1927,7 +1938,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Carpet Area (SQFT)</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Carpet Area (SQFT)")}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -1938,7 +1949,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Undivided Land Share (Katha)</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Undivided Land Share (Katha)")}</label>
                   <input
                     type="number"
                     step="0.0001"
@@ -1948,7 +1959,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Facing Direction</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Facing Direction")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -1958,8 +1969,8 @@ export default function MasterManagement() {
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setShowTemplateModal(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Template</button>
+                <button type="button" onClick={() => setShowTemplateModal(false)} className="btn btn-secondary">{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Save Template")}</button>
               </div>
             </form>
           </div>
@@ -1982,7 +1993,7 @@ export default function MasterManagement() {
             <form onSubmit={handleSaveFacility}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginBottom: '16px' }}>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Facility Code</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Facility Code")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -1992,7 +2003,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Facility Name</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Facility Name")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2002,42 +2013,42 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Category</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Category")}</label>
                   <select
                     className="form-control"
                     value={selectedFacility.category || 'COMMUNITY'}
                     onChange={e => setSelectedFacility({ ...selectedFacility, category: e.target.value })}
                   >
-                    <option value="WORSHIP">Worship (মসজিদ)</option>
-                    <option value="COMMUNITY">Community (কমিউনিটি)</option>
-                    <option value="WELLNESS">Wellness & Sports (সুইমিং/জিম)</option>
-                    <option value="INFRASTRUCTURE">Infrastructure (সাবস্টেশন/লিংক)</option>
-                    <option value="SECURITY">Security & Admin (গেটহাউস)</option>
-                    <option value="RECREATION_COMMUNITY">Recreation (ছাদ বাগান)</option>
+                    <option value="WORSHIP">{tr("Worship (মসজিদ)")}</option>
+                    <option value="COMMUNITY">{tr("Community (কমিউনিটি)")}</option>
+                    <option value="WELLNESS">{tr("Wellness & Sports (সুইমিং/জিম)")}</option>
+                    <option value="INFRASTRUCTURE">{tr("Infrastructure (সাবস্টেশন/লিংক)")}</option>
+                    <option value="SECURITY">{tr("Security & Admin (গেটহাউস)")}</option>
+                    <option value="RECREATION_COMMUNITY">{tr("Recreation (ছাদ বাগান)")}</option>
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Allocated Unit Number</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Allocated Unit Number")}</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="e.g. A-101, B-101, C-101"
+                    placeholder={tr("e.g. A-101, B-101, C-101")}
                     value={selectedFacility.allocated_unit_number || ''}
                     onChange={e => setSelectedFacility({ ...selectedFacility, allocated_unit_number: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Capacity</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Capacity")}</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="e.g. 350 Musallis, 120 Persons"
+                    placeholder={tr("e.g. 350 Musallis, 120 Persons")}
                     value={selectedFacility.capacity || ''}
                     onChange={e => setSelectedFacility({ ...selectedFacility, capacity: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Monthly Budget (৳)</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Monthly Budget (৳)")}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -2047,7 +2058,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Description</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Description")}</label>
                   <textarea
                     rows={2}
                     className="form-control"
@@ -2057,8 +2068,8 @@ export default function MasterManagement() {
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setShowFacilityModal(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Facility</button>
+                <button type="button" onClick={() => setShowFacilityModal(false)} className="btn btn-secondary">{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Save Facility")}</button>
               </div>
             </form>
           </div>
@@ -2081,7 +2092,7 @@ export default function MasterManagement() {
             <form onSubmit={handleSaveLabour}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginBottom: '16px' }}>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Trade Code</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Trade Code")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2091,7 +2102,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>English Name</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("English Name")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2112,20 +2123,20 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Skill Level</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Skill Level")}</label>
                   <select
                     className="form-control"
                     value={selectedLabour.skill_level || 'SKILLED'}
                     onChange={e => setSelectedLabour({ ...selectedLabour, skill_level: e.target.value })}
                   >
-                    <option value="HEAD_MISTRY">Head Mistry (প্রধান মিস্ত্রি)</option>
-                    <option value="SKILLED">Skilled (দক্ষ)</option>
-                    <option value="SEMI_SKILLED">Semi-Skilled (আধা-দক্ষ)</option>
-                    <option value="HELPER_JOGALI">Helper / Jogali (যোগালী)</option>
+                    <option value="HEAD_MISTRY">{tr("Head Mistry (প্রধান মিস্ত্রি)")}</option>
+                    <option value="SKILLED">{tr("Skilled (দক্ষ)")}</option>
+                    <option value="SEMI_SKILLED">{tr("Semi-Skilled (আধা-দক্ষ)")}</option>
+                    <option value="HELPER_JOGALI">{tr("Helper / Jogali (যোগালী)")}</option>
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Standard Daily Wage (৳)</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Standard Daily Wage (৳)")}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -2136,7 +2147,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Overtime Rate (৳ / hour)</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Overtime Rate (৳ / hour)")}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -2148,8 +2159,8 @@ export default function MasterManagement() {
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setShowLabourModal(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Trade</button>
+                <button type="button" onClick={() => setShowLabourModal(false)} className="btn btn-secondary">{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Save Trade")}</button>
               </div>
             </form>
           </div>
@@ -2172,7 +2183,7 @@ export default function MasterManagement() {
             <form onSubmit={handleSaveUtility}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginBottom: '16px' }}>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Service Code</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Service Code")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2182,7 +2193,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Service Name</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Service Name")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2192,29 +2203,29 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Provider Authority</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Provider Authority")}</label>
                   <input
                     type="text"
                     className="form-control"
                     required
-                    placeholder="e.g. DESCO, Dhaka WASA, Reticulated LPG"
+                    placeholder={tr("e.g. DESCO, Dhaka WASA, Reticulated LPG")}
                     value={selectedUtility.provider_authority || ''}
                     onChange={e => setSelectedUtility({ ...selectedUtility, provider_authority: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Unit of Measure (UOM)</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Unit of Measure (UOM)")}</label>
                   <input
                     type="text"
                     className="form-control"
                     required
-                    placeholder="e.g. kWh, 1000 Litres, m³"
+                    placeholder={tr("e.g. kWh, 1000 Litres, m³")}
                     value={selectedUtility.uom || ''}
                     onChange={e => setSelectedUtility({ ...selectedUtility, uom: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tariff Rate (৳ / Unit)</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Tariff Rate (৳ / Unit)")}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -2225,7 +2236,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Monthly Demand Charge (৳)</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Monthly Demand Charge (৳)")}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -2235,19 +2246,19 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Connection Type</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Connection Type")}</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="e.g. 3-Phase 400V LT / Commercial WASA 2-inch"
+                    placeholder={tr("e.g. 3-Phase 400V LT / Commercial WASA 2-inch")}
                     value={selectedUtility.connection_type || ''}
                     onChange={e => setSelectedUtility({ ...selectedUtility, connection_type: e.target.value })}
                   />
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setShowUtilityModal(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Utility</button>
+                <button type="button" onClick={() => setShowUtilityModal(false)} className="btn btn-secondary">{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Save Utility")}</button>
               </div>
             </form>
           </div>
@@ -2270,7 +2281,7 @@ export default function MasterManagement() {
             <form onSubmit={handleSaveCharge}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginBottom: '16px' }}>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Head Code</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Head Code")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2280,7 +2291,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Head Name (English)</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Head Name (English)")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2301,20 +2312,20 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Calculation Basis</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Calculation Basis")}</label>
                   <select
                     className="form-control"
                     value={selectedCharge.calculation_basis || 'FLAT_EQUAL'}
                     onChange={e => setSelectedCharge({ ...selectedCharge, calculation_basis: e.target.value })}
                   >
-                    <option value="FLAT_EQUAL">Equal Per Flat (সমান বণ্টন)</option>
-                    <option value="SFT_PROPORTIONAL">Proportional by SQFT (বর্গফুট অনুপাতে)</option>
-                    <option value="METER_CONSUMPTION">Meter Consumption (মিটার রিডিং)</option>
-                    <option value="FIXED">Fixed Amount (নির্দিষ্ট)</option>
+                    <option value="FLAT_EQUAL">{tr("Equal Per Flat (সমান বণ্টন)")}</option>
+                    <option value="SFT_PROPORTIONAL">{tr("Proportional by SQFT (বর্গফুট অনুপাতে)")}</option>
+                    <option value="METER_CONSUMPTION">{tr("Meter Consumption (মিটার রিডিং)")}</option>
+                    <option value="FIXED">{tr("Fixed Amount (নির্দিষ্ট)")}</option>
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Default Rate (৳)</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Default Rate (৳)")}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -2325,7 +2336,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Billing Frequency</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Billing Frequency")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2335,8 +2346,8 @@ export default function MasterManagement() {
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setShowChargeModal(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Charge Head</button>
+                <button type="button" onClick={() => setShowChargeModal(false)} className="btn btn-secondary">{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Save Charge Head")}</button>
               </div>
             </form>
           </div>
@@ -2359,7 +2370,7 @@ export default function MasterManagement() {
             <form onSubmit={handleSaveBank}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginBottom: '16px' }}>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Account Code</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Account Code")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2369,18 +2380,18 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Bank Name</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Bank Name")}</label>
                   <input
                     type="text"
                     className="form-control"
                     required
-                    placeholder="e.g. Dutch-Bangla Bank PLC"
+                    placeholder={tr("e.g. Dutch-Bangla Bank PLC")}
                     value={selectedBank.bank_name || ''}
                     onChange={e => setSelectedBank({ ...selectedBank, bank_name: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Branch Name</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Branch Name")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2390,21 +2401,21 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Account Type</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Account Type")}</label>
                   <select
                     className="form-control"
                     value={selectedBank.account_type || 'CURRENT'}
                     onChange={e => setSelectedBank({ ...selectedBank, account_type: e.target.value })}
                   >
-                    <option value="CURRENT">Current Account (চলতি হিসাব)</option>
-                    <option value="ESCROW_JVA">Escrow / JVA Account (যৌথ একাউন্ট)</option>
-                    <option value="SOCIETY_COLLECTION">Owners Society Collection (সোসাইটি ফান্ড)</option>
-                    <option value="RESERVE_FUND">Reserve / Sinking Fund (জরুরী তহবিল)</option>
-                    <option value="SAVINGS">Savings Account (সঞ্চয়ী)</option>
+                    <option value="CURRENT">{tr("Current Account (চলতি হিসাব)")}</option>
+                    <option value="ESCROW_JVA">{tr("Escrow / JVA Account (যৌথ একাউন্ট)")}</option>
+                    <option value="SOCIETY_COLLECTION">{tr("Owners Society Collection (সোসাইটি ফান্ড)")}</option>
+                    <option value="RESERVE_FUND">{tr("Reserve / Sinking Fund (জরুরী তহবিল)")}</option>
+                    <option value="SAVINGS">{tr("Savings Account (সঞ্চয়ী)")}</option>
                   </select>
                 </div>
                 <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Account Title</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Account Title")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2414,7 +2425,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Account Number</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Account Number")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2424,7 +2435,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Routing Number</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Routing Number")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2433,7 +2444,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Opening Balance (৳)</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Opening Balance (৳)")}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -2443,7 +2454,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Current Balance (৳)</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Current Balance (৳)")}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -2454,8 +2465,8 @@ export default function MasterManagement() {
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setShowBankModal(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Account</button>
+                <button type="button" onClick={() => setShowBankModal(false)} className="btn btn-secondary">{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Save Account")}</button>
               </div>
             </form>
           </div>
@@ -2478,7 +2489,7 @@ export default function MasterManagement() {
             <form onSubmit={handleSaveTax}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginBottom: '16px' }}>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Rule Code</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Rule Code")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2488,7 +2499,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tax / Duty Name</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Tax / Duty Name")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2498,21 +2509,21 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tax Type</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Tax Type")}</label>
                   <select
                     className="form-control"
                     value={selectedTax.tax_type || 'VAT_MUSHAK'}
                     onChange={e => setSelectedTax({ ...selectedTax, tax_type: e.target.value })}
                   >
-                    <option value="VAT_MUSHAK">VAT (মূসক)</option>
-                    <option value="AIT_INCOME_TAX">Advance Income Tax (AIT)</option>
-                    <option value="STAMP_DUTY">Stamp Duty (স্ট্যাম্প ডিউটি)</option>
-                    <option value="HOLDING_TAX">City Corporation / Holding Tax</option>
-                    <option value="OTHER">Other Statutory</option>
+                    <option value="VAT_MUSHAK">{tr("VAT (মূসক)")}</option>
+                    <option value="AIT_INCOME_TAX">{tr("Advance Income Tax (AIT)")}</option>
+                    <option value="STAMP_DUTY">{tr("Stamp Duty (স্ট্যাম্প ডিউটি)")}</option>
+                    <option value="HOLDING_TAX">{tr("City Corporation / Holding Tax")}</option>
+                    <option value="OTHER">{tr("Other Statutory")}</option>
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tax Rate (%)</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Tax Rate (%)")}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -2523,7 +2534,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Minimum Threshold (৳)</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Minimum Threshold (৳)")}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -2539,23 +2550,23 @@ export default function MasterManagement() {
                       checked={Boolean(selectedTax.is_withholding_mandatory ?? true)}
                       onChange={e => setSelectedTax({ ...selectedTax, is_withholding_mandatory: e.target.checked })}
                     />
-                    Withholding Mandatory (উৎস কর্তন বাধ্যতামূলক)
+                    {tr("Withholding Mandatory (উৎস কর্তন বাধ্যতামূলক)")}
                   </label>
                 </div>
                 <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>NBR / Legal Reference</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("NBR / Legal Reference")}</label>
                   <textarea
                     rows={2}
                     className="form-control"
-                    placeholder="e.g. NBR SRO 186-AIN/2021 / Income Tax Act 2023 Sec 125"
+                    placeholder={tr("e.g. NBR SRO 186-AIN/2021 / Income Tax Act 2023 Sec 125")}
                     value={selectedTax.nbr_statutory_reference || ''}
                     onChange={e => setSelectedTax({ ...selectedTax, nbr_statutory_reference: e.target.value })}
                   />
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setShowTaxModal(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Tax Rule</button>
+                <button type="button" onClick={() => setShowTaxModal(false)} className="btn btn-secondary">{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Save Tax Rule")}</button>
               </div>
             </form>
           </div>
@@ -2578,7 +2589,7 @@ export default function MasterManagement() {
             <form onSubmit={handleSaveItem}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginBottom: '16px' }}>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Item Code</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Item Code")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2588,7 +2599,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Item Name</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Item Name")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2598,29 +2609,29 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Category</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Category")}</label>
                   <input
                     type="text"
                     className="form-control"
                     required
-                    placeholder="e.g. CEMENT, STEEL_REBAR, TILES"
+                    placeholder={tr("e.g. CEMENT, STEEL_REBAR, TILES")}
                     value={selectedItem.category || ''}
                     onChange={e => setSelectedItem({ ...selectedItem, category: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Unit of Measure</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Unit of Measure")}</label>
                   <input
                     type="text"
                     className="form-control"
                     required
-                    placeholder="e.g. Bag, Ton, CFT, SQFT"
+                    placeholder={tr("e.g. Bag, Ton, CFT, SQFT")}
                     value={selectedItem.unit || ''}
                     onChange={e => setSelectedItem({ ...selectedItem, unit: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Standard Rate (৳)</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Standard Rate (৳)")}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -2631,7 +2642,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Min Stock Alert</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Min Stock Alert")}</label>
                   <input
                     type="number"
                     className="form-control"
@@ -2640,19 +2651,19 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Technical Specification / Brand</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Technical Specification / Brand")}</label>
                   <textarea
                     rows={2}
                     className="form-control"
-                    placeholder="e.g. Shah Cement Special 50kg bag BDS EN 197-1"
+                    placeholder={tr("e.g. Shah Cement Special 50kg bag BDS EN 197-1")}
                     value={selectedItem.technical_specification || ''}
                     onChange={e => setSelectedItem({ ...selectedItem, technical_specification: e.target.value })}
                   />
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setShowItemModal(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Catalogue Item</button>
+                <button type="button" onClick={() => setShowItemModal(false)} className="btn btn-secondary">{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Save Catalogue Item")}</button>
               </div>
             </form>
           </div>
@@ -2675,7 +2686,7 @@ export default function MasterManagement() {
             <form onSubmit={handleSaveWork}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginBottom: '16px' }}>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Work Code</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Work Code")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2685,7 +2696,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Work Name</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Work Name")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2695,30 +2706,30 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Category</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Category")}</label>
                   <input
                     type="text"
                     className="form-control"
                     required
-                    placeholder="e.g. SUBSTRUCTURE, SUPERSTRUCTURE"
+                    placeholder={tr("e.g. SUBSTRUCTURE, SUPERSTRUCTURE")}
                     value={selectedWork.category || ''}
                     onChange={e => setSelectedWork({ ...selectedWork, category: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Scope Level</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Scope Level")}</label>
                   <select
                     className="form-control"
                     value={selectedWork.scope_level || 'COMBINED'}
                     onChange={e => setSelectedWork({ ...selectedWork, scope_level: e.target.value })}
                   >
-                    <option value="COMBINED">Combined / Campus Shared</option>
-                    <option value="BUILDING_SPECIFIC">Building Specific Tower</option>
-                    <option value="INDIVIDUAL_FLAT">Individual Flat Scope</option>
+                    <option value="COMBINED">{tr("Combined / Campus Shared")}</option>
+                    <option value="BUILDING_SPECIFIC">{tr("Building Specific Tower")}</option>
+                    <option value="INDIVIDUAL_FLAT">{tr("Individual Flat Scope")}</option>
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Default Allocation Rule</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Default Allocation Rule")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2727,7 +2738,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Standard Budget (৳)</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Standard Budget (৳)")}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -2739,8 +2750,8 @@ export default function MasterManagement() {
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setShowWorkModal(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Work Item</button>
+                <button type="button" onClick={() => setShowWorkModal(false)} className="btn btn-secondary">{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Save Work Item")}</button>
               </div>
             </form>
           </div>
@@ -2763,7 +2774,7 @@ export default function MasterManagement() {
             <form onSubmit={handleSaveVendorCat}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginBottom: '16px' }}>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Category Code</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Category Code")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2773,7 +2784,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Category Name</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Category Name")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2783,18 +2794,18 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Trade Type</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Trade Type")}</label>
                   <input
                     type="text"
                     className="form-control"
                     required
-                    placeholder="e.g. MATERIAL_SUPPLIER, CONTRACTOR"
+                    placeholder={tr("e.g. MATERIAL_SUPPLIER, CONTRACTOR")}
                     value={selectedVendorCat.trade_type || ''}
                     onChange={e => setSelectedVendorCat({ ...selectedVendorCat, trade_type: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Default Retention (%)</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Default Retention (%)")}</label>
                   <input
                     type="number"
                     step="0.1"
@@ -2804,19 +2815,19 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Default Payment Terms</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Default Payment Terms")}</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="e.g. 30 Days Baki / 50% Cheque on Delivery"
+                    placeholder={tr("e.g. 30 Days Baki / 50% Cheque on Delivery")}
                     value={selectedVendorCat.default_payment_terms || ''}
                     onChange={e => setSelectedVendorCat({ ...selectedVendorCat, default_payment_terms: e.target.value })}
                   />
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setShowVendorCatModal(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Category</button>
+                <button type="button" onClick={() => setShowVendorCatModal(false)} className="btn btn-secondary">{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Save Category")}</button>
               </div>
             </form>
           </div>
@@ -2839,7 +2850,7 @@ export default function MasterManagement() {
             <form onSubmit={handleSaveSnag}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginBottom: '16px' }}>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Category Code</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Category Code")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2849,7 +2860,7 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Scope Name (English)</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Scope Name (English)")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -2870,31 +2881,31 @@ export default function MasterManagement() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Remedy SLA Duration</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Remedy SLA Duration")}</label>
                   <input
                     type="text"
                     className="form-control"
                     required
-                    placeholder="e.g. 3 Days, 7 Days"
+                    placeholder={tr("e.g. 3 Days, 7 Days")}
                     value={selectedSnag.default_remedy_sla_days || '7 Days'}
                     onChange={e => setSelectedSnag({ ...selectedSnag, default_remedy_sla_days: e.target.value })}
                   />
                 </div>
                 <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Trade Contractor Responsible</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>{tr("Trade Contractor Responsible")}</label>
                   <input
                     type="text"
                     className="form-control"
                     required
-                    placeholder="e.g. Sanitary Plumbing Contractor, Berger Paints Applicator"
+                    placeholder={tr("e.g. Sanitary Plumbing Contractor, Berger Paints Applicator")}
                     value={selectedSnag.trade_responsible || ''}
                     onChange={e => setSelectedSnag({ ...selectedSnag, trade_responsible: e.target.value })}
                   />
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setShowSnagModal(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Snag Category</button>
+                <button type="button" onClick={() => setShowSnagModal(false)} className="btn btn-secondary">{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Save Snag Category")}</button>
               </div>
             </form>
           </div>

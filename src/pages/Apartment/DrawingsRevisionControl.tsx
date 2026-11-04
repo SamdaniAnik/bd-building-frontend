@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
 
 export default function DrawingsRevisionControl() {
+  useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
   const [drawings, setDrawings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -55,16 +57,16 @@ export default function DrawingsRevisionControl() {
       <div className="page-header">
         <div>
           <div className="breadcrumb">
-            <span>Apartment System</span>
+            <span>{tr("Apartment System")}</span>
             <span className="breadcrumb-sep">/</span>
-            <span>Technical Documents</span>
+            <span>{tr("Technical Documents")}</span>
           </div>
           <h1 className="page-title">
-            <i className="fa-solid fa-compass-drafting text-primary"></i> Drawing & Floor Plan Revision Control (Sections 4 & 5)
+            <i className="fa-solid fa-compass-drafting text-primary"></i> {tr("Drawing & Floor Plan Revision Control (Sections 4 & 5)")}
           </h1>
         </div>
         <span className="badge badge-primary" style={{ padding: '6px 14px' }}>
-          Strict Versioning: Never Overwrite History
+          {tr("Strict Versioning: Never Overwrite History")}
         </span>
       </div>
 
@@ -86,11 +88,11 @@ export default function DrawingsRevisionControl() {
             <div className="card-body">
               <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '6px' }}>{d.title}</h3>
               <p className="text-muted text-xs mb-3">
-                Current Active Version: <span className="fw-bold text-success">Rev 0{d.current_revision} (Approved)</span>
+                {tr("Current Active Version:")} <span className="fw-bold text-success">Rev 0{d.current_revision} (Approved)</span>
               </p>
 
               <div className="section-heading" style={{ fontSize: '0.8rem', marginTop: '12px' }}>
-                <i className="fa-solid fa-timeline"></i> Revision Audit Trail
+                <i className="fa-solid fa-timeline"></i> {tr("Revision Audit Trail")}
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -117,9 +119,9 @@ export default function DrawingsRevisionControl() {
                       {rev.revision_reason}
                     </div>
                     <div className="flex-between text-xs text-muted mt-2" style={{ borderTop: '1px dashed #cbd5e1', paddingTop: '6px' }}>
-                      <span>Uploaded by {rev.uploaded_by} on {rev.upload_date}</span>
+                      <span>{tr("Uploaded by")} {rev.uploaded_by} on {rev.upload_date}</span>
                       <a href={rev.file_url} target="_blank" rel="noreferrer" className="text-primary fw-semibold">
-                        <i className="fa-solid fa-file-pdf"></i> View Blueprint
+                        <i className="fa-solid fa-file-pdf"></i> {tr("View Blueprint")}
                       </a>
                     </div>
                   </div>
@@ -136,14 +138,14 @@ export default function DrawingsRevisionControl() {
           <div className="modal" style={{ maxWidth: '550px' }} onClick={e => e.stopPropagation()}>
             <form onSubmit={handleUploadRevision}>
               <div className="modal-header">
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Upload New Revision: {selectedDrawing.drawing_code}</h3>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>{tr("Upload New Revision")}: {selectedDrawing.drawing_code}</h3>
                 <button type="button" className="btn btn-light btn-sm" onClick={() => setShowRevModal(false)}>
                   <i className="fa-solid fa-times"></i>
                 </button>
               </div>
               <div className="modal-body">
                 <div className="p-3 rounded mb-3" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-                  <div className="text-xs text-muted">Target Blueprint:</div>
+                  <div className="text-xs text-muted">{tr("Target Blueprint:")}</div>
                   <div className="fw-bold text-primary">{selectedDrawing.title}</div>
                   <div className="text-xs text-muted mt-1">
                     Previous version (Rev 0{selectedDrawing.current_revision}) will be retained as historical record and superseded.
@@ -151,7 +153,7 @@ export default function DrawingsRevisionControl() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label required">Architect / Engineer</label>
+                  <label className="form-label required">{tr("Architect / Engineer")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -162,11 +164,11 @@ export default function DrawingsRevisionControl() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label required">Revision Reason / Scope Changes</label>
+                  <label className="form-label required">{tr("Revision Reason / Scope Changes")}</label>
                   <textarea
                     className="form-control"
                     rows={3}
-                    placeholder="Specify structural or architectural modifications made..."
+                    placeholder={tr("Specify structural or architectural modifications made...")}
                     value={revForm.revision_reason}
                     onChange={e => setRevForm({ ...revForm, revision_reason: e.target.value })}
                     required
@@ -174,7 +176,7 @@ export default function DrawingsRevisionControl() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Drawing File Reference URL</label>
+                  <label className="form-label">{tr("Drawing File Reference URL")}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -185,8 +187,8 @@ export default function DrawingsRevisionControl() {
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-light" onClick={() => setShowRevModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">Commit New Revision</button>
+                <button type="button" className="btn btn-light" onClick={() => setShowRevModal(false)}>{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Commit New Revision")}</button>
               </div>
             </form>
           </div>

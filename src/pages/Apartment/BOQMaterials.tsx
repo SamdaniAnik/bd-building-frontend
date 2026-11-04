@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
 
 export default function BOQMaterials() {
+  useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
   const [materials, setMaterials] = useState<any[]>([]);
   const [works, setWorks] = useState<any[]>([]);
   const [selectedWorkId, setSelectedWorkId] = useState<number | null>(null);
@@ -106,16 +108,16 @@ export default function BOQMaterials() {
       <div className="page-header">
         <div>
           <div className="breadcrumb">
-            <span>Apartment System</span>
+            <span>{tr("Apartment System")}</span>
             <span className="breadcrumb-sep">/</span>
-            <span>Procurement & BOQ</span>
+            <span>{tr("Procurement & BOQ")}</span>
           </div>
           <h1 className="page-title">
-            <i className="fa-solid fa-boxes-stacked text-primary"></i> BOQ & Material Database
+            <i className="fa-solid fa-boxes-stacked text-primary"></i> {tr("BOQ & Material Database")}
           </h1>
         </div>
         <button className="btn btn-primary" onClick={() => setShowMaterialModal(true)}>
-          <i className="fa-solid fa-plus-circle"></i> Add Master Material
+          <i className="fa-solid fa-plus-circle"></i> {tr("Add Master Material")}
         </button>
       </div>
 
@@ -124,12 +126,12 @@ export default function BOQMaterials() {
         <div className="card">
           <div className="card-header flex-between">
             <div className="card-title">
-              <i className="fa-solid fa-file-invoice text-primary"></i> Bill of Quantities (BOQ) Schedule
+              <i className="fa-solid fa-file-invoice text-primary"></i> {tr("Bill of Quantities (BOQ) Schedule")}
             </div>
           </div>
           <div className="card-body">
             <div className="form-group mb-3">
-              <label className="form-label fw-bold">Select Construction Work</label>
+              <label className="form-label fw-bold">{tr("Select Construction Work")}</label>
               <select
                 className="form-select"
                 value={selectedWorkId || ''}
@@ -148,17 +150,17 @@ export default function BOQMaterials() {
               <table>
                 <thead>
                   <tr>
-                    <th>Item / Material</th>
-                    <th>Qty</th>
-                    <th>Unit</th>
-                    <th className="text-right">Rate (৳)</th>
-                    <th className="text-right">Total (৳)</th>
+                    <th>{tr("Item / Material")}</th>
+                    <th>{tr("Qty")}</th>
+                    <th>{tr("Unit")}</th>
+                    <th className="text-right">{tr("Rate (৳)")}</th>
+                    <th className="text-right">{tr("Total (৳)")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {boqItems.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="text-center text-muted py-3">No BOQ items added for this work yet.</td>
+                      <td colSpan={5} className="text-center text-muted py-3">{tr("No BOQ items added for this work yet.")}</td>
                     </tr>
                   ) : (
                     boqItems.map(item => (
@@ -174,7 +176,7 @@ export default function BOQMaterials() {
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td colSpan={4}>Subtotal BOQ Items</td>
+                    <td colSpan={4}>{tr("Subtotal BOQ Items")}</td>
                     <td className="text-right fw-bold text-success">৳{boqItems.reduce((s, i) => s + parseFloat(i.total || 0), 0).toLocaleString()}
                     </td>
                   </tr>
@@ -185,14 +187,14 @@ export default function BOQMaterials() {
             {/* Quick Add BOQ Item Form */}
             <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
               <div className="text-xs text-muted uppercase fw-bold mb-2">
-                <i className="fa-solid fa-plus"></i> Add Item to this BOQ
+                <i className="fa-solid fa-plus"></i> {tr("Add Item to this BOQ")}
               </div>
               <form onSubmit={handleAddBOQ}>
                 <div className="form-row cols-2 mb-2">
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="Material or Work Item Name"
+                    placeholder={tr("Material or Work Item Name")}
                     value={boqForm.item_name}
                     onChange={e => setBoqForm({ ...boqForm, item_name: e.target.value })}
                     required
@@ -202,7 +204,7 @@ export default function BOQMaterials() {
                       type="number"
                       step="0.01"
                       className="form-control"
-                      placeholder="Qty"
+                      placeholder={tr("Qty")}
                       value={boqForm.quantity}
                       onChange={e => setBoqForm({ ...boqForm, quantity: e.target.value })}
                       required
@@ -210,7 +212,7 @@ export default function BOQMaterials() {
                     <input
                       type="text"
                       className="form-control"
-                      placeholder="Unit (Bags/Tons)"
+                      placeholder={tr("Unit (Bags/Tons)")}
                       value={boqForm.unit}
                       onChange={e => setBoqForm({ ...boqForm, unit: e.target.value })}
                       required
@@ -222,13 +224,13 @@ export default function BOQMaterials() {
                     type="number"
                     step="0.01"
                     className="form-control"
-                    placeholder="Unit Rate (৳)"
+                    placeholder={tr("Unit Rate (৳)")}
                     value={boqForm.rate}
                     onChange={e => setBoqForm({ ...boqForm, rate: e.target.value })}
                     required
                   />
                   <button type="submit" className="btn btn-primary w-100">
-                    Add to BOQ (Qty × Rate = Amount)
+                    {tr("Add to BOQ (Qty × Rate = Amount)")}
                   </button>
                 </div>
               </form>
@@ -240,19 +242,19 @@ export default function BOQMaterials() {
         <div className="card">
           <div className="card-header flex-between">
             <div className="card-title">
-              <i className="fa-solid fa-layer-group text-primary"></i> Master Construction Materials Catalogue
+              <i className="fa-solid fa-layer-group text-primary"></i> {tr("Master Construction Materials Catalogue")}
             </div>
-            <span className="badge badge-primary">{materials.length} Master Items</span>
+            <span className="badge badge-primary">{materials.length} {tr("Master Items")}</span>
           </div>
           <div className="table-wrapper">
             <table>
               <thead>
                 <tr>
-                  <th>Material Name</th>
-                  <th>Category</th>
-                  <th>Unit</th>
-                  <th className="text-right">Current Rate (৳)</th>
-                  <th>Preferred Supplier</th>
+                  <th>{tr("Material Name")}</th>
+                  <th>{tr("Category")}</th>
+                  <th>{tr("Unit")}</th>
+                  <th className="text-right">{tr("Current Rate (৳)")}</th>
+                  <th>{tr("Preferred Supplier")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -277,18 +279,18 @@ export default function BOQMaterials() {
           <div className="modal" style={{ maxWidth: '500px' }} onClick={e => e.stopPropagation()}>
             <form onSubmit={handleAddMaterial}>
               <div className="modal-header">
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Add Master Construction Material</h3>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>{tr("Add Master Construction Material")}</h3>
                 <button type="button" className="btn btn-light btn-sm" onClick={() => setShowMaterialModal(false)}>
                   <i className="fa-solid fa-times"></i>
                 </button>
               </div>
               <div className="modal-body">
                 <div className="form-group">
-                  <label className="form-label required">Material Name</label>
+                  <label className="form-label required">{tr("Material Name")}</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="e.g. Berger WeatherCoat All Guard"
+                    placeholder={tr("e.g. Berger WeatherCoat All Guard")}
                     value={matForm.material_name}
                     onChange={e => setMatForm({ ...matForm, material_name: e.target.value })}
                     required
@@ -296,26 +298,26 @@ export default function BOQMaterials() {
                 </div>
                 <div className="form-row cols-2">
                   <div className="form-group">
-                    <label className="form-label required">Category</label>
+                    <label className="form-label required">{tr("Category")}</label>
                     <select
                       className="form-select"
                       value={matForm.category}
                       onChange={e => setMatForm({ ...matForm, category: e.target.value })}
                     >
-                      <option value="Structural">Structural (Cement/Steel/Sand)</option>
-                      <option value="Finishing">Finishing (Tiles/Paint/Doors)</option>
-                      <option value="Electrical">Electrical (Cables/DB/Lights)</option>
-                      <option value="Plumbing">Plumbing (Pipes/Fittings)</option>
-                      <option value="Sanitary">Sanitary (Toilets/Basins)</option>
-                      <option value="Other">Other</option>
+                      <option value="Structural">{tr("Structural (Cement/Steel/Sand)")}</option>
+                      <option value="Finishing">{tr("Finishing (Tiles/Paint/Doors)")}</option>
+                      <option value="Electrical">{tr("Electrical (Cables/DB/Lights)")}</option>
+                      <option value="Plumbing">{tr("Plumbing (Pipes/Fittings)")}</option>
+                      <option value="Sanitary">{tr("Sanitary (Toilets/Basins)")}</option>
+                      <option value="Other">{tr("Other")}</option>
                     </select>
                   </div>
                   <div className="form-group">
-                    <label className="form-label required">Standard Unit</label>
+                    <label className="form-label required">{tr("Standard Unit")}</label>
                     <input
                       type="text"
                       className="form-control"
-                      placeholder="Bags / Tons / SFT"
+                      placeholder={tr("Bags / Tons / SFT")}
                       value={matForm.unit}
                       onChange={e => setMatForm({ ...matForm, unit: e.target.value })}
                       required
@@ -324,23 +326,23 @@ export default function BOQMaterials() {
                 </div>
                 <div className="form-row cols-2">
                   <div className="form-group">
-                    <label className="form-label required">Current Unit Rate (৳)</label>
+                    <label className="form-label required">{tr("Current Unit Rate (৳)")}</label>
                     <input
                       type="number"
                       step="0.01"
                       className="form-control"
-                      placeholder="e.g. 10.50"
+                      placeholder={tr("e.g. 10.50")}
                       value={matForm.current_rate}
                       onChange={e => setMatForm({ ...matForm, current_rate: e.target.value })}
                       required
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Preferred Supplier</label>
+                    <label className="form-label">{tr("Preferred Supplier")}</label>
                     <input
                       type="text"
                       className="form-control"
-                      placeholder="e.g. Shah Cement / BSRM"
+                      placeholder={tr("e.g. Shah Cement / BSRM")}
                       value={matForm.supplier}
                       onChange={e => setMatForm({ ...matForm, supplier: e.target.value })}
                     />
@@ -348,8 +350,8 @@ export default function BOQMaterials() {
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-light" onClick={() => setShowMaterialModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">Save to Catalogue</button>
+                <button type="button" className="btn btn-light" onClick={() => setShowMaterialModal(false)}>{tr("Cancel")}</button>
+                <button type="submit" className="btn btn-primary">{tr("Save to Catalogue")}</button>
               </div>
             </form>
           </div>

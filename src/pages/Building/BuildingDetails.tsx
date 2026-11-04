@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { tr, useLang } from '../../i18n/LanguageContext';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../api/client';
 
@@ -18,6 +19,7 @@ const InfoRow = ({ label, value }: InfoRowProps) => (
 );
 
 export default function BuildingDetails() {
+  useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
   const { id } = useParams<{id:string}>();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -30,7 +32,7 @@ export default function BuildingDetails() {
   }, [id]);
 
   if (loading) return <div className="loader-overlay"><div className="spinner" /></div>;
-  if (!data?.building) return <div className="alert alert-danger">Building not found</div>;
+  if (!data?.building) return <div className="alert alert-danger">{tr("Building not found")}</div>;
 
   const b = data.building;
   const shareholders = data.shareholders || [];
@@ -52,7 +54,7 @@ export default function BuildingDetails() {
     <div>
       {/* Breadcrumb */}
       <div className="breadcrumb mb-3">
-        <Link to="/buildings">Buildings</Link><span className="breadcrumb-sep">/</span>
+        <Link to="/buildings">{tr("Buildings")}</Link><span className="breadcrumb-sep">/</span>
         <span>{b.building_name}</span>
       </div>
 
@@ -75,11 +77,11 @@ export default function BuildingDetails() {
               </div>
             </div>
             <div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}>
-              <Link to={`/buildings/edit/${id}`} className="btn btn-warning btn-sm"><i className="fa-solid fa-pen" /> Edit</Link>
-              <Link to={`/buildings/${id}/shareholders`} className="btn btn-info btn-sm"><i className="fa-solid fa-users" /> Shareholders</Link>
-              <Link to={`/buildings/${id}/units`} className="btn btn-success btn-sm"><i className="fa-solid fa-home" /> Units</Link>
-              <Link to={`/buildings/${id}/costing`} className="btn btn-primary btn-sm"><i className="fa-solid fa-calculator" /> Costing</Link>
-              <Link to={`/buildings/${id}/payments`} className="btn btn-light btn-sm"><i className="fa-solid fa-money-bill" /> Payments</Link>
+              <Link to={`/buildings/edit/${id}`} className="btn btn-warning btn-sm"><i className="fa-solid fa-pen" /> {tr("Edit")}</Link>
+              <Link to={`/buildings/${id}/shareholders`} className="btn btn-info btn-sm"><i className="fa-solid fa-users" /> {tr("Shareholders")}</Link>
+              <Link to={`/buildings/${id}/units`} className="btn btn-success btn-sm"><i className="fa-solid fa-home" /> {tr("Units")}</Link>
+              <Link to={`/buildings/${id}/costing`} className="btn btn-primary btn-sm"><i className="fa-solid fa-calculator" /> {tr("Costing")}</Link>
+              <Link to={`/buildings/${id}/payments`} className="btn btn-light btn-sm"><i className="fa-solid fa-money-bill" /> {tr("Payments")}</Link>
             </div>
           </div>
         </div>
@@ -87,12 +89,12 @@ export default function BuildingDetails() {
         {/* Stats row */}
         <div className="card-body">
           <div className="stats-grid" style={{marginBottom:0}}>
-            <div className="stat-card stat-success"><div className="stat-icon"><i className="fa-solid fa-map" /></div><div className="stat-value">{Number(b.total_land_area).toFixed(2)}</div><div className="stat-label">কাঠা Land</div></div>
-            <div className="stat-card stat-primary"><div className="stat-icon"><i className="fa-solid fa-layer-group" /></div><div className="stat-value">{b.total_floors||'—'}</div><div className="stat-label">Floors</div></div>
-            <div className="stat-card stat-warning"><div className="stat-icon"><i className="fa-solid fa-home" /></div><div className="stat-value">{totalUnits||b.total_units||'—'}</div><div className="stat-label">Total Units</div></div>
-            <div className="stat-card stat-info"><div className="stat-icon"><i className="fa-solid fa-users" /></div><div className="stat-value">{shareholders.length}</div><div className="stat-label">Shareholders</div></div>
-            <div className="stat-card stat-success"><div className="stat-icon"><i className="fa-solid fa-check-double" /></div><div className="stat-value">{soldUnits}</div><div className="stat-label">Units Sold</div></div>
-            <div className="stat-card stat-danger"><div className="stat-icon"><i className="fa-solid fa-circle-dollar-to-slot" /></div><div className="stat-value" style={{fontSize:'1.1rem'}}>{formatBDT(b.estimated_construction_cost)}</div><div className="stat-label">Est. Cost</div></div>
+            <div className="stat-card stat-success"><div className="stat-icon"><i className="fa-solid fa-map" /></div><div className="stat-value">{Number(b.total_land_area).toFixed(2)}</div><div className="stat-label">{tr("কাঠা Land")}</div></div>
+            <div className="stat-card stat-primary"><div className="stat-icon"><i className="fa-solid fa-layer-group" /></div><div className="stat-value">{b.total_floors||'—'}</div><div className="stat-label">{tr("Floors")}</div></div>
+            <div className="stat-card stat-warning"><div className="stat-icon"><i className="fa-solid fa-home" /></div><div className="stat-value">{totalUnits||b.total_units||'—'}</div><div className="stat-label">{tr("Total Units")}</div></div>
+            <div className="stat-card stat-info"><div className="stat-icon"><i className="fa-solid fa-users" /></div><div className="stat-value">{shareholders.length}</div><div className="stat-label">{tr("Shareholders")}</div></div>
+            <div className="stat-card stat-success"><div className="stat-icon"><i className="fa-solid fa-check-double" /></div><div className="stat-value">{soldUnits}</div><div className="stat-label">{tr("Units Sold")}</div></div>
+            <div className="stat-card stat-danger"><div className="stat-icon"><i className="fa-solid fa-circle-dollar-to-slot" /></div><div className="stat-value" style={{fontSize:'1.1rem'}}>{formatBDT(b.estimated_construction_cost)}</div><div className="stat-label">{tr("Est. Cost")}</div></div>
           </div>
         </div>
       </div>
@@ -113,7 +115,7 @@ export default function BuildingDetails() {
           {activeTab==='overview' && (
             <div className="grid grid-2">
               <div>
-                <h5 className="section-heading"><i className="fa-solid fa-building" />Building Details</h5>
+                <h5 className="section-heading"><i className="fa-solid fa-building" />{tr("Building Details")}</h5>
                 <InfoRow label="Building Name" value={b.building_name} />
                 <InfoRow label="Building Code" value={b.building_code} />
                 <InfoRow label="Type" value={b.building_type} />
@@ -123,7 +125,7 @@ export default function BuildingDetails() {
                 <InfoRow label="Total Units" value={b.total_units} />
               </div>
               <div>
-                <h5 className="section-heading"><i className="fa-solid fa-calendar" />Timeline & Approval</h5>
+                <h5 className="section-heading"><i className="fa-solid fa-calendar" />{tr("Timeline & Approval")}</h5>
                 <InfoRow label="Start Date" value={b.start_date?.split('T')[0]} />
                 <InfoRow label="Completion" value={b.completion_date?.split('T')[0]} />
                 <InfoRow label="Authority" value={b.approval_authority} />
@@ -144,14 +146,14 @@ export default function BuildingDetails() {
           {activeTab==='land' && (
             <div className="grid grid-2">
               <div>
-                <h5 className="section-heading"><i className="fa-solid fa-ruler-combined" />Land Measurements</h5>
+                <h5 className="section-heading"><i className="fa-solid fa-ruler-combined" />{tr("Land Measurements")}</h5>
                 <InfoRow label="Land (কাঠা)" value={`${Number(b.total_land_area).toFixed(4)} কাঠা`} />
                 <InfoRow label="Land (Sqft)" value={b.total_land_area_sqft ? `${Number(b.total_land_area_sqft).toLocaleString()} sqft` : '—'} />
                 <InfoRow label="FAR Ratio" value={b.far_ratio} />
                 <InfoRow label="Buildable Area" value={b.total_buildable_area_sqft ? `${Number(b.total_buildable_area_sqft).toLocaleString()} sqft` : '—'} />
               </div>
               <div>
-                <h5 className="section-heading"><i className="fa-solid fa-file-contract" />Legal Records</h5>
+                <h5 className="section-heading"><i className="fa-solid fa-file-contract" />{tr("Legal Records")}</h5>
                 <InfoRow label="Mouza (মৌজা)" value={b.mouza} />
                 <InfoRow label="Dag No. (দাগ নং)" value={b.dag_no} />
                 <InfoRow label="Khatian No." value={b.khatian_no} />
@@ -166,14 +168,14 @@ export default function BuildingDetails() {
           {activeTab==='shareholders' && (
             <div>
               <div className="flex-between mb-4">
-                <h5 className="section-heading" style={{marginBottom:0}}><i className="fa-solid fa-users" />Land Shareholders ({shareholders.length})</h5>
-                <Link to={`/buildings/${id}/shareholders`} className="btn btn-primary btn-sm"><i className="fa-solid fa-plus" /> Manage</Link>
+                <h5 className="section-heading" style={{marginBottom:0}}><i className="fa-solid fa-users" />{tr("Land Shareholders")} ({shareholders.length})</h5>
+                <Link to={`/buildings/${id}/shareholders`} className="btn btn-primary btn-sm"><i className="fa-solid fa-plus" /> {tr("Manage")}</Link>
               </div>
               <div className="table-wrapper">
                 <table>
-                  <thead><tr><th>#</th><th>Name</th><th>NID</th><th>Share (কাঠা)</th><th>Share (%)</th><th>Entitled Flats</th><th>Payment Mode</th><th>Status</th></tr></thead>
+                  <thead><tr><th>#</th><th>{tr("Name")}</th><th>NID</th><th>{tr("Share (কাঠা)")}</th><th>{tr("Share (%)")}</th><th>{tr("Entitled Flats")}</th><th>{tr("Payment Mode")}</th><th>{tr("Status")}</th></tr></thead>
                   <tbody>
-                    {shareholders.length===0 ? <tr><td colSpan={8}><div className="empty-state" style={{padding:'30px'}}><i className="fa-solid fa-users" /><p>No shareholders added yet</p></div></td></tr>
+                    {shareholders.length===0 ? <tr><td colSpan={8}><div className="empty-state" style={{padding:'30px'}}><i className="fa-solid fa-users" /><p>{tr("No shareholders added yet")}</p></div></td></tr>
                     : shareholders.map((s:any,i:number) => (
                       <tr key={s.id_shareholders}>
                         <td>{i+1}</td>
@@ -196,8 +198,8 @@ export default function BuildingDetails() {
           {activeTab==='units' && (
             <div>
               <div className="flex-between mb-4">
-                <h5 className="section-heading" style={{marginBottom:0}}><i className="fa-solid fa-home" />Units Summary</h5>
-                <Link to={`/buildings/${id}/units`} className="btn btn-success btn-sm"><i className="fa-solid fa-plus" /> Manage Units</Link>
+                <h5 className="section-heading" style={{marginBottom:0}}><i className="fa-solid fa-home" />{tr("Units Summary")}</h5>
+                <Link to={`/buildings/${id}/units`} className="btn btn-success btn-sm"><i className="fa-solid fa-plus" /> {tr("Manage Units")}</Link>
               </div>
               <div className="stats-grid">
                 {[
@@ -220,8 +222,8 @@ export default function BuildingDetails() {
           {activeTab==='costing' && (
             <div>
               <div className="flex-between mb-4">
-                <h5 className="section-heading" style={{marginBottom:0}}><i className="fa-solid fa-calculator" />Costing Summary</h5>
-                <Link to={`/buildings/${id}/costing`} className="btn btn-primary btn-sm"><i className="fa-solid fa-plus" /> Manage Costing</Link>
+                <h5 className="section-heading" style={{marginBottom:0}}><i className="fa-solid fa-calculator" />{tr("Costing Summary")}</h5>
+                <Link to={`/buildings/${id}/costing`} className="btn btn-primary btn-sm"><i className="fa-solid fa-plus" /> {tr("Manage Costing")}</Link>
               </div>
               <div className="stats-grid">
                 {[
