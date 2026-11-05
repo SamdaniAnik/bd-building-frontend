@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { tr, useLang } from '../../i18n/LanguageContext';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../api/client';
+import { fmtDate } from '../../utils/bd';
 
 const formatBDT = (v: any) => v ? `৳ ${Number(v).toLocaleString('en-BD')}` : '—';
 const statusBadge = (s: string) => {
@@ -126,11 +127,11 @@ export default function BuildingDetails() {
               </div>
               <div>
                 <h5 className="section-heading"><i className="fa-solid fa-calendar" />{tr("Timeline & Approval")}</h5>
-                <InfoRow label="Start Date" value={b.start_date?.split('T')[0]} />
-                <InfoRow label="Completion" value={b.completion_date?.split('T')[0]} />
+                <InfoRow label="Start Date" value={b.start_date ? fmtDate(b.start_date) : undefined} />
+                <InfoRow label="Completion" value={b.completion_date ? fmtDate(b.completion_date) : undefined} />
                 <InfoRow label="Authority" value={b.approval_authority} />
                 <InfoRow label="Approval No." value={b.rajuk_approval_no} />
-                <InfoRow label="Approval Date" value={b.rajuk_approval_date?.split('T')[0]} />
+                <InfoRow label="Approval Date" value={b.rajuk_approval_date ? fmtDate(b.rajuk_approval_date) : undefined} />
                 <InfoRow label="Land Cost" value={formatBDT(b.land_purchase_cost)} />
                 <InfoRow label="Est. Construction Cost" value={formatBDT(b.estimated_construction_cost)} />
               </div>

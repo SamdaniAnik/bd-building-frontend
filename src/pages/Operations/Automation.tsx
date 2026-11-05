@@ -17,8 +17,8 @@ const hhmm = (h: number, m: number) => `${String(h ?? 0).padStart(2, '0')}:${Str
 
 export default function Automation() {
   const { t } = useLang();
-  const { user } = useAuth();
-  const isAdmin = user?.role === 'admin';
+  const { can } = useAuth();
+  const isAdmin = can('automation.edit');
   const { show, node } = useToast();
   const [d, setD] = useState<any>(null);
   const [runsKey, setRunsKey] = useState(0);
@@ -36,7 +36,7 @@ export default function Automation() {
       {d && <>
         {!d.scheduler_enabled && <div className="alert alert-danger mb-4"><i className="fa-solid fa-circle-pause" /> {t('The scheduler is switched off on this server (SCHEDULER_ENABLED=false). Jobs will only run when you press "Run now".', 'এই সার্ভারে শিডিউলার বন্ধ (SCHEDULER_ENABLED=false)। শুধু "এখনই চালান" চাপলে চলবে।')}</div>}
         {d.sms?.provider === 'log' && <div className="alert alert-warning mb-4"><i className="fa-solid fa-triangle-exclamation" /> {t('SMS is in test mode (SMS_PROVIDER=log): reminder jobs record messages in the SMS outbox but nothing reaches phones. Set a real provider in the API’s .env before switching SMS jobs on.', 'এসএমএস টেস্ট মোডে আছে (SMS_PROVIDER=log): রিমাইন্ডার আউটবক্সে জমা হবে কিন্তু ফোনে যাবে না। এসএমএস কাজ চালুর আগে .env-এ আসল প্রোভাইডার দিন।')}</div>}
-        {!isAdmin && <div className="alert alert-info mb-4"><i className="fa-solid fa-lock" /> {t('Only admins can change schedules. You can still run a job now.', 'শুধু অ্যাডমিন সময়সূচি বদলাতে পারেন। আপনি এখনই চালাতে পারবেন।')}</div>}
+        {!isAdmin && <div className="alert alert-info mb-4"><i className="fa-solid fa-lock" /> {t('Your role can view the schedules but not change or run them.', 'আপনার রোলে সময়সূচি দেখা যায়, পরিবর্তন বা চালানো যায় না।')}</div>}
         <div className="text-xs text-muted mb-4"><i className="fa-solid fa-clock" /> {t('Times use the server clock', 'সময় সার্ভারের ঘড়ি অনুযায়ী')}: {d.timezone} · {t('now', 'এখন')} {dateTime(d.server_time)}</div>
       </>}
 

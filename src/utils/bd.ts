@@ -58,8 +58,43 @@ export function toBongabdo(input: Date | string = new Date()): { day: number; mo
   return { day, month: m + 1, monthName: BN_MONTHS[m], year, text: `${toBanglaDigits(day)} ${BN_MONTHS[m]} ${toBanglaDigits(year)} বঙ্গাব্দ` };
 }
 
-/** "04 Nov 2026" */
-export const fmtDate = (d?: string | Date | null) =>
-  d ? new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+// A plain "YYYY-MM-DD" is a calendar date: read it as local midnight, not UTC midnight, so it never shifts a day.
+const toDate = (d: string | Date) => {
+  if (d instanceof Date) return d;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d);
+  return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : new Date(d);
+};
+const valid = (x: Date) => !Number.isNaN(x.getTime());
+
+/** "12 Mar 2026" — for dates and timestamps alike; '—' when empty, the input unchanged when unreadable. */
+export const fmtDate = (d?: string | Date | null) => {
+  if (!d) return '—';
+  const x = toDate(d);
+  return valid(x) ? x.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : String(d);
+};
+
+/** "12 Mar 2026, 6:00 pm" */
+export const fmtDateTime = (d?: string | Date | null) => {
+  if (!d) return '—';
+  const x = toDate(d);
+  return valid(x) ? `${fmtDate(x)}, ${x.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }).toLowerCase()}` : String(d);
+};
+
+const pad = (n: number) => String(n).padStart(2, '0');
+/** Today as "YYYY-MM-DD" in the user's own time zone (toISOString() would give yesterday before 6am in Dhaka). */
+export const todayISO = () => { const x = new Date(); return `${x.getFullYear()}-${pad(x.getMonth() + 1)}-${pad(x.getDate())}`; };
+/** Now as "YYYY-MM-DDTHH:mm" for <input type="datetime-local">, local time. */
+export const nowLocalInput = () => { const x = new Date(); return `${todayISO()}T${pad(x.getHours())}:${pad(x.getMinutes())}`; };
+
+/** NID check: 10, 13 or 17 digits; a 17-digit NID starts with the birth year. Returns [en, bn] message or null. */
+export function nidProblem(nid?: string, dob?: string): [string, string] | null {
+  const n = String(nid || '').replace(/[\s-]/g, '');
+  if (!n) return null;
+  if (!/^(\d{10}|\d{13}|\d{17})$/.test(n)) return ['NID must be 10, 13 or 17 digits', 'এনআইডি ১০, ১৩ বা ১৭ অঙ্কের হয়'];
+  const year = String(dob || '').slice(0, 4);
+  if (n.length === 17 && /^\d{4}$/.test(year) && n.slice(0, 4) !== year)
+    return [`A 17-digit NID starts with the birth year (${year}) — check the number or the date of birth`, `১৭ অঙ্কের এনআইডি জন্মসাল (${year}) দিয়ে শুরু হয় — নম্বর বা জন্ম তারিখ যাচাই করুন`];
+  return null;
+}
 
 export const isValidBdMobile = (v: string) => /^01[3-9]\d{8}$/.test(String(v || '').replace(/[\s-]/g, '').replace(/^\+?88/, ''));

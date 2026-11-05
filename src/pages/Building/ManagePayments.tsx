@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { tr, useLang } from '../../i18n/LanguageContext';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../api/client';
+import { fmtDate } from '../../utils/bd';
 
 const formatBDT = (v:any) => v ? `৳ ${Number(v).toLocaleString('en-BD')}` : '—';
 const EMPTY = { idUnits:'', installmentType:'Booking', amountBdt:'', paymentDate:'', paymentMethod:'Cash', chequeNo:'', bankName:'', transactionId:'', status:'Received', remarks:'' };
@@ -113,7 +114,7 @@ export default function ManagePayments() {
                     <td className="fw-bold">{p.unit_no||'—'}</td>
                     <td><span className="badge badge-info">{p.installment_type}</span></td>
                     <td className="fw-bold text-success bdt-amount">{formatBDT(p.amount_bdt)}</td>
-                    <td>{p.payment_date?.split('T')[0]}</td>
+                    <td>{fmtDate(p.payment_date)}</td>
                     <td>{p.payment_method}</td>
                     <td className="text-sm text-muted">{p.cheque_no||p.transaction_id||'—'}</td>
                     <td><span className={`badge ${p.status==='Received'?'badge-success':p.status==='Bounced'?'badge-danger':p.status==='Cancelled'?'badge-gray':'badge-warning'}`}>{p.status}</span></td>

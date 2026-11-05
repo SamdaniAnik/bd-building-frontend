@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/client';
 import { useLang, tr } from '../../i18n/LanguageContext';
+import { fmtDate } from '../../utils/bd';
 
 export default function BangladeshComplianceHub() {
   const [loading, setLoading] = useState(false);
@@ -366,7 +367,7 @@ export default function BangladeshComplianceHub() {
                 </div>
                 <div>
                   <span style={{ color: '#64748b', display: 'block' }}>{isBangla ? 'দলিল নম্বর ও তারিখ:' : 'Deed No & Date:'}</span>
-                  <strong>{land.deed_no} ({land.deed_date})</strong>
+                  <strong>{land.deed_no} ({fmtDate(land.deed_date)})</strong>
                 </div>
                 <div>
                   <span style={{ color: '#64748b', display: 'block' }}>{isBangla ? 'ভূমি উন্নয়ন কর (খাজনা):' : 'Land Tax (Khajna):'}</span>
@@ -421,7 +422,7 @@ export default function BangladeshComplianceHub() {
                 </div>
                 <div>
                   <span style={{ color: '#64748b', display: 'block' }}>{isBangla ? 'চুক্তির তারিখ:' : 'Agreement Date:'}</span>
-                  <strong>{jva.agreement_date}</strong>
+                  <strong>{fmtDate(jva.agreement_date)}</strong>
                 </div>
                 <div>
                   <span style={{ color: '#64748b', display: 'block' }}>{isBangla ? 'মালিক ও ডেভেলপার অনুপাত:' : 'Allocation Ratio:'}</span>
@@ -433,7 +434,7 @@ export default function BangladeshComplianceHub() {
                 </div>
                 <div>
                   <span style={{ color: '#64748b', display: 'block' }}>{isBangla ? 'হস্তান্তরের শেষ সময়সীমা:' : 'Handover Deadline:'}</span>
-                  <strong style={{ color: '#d97706' }}>{jva.handover_deadline}</strong>
+                  <strong style={{ color: '#d97706' }}>{fmtDate(jva.handover_deadline)}</strong>
                 </div>
                 <div>
                   <span style={{ color: '#64748b', display: 'block' }}>{isBangla ? 'বিলম্ব জরিমানা (মাসিক):' : 'Delay Penalty (Monthly):'}</span>
@@ -510,8 +511,8 @@ export default function BangladeshComplianceHub() {
                       <div style={{ fontWeight: 600, color: '#334155' }}>{app.application_number}</div>
                       <span style={{ fontSize: '0.75rem', color: '#059669' }}>{app.approval_reference_no}</span>
                     </td>
-                    <td style={{ padding: '12px' }}>{app.approval_date || 'Pending'}</td>
-                    <td style={{ padding: '12px', color: '#d97706', fontWeight: 600 }}>{app.expiry_date || 'N/A'}</td>
+                    <td style={{ padding: '12px' }}>{app.approval_date ? fmtDate(app.approval_date) : 'Pending'}</td>
+                    <td style={{ padding: '12px', color: '#d97706', fontWeight: 600 }}>{app.expiry_date ? fmtDate(app.expiry_date) : 'N/A'}</td>
                     <td style={{ padding: '12px', textAlign: 'center' }}>
                       <span style={{ padding: '3px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600, background: '#dcfce7', color: '#166534' }}>
                         {app.status}
@@ -595,9 +596,9 @@ export default function BangladeshComplianceHub() {
                       <td style={{ padding: '12px', fontWeight: 700, color: '#059669' }}>{fe.equipment_tag}</td>
                       <td style={{ padding: '12px', fontWeight: 600 }}>{fe.equipment_type}</td>
                       <td style={{ padding: '12px' }}>{fe.location_description}</td>
-                      <td style={{ padding: '12px' }}>{fe.last_inspection_date}</td>
+                      <td style={{ padding: '12px' }}>{fmtDate(fe.last_inspection_date)}</td>
                       <td style={{ padding: '12px', color: fe.status === 'REFILL_DUE' ? '#dc2626' : '#059669', fontWeight: 700 }}>
-                        {fe.expiry_refill_date}
+                        {fmtDate(fe.expiry_refill_date)}
                       </td>
                       <td style={{ padding: '12px' }}>{fe.inspector_name}</td>
                       <td style={{ padding: '12px', textAlign: 'center' }}>
@@ -713,7 +714,7 @@ export default function BangladeshComplianceHub() {
                       Unit {h.unit_number}
                     </span>
                     <h4 style={{ margin: '6px 0 2px 0', fontSize: '1.05rem', color: '#0f172a' }}>{h.owner_name}</h4>
-                    <span style={{ fontSize: '0.78rem', color: '#64748b' }}>{tr("Possession")}: {h.possession_date} &bull; Ref: {h.possession_letter_ref}</span>
+                    <span style={{ fontSize: '0.78rem', color: '#64748b' }}>{tr("Possession")}: {fmtDate(h.possession_date)} &bull; Ref: {h.possession_letter_ref}</span>
                   </div>
                   <span style={{ background: '#dcfce7', color: '#166534', padding: '3px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700 }}>
                     {h.handover_status}
@@ -880,8 +881,8 @@ export default function BangladeshComplianceHub() {
                       <td style={{ padding: '12px', textAlign: 'right', fontWeight: 800, color: '#0f172a' }}>
                         ৳{Number(c.amount_bdt).toLocaleString()}
                       </td>
-                      <td style={{ padding: '12px' }}>{c.issue_date}</td>
-                      <td style={{ padding: '12px' }}>{c.clearance_date || 'Pending'}</td>
+                      <td style={{ padding: '12px' }}>{fmtDate(c.issue_date)}</td>
+                      <td style={{ padding: '12px' }}>{c.clearance_date ? fmtDate(c.clearance_date) : 'Pending'}</td>
                       <td style={{ padding: '12px', textAlign: 'center' }}>
                         <span style={{ padding: '3px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600, background: '#dcfce7', color: '#166534' }}>
                           {c.status}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
+import { fmtDate } from '../../utils/bd';
 
 export default function SiteManagerMobile() {
   useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
@@ -174,7 +175,7 @@ export default function SiteManagerMobile() {
                       <div className="fw-semibold">{p.payee}</div>
                       <div className="text-xs text-muted">{p.description}</div>
                     </td>
-                    <td>{p.expense_date}</td>
+                    <td>{fmtDate(p.expense_date)}</td>
                     <td className="text-muted text-sm">{p.entered_by}</td>
                     <td className="text-right fw-bold text-danger">৳{parseFloat(p.amount).toFixed(2)}</td>
                   </tr>
@@ -212,7 +213,7 @@ export default function SiteManagerMobile() {
                   <tr key={a.id_attendance}>
                     <td className="fw-bold">{a.worker_name}</td>
                     <td><span className="badge badge-primary">{a.worker_type}</span></td>
-                    <td>{a.attendance_date}</td>
+                    <td>{fmtDate(a.attendance_date)}</td>
                     <td>{a.hours_worked} {tr("hrs")} {parseFloat(a.overtime_hours) > 0 ? `(+${a.overtime_hours} OT)` : ''}</td>
                     <td className="text-muted text-sm">{a.work_performed}</td>
                     <td className="text-right fw-bold text-success">৳{parseFloat(a.calculated_pay).toFixed(2)}</td>
@@ -330,7 +331,7 @@ export default function SiteManagerMobile() {
               <div className="card-body">
                 <div className="flex-between mb-1">
                   <span className="badge badge-primary">{p.stage_tag}</span>
-                  <span className="text-xs text-muted">{p.photo_date}</span>
+                  <span className="text-xs text-muted">{fmtDate(p.photo_date)}</span>
                 </div>
                 <h4 style={{ fontSize: '1rem', fontWeight: 800, marginTop: '4px' }}>{p.title}</h4>
                 <p className="text-xs text-muted mt-1">{p.notes}</p>

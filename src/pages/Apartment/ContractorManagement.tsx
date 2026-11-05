@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
+import { fmtDate } from '../../utils/bd';
 
 export default function ContractorManagement() {
   useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
@@ -164,7 +165,7 @@ export default function ContractorManagement() {
                   <div key={b.id_progress_bills} className="p-2 rounded border bg-white flex-between text-xs">
                     <div>
                       <span className="fw-bold text-primary">{b.bill_number}</span> ({b.cumulative_work_percent}%)
-                      <div className="text-muted">{b.billing_date}</div>
+                      <div className="text-muted">{fmtDate(b.billing_date)}</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div className="fw-bold text-success" style={{ fontSize: '0.85rem' }}>৳{parseFloat(b.net_payable_amount).toLocaleString()}</div>

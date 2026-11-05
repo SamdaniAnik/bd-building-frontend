@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
+import { fmtDate } from '../../utils/bd';
 
 export default function PostHandoverMaintenance() {
   useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
@@ -157,8 +158,8 @@ export default function PostHandoverMaintenance() {
                 <tr key={w.id_warranties}>
                   <td className="fw-bold">{w.asset_name}</td>
                   <td className="fw-semibold text-primary">{w.vendor_name}</td>
-                  <td>{w.start_date}</td>
-                  <td className="fw-bold text-success">{w.expiration_date}</td>
+                  <td>{fmtDate(w.start_date)}</td>
+                  <td className="fw-bold text-success">{fmtDate(w.expiration_date)}</td>
                   <td className="text-xs text-muted">{w.coverage_terms}</td>
                   <td className="fw-semibold">{w.contact_hotline}</td>
                 </tr>

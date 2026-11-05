@@ -19,8 +19,8 @@ export default function Login() {
     setLoading(true);
     setError('');
     try {
-      const u = await login(email, password);
-      navigate(['admin', 'manager'].includes(u?.role) ? '/apartment/dashboard' : '/apartment/owner-portal', { replace: true });
+      await login(email, password);
+      navigate('/', { replace: true }); // HomeRedirect picks the first page this role may open
     } catch (err: any) {
       setError(err.message || 'Login failed');
     } finally { setLoading(false); }

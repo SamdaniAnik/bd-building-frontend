@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
+import { todayISO } from '../../utils/bd';
 
 export default function WorksManagement() {
   useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
@@ -20,7 +21,7 @@ export default function WorksManagement() {
     description: '',
     estimated_cost: '',
     actual_cost: '',
-    start_date: new Date().toISOString().split('T')[0],
+    start_date: todayISO(),
     expected_completion: '',
     status: 'IN_PROGRESS',
     id_vendors: '',
@@ -100,7 +101,7 @@ export default function WorksManagement() {
           description: '',
           estimated_cost: '',
           actual_cost: '',
-          start_date: new Date().toISOString().split('T')[0],
+          start_date: todayISO(),
           expected_completion: '',
           status: 'IN_PROGRESS',
           id_vendors: '',

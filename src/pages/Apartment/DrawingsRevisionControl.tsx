@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
+import { fmtDate } from '../../utils/bd';
 
 export default function DrawingsRevisionControl() {
   useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
@@ -119,7 +120,7 @@ export default function DrawingsRevisionControl() {
                       {rev.revision_reason}
                     </div>
                     <div className="flex-between text-xs text-muted mt-2" style={{ borderTop: '1px dashed #cbd5e1', paddingTop: '6px' }}>
-                      <span>{tr("Uploaded by")} {rev.uploaded_by} on {rev.upload_date}</span>
+                      <span>{tr("Uploaded by")} {rev.uploaded_by} on {fmtDate(rev.upload_date)}</span>
                       <a href={rev.file_url} target="_blank" rel="noreferrer" className="text-primary fw-semibold">
                         <i className="fa-solid fa-file-pdf"></i> {tr("View Blueprint")}
                       </a>

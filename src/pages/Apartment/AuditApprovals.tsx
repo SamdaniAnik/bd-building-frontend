@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
+import { fmtDateTime } from '../../utils/bd';
 
 export default function AuditApprovals() {
   useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
@@ -166,7 +167,7 @@ export default function AuditApprovals() {
                 {auditLogs.map(log => (
                   <tr key={log.id_audit}>
                     <td className="text-muted text-sm" style={{ whiteSpace: 'nowrap' }}>
-                      {new Date(log.created_at).toLocaleString()}
+                      {fmtDateTime(log.created_at)}
                     </td>
                     <td className="fw-bold text-primary">{log.user_name}</td>
                     <td><span className="badge badge-info">{log.action}</span></td>

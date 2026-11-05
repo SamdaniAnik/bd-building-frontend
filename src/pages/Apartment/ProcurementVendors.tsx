@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
+import { fmtDate, todayISO } from '../../utils/bd';
 
 export default function ProcurementVendors() {
   useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
@@ -19,7 +20,7 @@ export default function ProcurementVendors() {
     invoice_number: '',
     id_vendors: '',
     id_works: '',
-    invoice_date: new Date().toISOString().split('T')[0],
+    invoice_date: todayISO(),
     due_date: '',
     total_amount: ''
   });
@@ -33,7 +34,7 @@ export default function ProcurementVendors() {
     payment_type: 'PARTIAL',
     payment_method: 'BANK_TRANSFER',
     reference_number: '',
-    payment_date: new Date().toISOString().split('T')[0],
+    payment_date: todayISO(),
     notes: ''
   });
 
@@ -75,7 +76,7 @@ export default function ProcurementVendors() {
       if (res.success) {
         alert('Vendor invoice recorded');
         setShowInvoiceModal(false);
-        setInvForm({ invoice_number: '', id_vendors: '', id_works: '', invoice_date: new Date().toISOString().split('T')[0], due_date: '', total_amount: '' });
+        setInvForm({ invoice_number: '', id_vendors: '', id_works: '', invoice_date: todayISO(), due_date: '', total_amount: '' });
         fetchData();
       }
     } catch (err: any) {
@@ -90,7 +91,7 @@ export default function ProcurementVendors() {
       if (res.success) {
         alert('Vendor payment registered successfully');
         setShowPaymentModal(false);
-        setPaymentForm({ id_invoices: '', id_vendors: '', amount: '', payment_type: 'PARTIAL', payment_method: 'BANK_TRANSFER', reference_number: '', payment_date: new Date().toISOString().split('T')[0], notes: '' });
+        setPaymentForm({ id_invoices: '', id_vendors: '', amount: '', payment_type: 'PARTIAL', payment_method: 'BANK_TRANSFER', reference_number: '', payment_date: todayISO(), notes: '' });
         fetchData();
       }
     } catch (err: any) {
@@ -216,8 +217,8 @@ export default function ProcurementVendors() {
                     <td className="fw-semibold">{inv.vendor_name}</td>
                     <td className="text-muted text-sm">{inv.work_name || 'General Project'}</td>
                     <td>
-                      <div>{inv.invoice_date}</div>
-                      {inv.due_date && <div className="text-xs text-muted">Due: {inv.due_date}</div>}
+                      <div>{fmtDate(inv.invoice_date)}</div>
+                      {inv.due_date && <div className="text-xs text-muted">Due: {fmtDate(inv.due_date)}</div>}
                     </td>
                     <td className="text-right fw-bold">৳{parseFloat(inv.total_amount).toLocaleString()}</td>
                     <td className="text-right text-success fw-semibold">৳{parseFloat(inv.paid_amount || 0).toLocaleString()}</td>
@@ -292,7 +293,7 @@ export default function ProcurementVendors() {
                   <tbody>
                     {(selectedLedger.ledger || []).map((e: any, idx: number) => (
                       <tr key={idx}>
-                        <td>{e.date}</td>
+                        <td>{fmtDate(e.date)}</td>
                         <td>
                           <span className={`badge ${e.type === 'INVOICE' ? 'badge-primary' : 'badge-success'}`}>
                             {e.type}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
+import { fmtDate } from '../../utils/bd';
 
 export default function UnitsList() {
   useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
@@ -278,7 +279,7 @@ export default function UnitsList() {
                     {(selectedUnit.contributions || []).map((c: any) => (
                       <tr key={c.id_contributions}>
                         <td className="fw-semibold">{c.receipt_number}</td>
-                        <td>{c.payment_date}</td>
+                        <td>{fmtDate(c.payment_date)}</td>
                         <td><span className="badge badge-primary">{c.contribution_type}</span></td>
                         <td>{c.payment_method}</td>
                         <td className="text-right fw-bold text-success">৳{parseFloat(c.amount).toLocaleString()}</td>

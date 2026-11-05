@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { tr, useLang } from '../../i18n/LanguageContext';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../api/client';
+import { fmtDate } from '../../utils/bd';
 
 const formatBDT = (v:any) => v ? `৳ ${Number(v).toLocaleString('en-BD')}` : '—';
 const CATEGORIES = ['Land Cost','Land Registration','Stamp Duty & Legal','RAJUK/Authority Approval','Foundation & Piling','RCC Frame Structure','Brick Work & Masonry','Plastering & Finishing','Doors & Windows','Electrical Work','Plumbing & Sanitary','Gas Line','Lift Installation','Roofing & Waterproofing','Tiles & Flooring','Paint Work','Security System & CCTV','Generator & Backup','Landscaping','Car Park Construction','Common Area Finishing','Utility Connection (WASA, PDB, Gas)','Project Management','Contingency','Other'];
@@ -215,7 +216,7 @@ export default function ManageBuildingCosting() {
                       <td className="fw-bold">{formatBDT(e.amount_bdt)}</td>
                       <td style={{color:'var(--success)'}}>{formatBDT(e.paid_amount_bdt)}</td>
                       <td><span className={`badge ${payColors[e.payment_status]||'badge-gray'}`}>{e.payment_status}</span></td>
-                      <td style={{fontSize:'0.78rem'}}>{e.cost_date?.split('T')[0]||'—'}</td>
+                      <td style={{fontSize:'0.78rem'}}>{fmtDate(e.cost_date)}</td>
                       <td>
                         <div className="flex gap-2">
                           <button className="btn btn-warning btn-sm btn-icon" onClick={()=>handleEdit(e)}><i className="fa-solid fa-pen" /></button>

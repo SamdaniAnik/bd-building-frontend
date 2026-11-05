@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
+import { fmtDate } from '../../utils/bd';
 
 export default function CommitteeVoting() {
   useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
@@ -65,7 +66,7 @@ export default function CommitteeVoting() {
                     {p.status} {tr("RESOLUTION")}
                   </span>
                   <span className="text-xs text-muted ml-2" style={{ marginLeft: '8px' }}>
-                    {tr("Proposed by")} {p.proposed_by} on {p.proposal_date}
+                    {tr("Proposed by")} {p.proposed_by} on {fmtDate(p.proposal_date)}
                   </span>
                 </div>
                 <div className="fw-bold text-primary">
@@ -104,7 +105,7 @@ export default function CommitteeVoting() {
                       {tr("Abstain")}
                     </button>
                   </div>
-                  <span className="text-xs text-muted">{tr("Voting closes")}: {p.voting_deadline}</span>
+                  <span className="text-xs text-muted">{tr("Voting closes")}: {fmtDate(p.voting_deadline)}</span>
                 </div>
 
                 {/* Individual Owner Votes List */}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../api/client';
 import { useLang } from '../../i18n/LanguageContext';
-import { fmtDate, isValidBdMobile } from '../../utils/bd';
+import { fmtDate, isValidBdMobile, nidProblem } from '../../utils/bd';
 import { Empty, Field, Modal, PageHeader, PayDialog, Stat, Tabs, UnitSelect, inputDate, money, monthName, openReceipt, run, shiftMonth, thisMonth, todayStr, useToast, useUnits, Notify, Unit } from './shared';
 
 type Tab = 'tenants' | 'rent';
@@ -158,6 +158,7 @@ function TenantForm({ show, units, initial, onClose, onSaved }: { show: Notify; 
   const set = (k: string, v: any) => setF((x: any) => ({ ...x, [k]: v }));
   const inp = (k: string, props: any = {}) => <input className="form-control" value={f[k] ?? ''} onChange={e => set(k, e.target.value)} {...props} />;
   const phoneBad = f.phone && !isValidBdMobile(f.phone);
+  const nidBad = nidProblem(f.nid_no, f.date_of_birth);
   const save = async () => {
     setBusy(true);
     const r: any = await run(show, api.post('/ops/tenants', f));
@@ -169,7 +170,7 @@ function TenantForm({ show, units, initial, onClose, onSaved }: { show: Notify; 
     <Modal wide title={f.id_tenants ? t('Edit tenant', 'ভাড়াটিয়া সম্পাদনা') : t('New tenant', 'নতুন ভাড়াটিয়া')} onClose={onClose} footer={<>
       <span className="text-xs text-muted" style={{ marginRight: 'auto' }}>{t('Fields follow the DMP tenant information form (ভাড়াটিয়া নিবন্ধন ফরম).', 'ঘরগুলো ডিএমপি ভাড়াটিয়া নিবন্ধন ফরম অনুযায়ী।')}</span>
       <button className="btn btn-light" onClick={onClose}>{t('Cancel')}</button>
-      <button className="btn btn-primary" disabled={busy || !f.full_name || !f.id_units || !f.phone || phoneBad} onClick={save}>{t('Save')}</button>
+      <button className="btn btn-primary" disabled={busy || !f.full_name || !f.id_units || !f.phone || phoneBad || !!nidBad} onClick={save}>{t('Save')}</button>
     </>}>
       <div className="section-heading mb-1">{t('Flat & tenant', 'ফ্ল্যাট ও ভাড়াটিয়া')}</div>
       <div className="form-row cols-3">
@@ -188,7 +189,7 @@ function TenantForm({ show, units, initial, onClose, onSaved }: { show: Notify; 
         <Field label={t('Education', 'শিক্ষাগত যোগ্যতা')}>{inp('education')}</Field>
         <Field label={t('Mobile', 'মোবাইল')} required hint={phoneBad ? t('Use 01XXXXXXXXX', '01XXXXXXXXX লিখুন') : undefined}>{inp('phone', { inputMode: 'tel', placeholder: '01XXXXXXXXX' })}</Field>
         <Field label={t('Email', 'ই-মেইল')}>{inp('email', { type: 'email' })}</Field>
-        <Field label={t('NID number', 'জাতীয় পরিচয়পত্র নম্বর')} hint={t('10, 13 or 17 digits', '১০, ১৩ বা ১৭ অঙ্ক')}>{inp('nid_no', { inputMode: 'numeric' })}</Field>
+        <Field label={t('NID number', 'জাতীয় পরিচয়পত্র নম্বর')} hint={nidBad ? t(nidBad[0], nidBad[1]) : t('10, 13 or 17 digits', '১০, ১৩ বা ১৭ অঙ্ক')}>{inp('nid_no', { inputMode: 'numeric', 'aria-invalid': !!nidBad || undefined })}</Field>
         <Field label={t('Passport no. (if any)', 'পাসপোর্ট নম্বর (যদি থাকে)')}>{inp('passport_no')}</Field>
         <Field label={t('Move-in date', 'বর্তমান বাসায় বসবাসের তারিখ')}>{inp('move_in_date', { type: 'date' })}</Field>
       </div>
@@ -224,7 +225,81 @@ function TenantForm({ show, units, initial, onClose, onSaved }: { show: Notify; 
         <div className="form-group" style={{ alignSelf: 'end' }}><label className="flex gap-2 text-sm"><input type="checkbox" checked={!!f.police_form_submitted} onChange={e => set('police_form_submitted', e.target.checked)} /> {t('Form submitted to the thana', 'ফরম থানায় জমা হয়েছে')}</label></div>
       </div>
       <Field label={t('Notes', 'মন্তব্য')}>{inp('notes')}</Field>
+
+      <div className="section-heading mb-1 mt-4">{t('ID documents', 'পরিচয়পত্রের ছবি')}</div>
+      {f.id_tenants ? <TenantDocuments id={f.id_tenants} show={show} />
+        : <div className="text-sm text-muted">{t('Save the tenant first, then reopen to upload the NID photos.', 'আগে ভাড়াটিয়া সংরক্ষণ করুন, তারপর খুলে এনআইডির ছবি দিন।')}</div>}
     </Modal>
+  );
+}
+
+// NID front / back and a photo, resized in the browser so each stays well under the 1.5 MB server limit.
+const DOC_SLOTS: [string, string, string][] = [['NID_FRONT', 'NID — front', 'এনআইডি — সামনে'], ['NID_BACK', 'NID — back', 'এনআইডি — পেছনে'], ['PHOTO', 'Passport-size photo', 'পাসপোর্ট সাইজ ছবি']];
+
+function shrinkImage(file: File, maxSide = 1400): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (file.type === 'application/pdf') {
+      if (file.size > 1.4 * 1024 * 1024) return reject(new Error('PDF is larger than 1.4 MB'));
+      const r = new FileReader(); r.onload = () => resolve(String(r.result)); r.onerror = () => reject(r.error); r.readAsDataURL(file); return;
+    }
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+      c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height);
+      resolve(c.toDataURL('image/jpeg', 0.82));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Not an image file')); };
+    img.src = url;
+  });
+}
+
+function TenantDocuments({ id, show }: { id: number; show: Notify }) {
+  const { t, lang } = useLang();
+  const bn = lang === 'bn';
+  const [docs, setDocs] = useState<any[]>([]);
+  const [busy, setBusy] = useState('');
+  const load = () => api.get(`/ops/tenants/${id}/documents`).then((r: any) => setDocs(r.rows)).catch((e: any) => show(false, e.message));
+  useEffect(() => { load(); }, [id]);
+  const upload = async (type: string, file?: File | null) => {
+    if (!file) return;
+    setBusy(type);
+    try { const data = await shrinkImage(file); if (await run(show, api.post(`/ops/tenants/${id}/documents`, { doc_type: type, data }))) load(); }
+    catch (e: any) { show(false, e.message); }
+    setBusy('');
+  };
+  const view = async (docId: number) => {
+    const w = window.open('', '_blank'); // open before the request so the popup isn't blocked
+    try {
+      const r: any = await api.get(`/ops/tenants/documents/${docId}`);
+      const blob = await (await fetch(r.doc.data)).blob();
+      if (w) w.location.href = URL.createObjectURL(blob);
+    } catch (e: any) { w?.close(); show(false, e.message); }
+  };
+  const remove = async (docId: number) => { if (confirm(t('Delete this document?', 'এই ছবি মুছবেন?')) && await run(show, api.delete(`/ops/tenants/documents/${docId}`))) load(); };
+  return (
+    <div className="form-row cols-3">
+      {DOC_SLOTS.map(([type, en, bnL]) => {
+        const d = docs.find(x => x.doc_type === type);
+        return (
+          <div key={type} className="p-3 rounded" style={{ border: '1px dashed #cbd5e1' }}>
+            <div className="fw-semibold text-sm mb-1">{bn ? bnL : en}</div>
+            {d ? <div className="flex gap-2" style={{ alignItems: 'center', flexWrap: 'wrap' }}>
+              <span className="badge badge-success"><i className="fa-solid fa-check" /> {t('Uploaded', 'আপলোড হয়েছে')}</span>
+              <button type="button" className="btn btn-light btn-sm" onClick={() => view(d.id_tenant_documents)}>{t('View', 'দেখুন')}</button>
+              <button type="button" className="btn btn-light btn-sm" aria-label={t('Delete', 'মুছুন')} onClick={() => remove(d.id_tenant_documents)}><i className="fa-solid fa-trash" /></button>
+            </div> : <div className="text-xs text-muted mb-1">{t('Not uploaded', 'আপলোড হয়নি')}</div>}
+            <label className="btn btn-light btn-sm mt-1" style={{ cursor: 'pointer' }}>
+              <i className={busy === type ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-upload'} /> {d ? t('Replace', 'বদলান') : t('Upload', 'আপলোড')}
+              <input type="file" accept="image/*,application/pdf" capture="environment" hidden disabled={!!busy} onChange={e => { upload(type, e.target.files?.[0]); e.target.value = ''; }} />
+            </label>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 

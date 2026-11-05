@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import api from '../../api/client';
 import { useLang } from '../../i18n/LanguageContext';
-import { formatBDT, formatBDTShort, fiscalYearOf, toBongabdo, toBanglaDigits, fmtDate, isValidBdMobile } from '../../utils/bd';
+import { fiscalYearOf, fmtDate, formatBDT, formatBDTShort, isValidBdMobile, toBanglaDigits, toBongabdo, nowLocalInput, todayISO } from '../../utils/bd';
 
 type TabKey = 'registration' | 'mfs' | 'withholding' | 'rates' | 'calendar' | 'holding';
 type Toast = { type: 'success' | 'error'; message: string } | null;
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = todayISO;
 const num = (v: any) => Number(v) || 0;
 
 const MFS_COLORS: Record<string, string> = { BKASH: '#e2136e', NAGAD: '#ec6a1d', ROCKET: '#8c3494', UPAY: '#0a4d9c', TAP: '#0f766e' };
@@ -341,7 +341,7 @@ function RegistrationTab({ data, bn, t, money, send }: TabProps) {
 // 2. MFS register
 // ─────────────────────────────────────────────────────────────
 function MfsTab({ data, t, money, send }: TabProps) {
-  const blank = { provider: 'BKASH', trx_id: '', direction: 'RECEIVED', purpose: 'INSTALLMENT', counterparty_name: '', counterparty_wallet: '', our_wallet: '', unit_number: '', amount_bdt: '', fee_bdt: 0, trx_datetime: new Date().toISOString().slice(0, 16), reference_voucher_no: '', remarks: '' };
+  const blank = { provider: 'BKASH', trx_id: '', direction: 'RECEIVED', purpose: 'INSTALLMENT', counterparty_name: '', counterparty_wallet: '', our_wallet: '', unit_number: '', amount_bdt: '', fee_bdt: 0, trx_datetime: nowLocalInput(), reference_voucher_no: '', remarks: '' };
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<any>(blank);
   const [filter, setFilter] = useState('ALL');
@@ -441,7 +441,11 @@ function MfsTab({ data, t, money, send }: TabProps) {
 // ─────────────────────────────────────────────────────────────
 function WithholdingTab({ data, t, money, send }: TabProps) {
   const defaults = data.defaults.withholding;
-  const blank = { vendor_name: '', vendor_bin: '', vendor_tin: '', bill_no: '', bill_date: today(), service_category: 'SUPPLY_OF_GOODS', gross_amount_bdt: '', tds_rate_percent: defaults.SUPPLY_OF_GOODS.tds, vds_rate_percent: defaults.SUPPLY_OF_GOODS.vds, remarks: '' };
+  const blank = { id_vendors: '', vendor_name: '', vendor_bin: '', vendor_tin: '', bill_no: '', bill_date: today(), service_category: 'SUPPLY_OF_GOODS', gross_amount_bdt: '', tds_rate_percent: defaults.SUPPLY_OF_GOODS.tds, vds_rate_percent: defaults.SUPPLY_OF_GOODS.vds, apply_no_tin_uplift: true, remarks: '' };
+  // Vendors with their saved TIN / BIN, and the extra TDS % charged when there is no TIN (Collections → settings).
+  const [vendors, setVendors] = useState<any[]>([]);
+  const [upliftPct, setUpliftPct] = useState(0);
+  useEffect(() => { api.get('/ops/compliance/vendor-tax').then((r: any) => { setVendors(r.rows.filter((v: any) => v.status === 'ACTIVE')); setUpliftPct(r.no_tin_uplift_percent); }).catch(() => {}); }, []);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<any>(blank);
   const [deposit, setDeposit] = useState<any>(null);
@@ -449,8 +453,15 @@ function WithholdingTab({ data, t, money, send }: TabProps) {
   const set = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
   const setCategory = (c: string) => setForm((f: any) => ({ ...f, service_category: c, tds_rate_percent: defaults[c].tds, vds_rate_percent: defaults[c].vds }));
 
+  const pickVendor = (id: string) => {
+    const v = vendors.find(x => String(x.id_vendors) === id);
+    setForm((f: any) => ({ ...f, id_vendors: id, vendor_name: v ? v.company_name : f.vendor_name, vendor_tin: v?.tin_no || '', vendor_bin: v?.bin_no || '' }));
+  };
+  const noTin = !String(form.vendor_tin || '').trim();
+  const uplift = noTin && form.apply_no_tin_uplift ? upliftPct : 0;
+  const tdsRate = Math.round(num(form.tds_rate_percent) * (1 + uplift / 100) * 100) / 100;
   const gross = num(form.gross_amount_bdt);
-  const tds = Math.round(gross * num(form.tds_rate_percent)) / 100;
+  const tds = Math.round(gross * tdsRate) / 100;
   const vds = Math.round(gross * num(form.vds_rate_percent)) / 100;
 
   const years: string[] = Array.from(new Set<string>([data.fiscal_year, ...data.withholding.map((w: any) => w.fiscal_year)])).sort().reverse();
@@ -482,7 +493,7 @@ function WithholdingTab({ data, t, money, send }: TabProps) {
                   <td className="text-sm">{w.bill_no || '—'}<div className="text-xs text-muted">{fmtDate(w.bill_date)}</div></td>
                   <td className="text-sm">{CATEGORY_LABEL[w.service_category]}</td>
                   <td className="text-right bdt-amount">{money(w.gross_amount_bdt)}</td>
-                  <td className="text-right">{money(w.tds_amount_bdt)}<div className="text-xs text-muted">{num(w.tds_rate_percent)}%</div></td>
+                  <td className="text-right">{money(w.tds_amount_bdt)}<div className="text-xs text-muted">{num(w.tds_rate_percent)}%{w.no_tin_uplift ? <> · <span className="badge badge-warning">{t('no TIN', 'TIN নেই')}</span></> : null}</div></td>
                   <td className="text-right">{money(w.vds_amount_bdt)}<div className="text-xs text-muted">{num(w.vds_rate_percent)}%</div></td>
                   <td className="text-right bdt-amount text-success">{money(w.net_payable_bdt)}</td>
                   <td className="text-xs">{w.tds_challan_no || w.vds_challan_no ? <>{w.tds_challan_no} / {w.vds_challan_no}<div className="text-muted">{w.mushak_6_6_no || t('6.6 pending', '৬.৬ বাকি')}</div></> : '—'}</td>
@@ -501,6 +512,8 @@ function WithholdingTab({ data, t, money, send }: TabProps) {
         <Modal title={t('Vendor bill — source tax & VDS', 'বিল — উৎসে কর ও ভ্যাট কর্তন')} onClose={() => setOpen(false)}
           footer={<><button className="btn btn-light" onClick={() => setOpen(false)}>{t('Cancel', 'বাতিল')}</button><button className="btn btn-primary" onClick={save}>{t('Save', 'সংরক্ষণ')}</button></>}>
           <div className="form-row cols-3">
+            <Field label={t('Pick a saved vendor', 'সংরক্ষিত সরবরাহকারী')} hint={t('Fills in its TIN / BIN; IDs you type are saved back to the vendor', 'TIN / BIN নিজে বসবে; নতুন লিখলে সরবরাহকারীর তথ্যে সংরক্ষিত হবে')}>
+              <select className="form-select" value={form.id_vendors} onChange={e => pickVendor(e.target.value)}><option value="">{t('— Other / not listed —', '— অন্যান্য —')}</option>{vendors.map(v => <option key={v.id_vendors} value={v.id_vendors}>{v.company_name}{v.tin_no ? '' : ' (no TIN)'}</option>)}</select></Field>
             <Field label={t('Vendor', 'সরবরাহকারী')} required><input className="form-control" value={form.vendor_name} onChange={e => set('vendor_name', e.target.value)} /></Field>
             <Field label="BIN"><input className="form-control" value={form.vendor_bin} onChange={e => set('vendor_bin', e.target.value)} placeholder="000123456-0101" /></Field>
             <Field label="e-TIN"><input className="form-control" value={form.vendor_tin} onChange={e => set('vendor_tin', e.target.value)} /></Field>
@@ -508,9 +521,15 @@ function WithholdingTab({ data, t, money, send }: TabProps) {
             <Field label={t('Bill date', 'বিলের তারিখ')} hint={`FY ${fiscalYearOf(form.bill_date || new Date())}`}><input type="date" className="form-control" value={form.bill_date} onChange={e => set('bill_date', e.target.value)} /></Field>
             <Field label={t('Category', 'খাত')}><select className="form-select" value={form.service_category} onChange={e => setCategory(e.target.value)}>{Object.entries(CATEGORY_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></Field>
             <Field label={t('Gross bill (৳)', 'মোট বিল (৳)')} required><input type="number" min={1} className="form-control" value={form.gross_amount_bdt} onChange={e => set('gross_amount_bdt', e.target.value)} /></Field>
-            <Field label="TDS %"><input type="number" step="0.5" min={0} className="form-control" value={form.tds_rate_percent} onChange={e => set('tds_rate_percent', e.target.value)} /></Field>
+            <Field label="TDS %" hint={uplift ? t(`${tdsRate}% after the no-TIN increase`, `TIN না থাকায় ${tdsRate}%`) : undefined}><input type="number" step="0.5" min={0} className="form-control" value={form.tds_rate_percent} onChange={e => set('tds_rate_percent', e.target.value)} /></Field>
             <Field label="VDS %"><input type="number" step="0.5" min={0} className="form-control" value={form.vds_rate_percent} onChange={e => set('vds_rate_percent', e.target.value)} /></Field>
           </div>
+          {noTin && upliftPct > 0 && (
+            <div className="alert alert-warning mb-4">
+              <label className="flex gap-2 text-sm"><input type="checkbox" checked={!!form.apply_no_tin_uplift} onChange={e => set('apply_no_tin_uplift', e.target.checked)} />
+                {t(`No e-TIN entered — deduct ${upliftPct}% more source tax. Untick only if the vendor has shown a valid return / exemption.`, `e-TIN নেই — উৎসে কর ${upliftPct}% বেশি কাটুন। সরবরাহকারী বৈধ রিটার্ন / অব্যাহতি দেখালে টিক তুলে দিন।`)}</label>
+            </div>
+          )}
           {gross > 0 && (
             <div className="grid grid-3 p-3 rounded" style={{ background: '#f8fafc' }}>
               <div><div className="text-xs text-muted">TDS</div><div className="fw-bold">{money(tds)}</div></div>

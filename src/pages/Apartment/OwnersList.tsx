@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
+import { fmtDate } from '../../utils/bd';
 
 export default function OwnersList() {
   useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
@@ -174,7 +175,7 @@ export default function OwnersList() {
                 </div>
                 <div className="p-3 rounded" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
                   <div className="text-xs text-muted">{tr("Agreement Date:")}</div>
-                  <div className="fw-bold text-primary">{selectedLedger.owner?.agreement_date}</div>
+                  <div className="fw-bold text-primary">{fmtDate(selectedLedger.owner?.agreement_date)}</div>
                 </div>
               </div>
 
@@ -202,7 +203,7 @@ export default function OwnersList() {
                     ) : (
                       (selectedLedger.ledger || []).map((l: any) => (
                         <tr key={l.id_ledger}>
-                          <td>{l.transaction_date}</td>
+                          <td>{fmtDate(l.transaction_date)}</td>
                           <td>
                             <span className={`badge ${l.entry_type === 'DEBIT' ? 'badge-danger' : 'badge-success'}`}>
                               {l.category}

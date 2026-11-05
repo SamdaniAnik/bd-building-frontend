@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { tr, useLang } from '../../i18n/LanguageContext';
 import api from '../../api/client';
+import { fmtDate, todayISO } from '../../utils/bd';
 
 export default function FinanceManagement() {
   useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
@@ -19,7 +20,7 @@ export default function FinanceManagement() {
     id_owners: '',
     id_units: '',
     amount: '',
-    payment_date: new Date().toISOString().split('T')[0],
+    payment_date: todayISO(),
     contribution_type: 'CONSTRUCTION_INSTALLMENT',
     payment_method: 'BANK_TRANSFER',
     bank_or_cash_account: 'Dhaka Bank Project Escrow',
@@ -42,7 +43,7 @@ export default function FinanceManagement() {
   const [selectedLoan, setSelectedLoan] = useState<any | null>(null);
   const [disburseForm, setDisburseForm] = useState({
     amount: '',
-    disbursement_date: new Date().toISOString().split('T')[0],
+    disbursement_date: todayISO(),
     reference_number: '',
     notes: ''
   });
@@ -86,7 +87,7 @@ export default function FinanceManagement() {
           id_owners: '',
           id_units: '',
           amount: '',
-          payment_date: new Date().toISOString().split('T')[0],
+          payment_date: todayISO(),
           contribution_type: 'CONSTRUCTION_INSTALLMENT',
           payment_method: 'BANK_TRANSFER',
           bank_or_cash_account: 'Dhaka Bank Project Escrow',
@@ -129,7 +130,7 @@ export default function FinanceManagement() {
         alert('Loan disbursement installment registered!');
         setShowDisburseModal(false);
         setSelectedLoan(null);
-        setDisburseForm({ amount: '', disbursement_date: new Date().toISOString().split('T')[0], reference_number: '', notes: '' });
+        setDisburseForm({ amount: '', disbursement_date: todayISO(), reference_number: '', notes: '' });
         fetchData();
       }
     } catch (err: any) {
@@ -228,7 +229,7 @@ export default function FinanceManagement() {
                     <td className="fw-bold text-primary">{c.receipt_number}</td>
                     <td className="fw-semibold">{c.owner_name}</td>
                     <td><span className="unit-badge">{c.unit_number || 'General'}</span></td>
-                    <td>{c.payment_date}</td>
+                    <td>{fmtDate(c.payment_date)}</td>
                     <td>
                       <span className="badge badge-info">{c.contribution_type?.replace('_', ' ')}</span>
                     </td>

@@ -3,8 +3,32 @@ import { Outlet, NavLink, Navigate, useLocation, useNavigate } from 'react-route
 import { useAuth } from '../context/AuthContext';
 import { useLang, LanguageSelect } from '../i18n/LanguageContext';
 
+// A menu section: hides links the user's role cannot open, and the whole section (heading included) when none
+// are left. The server enforces the same rules; this only keeps the menu honest.
+function NavGroup({ children }: { children: React.ReactNode }) {
+  const { canPage } = useAuth();
+  const kids = React.Children.toArray(children);
+  const target = (k: any) => (React.isValidElement(k) ? (k.props as any).to as string | undefined : undefined);
+  const links = kids.filter(target);
+  if (links.length && !links.some(k => canPage(target(k)!))) return null;
+  return <>{kids.map(k => (target(k) && !canPage(target(k)!) ? null : k))}</>;
+}
+
+function NoAccess() {
+  const { t } = useLang();
+  const { user, firstPage } = useAuth();
+  return (
+    <div className="card" style={{ maxWidth: 560, margin: '60px auto', textAlign: 'center' }}><div className="card-body" style={{ padding: 32 }}>
+      <i className="fa-solid fa-lock" style={{ fontSize: 40, color: '#94a3b8' }} aria-hidden="true" />
+      <h2 className="mt-4">{t('You do not have access to this page', 'এই পেজে আপনার প্রবেশাধিকার নেই')}</h2>
+      <p className="text-muted">{t(`Your role (${user?.role_name}) does not include it. Ask an administrator if you need it.`, `আপনার রোলে (${user?.role_name}) এটি নেই। প্রয়োজন হলে অ্যাডমিনিস্ট্রেটরকে জানান।`)}</p>
+      <NavLink to={firstPage()} className="btn btn-primary">{t('Go to my start page', 'আমার শুরুর পেজে যান')}</NavLink>
+    </div></div>
+  );
+}
+
 export default function Layout() {
-  const { user, logout, isStaff } = useAuth();
+  const { user, logout, isStaff, canPage } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useLang();
@@ -51,6 +75,7 @@ export default function Layout() {
 
         <nav className="sidebar-nav">
           {isStaff ? (<>
+          <NavGroup>
           <div className="nav-section">{t('Executive & Core')}</div>
           <NavLink to="/apartment/dashboard" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
             <i className="fa-solid fa-gauge-high"></i>
@@ -84,8 +109,10 @@ export default function Layout() {
             <i className="fa-solid fa-file-invoice-dollar" style={{ color: '#fbbf24' }}></i>
             <span style={{ fontWeight: 700 }}>{t('Receipts, SMS & Online Pay')}</span>
           </NavLink>
-
           <hr className="nav-divider" />
+          </NavGroup>
+          
+          <NavGroup>
           <div className="nav-section">{t('Building Operations')}</div>
           <NavLink to="/operations/tenants" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
             <i className="fa-solid fa-house-user"></i>
@@ -107,11 +134,26 @@ export default function Layout() {
             <i className="fa-solid fa-headset"></i>
             <span>{t('Resident Helpdesk', 'বাসিন্দা হেল্পডেস্ক')}</span>
           </NavLink>
+          <NavLink to="/operations/renewals" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
+            <i className="fa-solid fa-calendar-check"></i>
+            <span>{t('Renewals & Upkeep', 'নবায়ন ও রক্ষণাবেক্ষণ')}</span>
+          </NavLink>
+          <NavLink to="/operations/association" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
+            <i className="fa-solid fa-people-roof"></i>
+            <span>{t("Owners' Association", 'ফ্ল্যাট মালিক সমিতি')}</span>
+          </NavLink>
+          <NavLink to="/operations/transfers" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
+            <i className="fa-solid fa-right-left"></i>
+            <span>{t('Flat & Share Transfer', 'ফ্ল্যাট ও শেয়ার হস্তান্তর')}</span>
+          </NavLink>
           <NavLink to="/operations/automation" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
             <i className="fa-solid fa-robot"></i>
             <span>{t('Automation', 'স্বয়ংক্রিয় কাজ')}</span>
           </NavLink>
           <hr className="nav-divider" />
+          </NavGroup>
+          
+          <NavGroup>
           <div className="nav-section">{t('Engineering & Drawings')}</div>
           <NavLink to="/apartment/works" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
             <i className="fa-solid fa-trowel-bricks"></i>
@@ -125,8 +167,14 @@ export default function Layout() {
             <i className="fa-solid fa-boxes-stacked"></i>
             <span>{t('BOQ & Materials')}</span>
           </NavLink>
-
+          <NavLink to="/apartment/inventory" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
+            <i className="fa-solid fa-warehouse"></i>
+            <span>{t('Inventory & Material Plan', 'মজুদ ও মালামাল পরিকল্পনা')}</span>
+          </NavLink>
           <hr className="nav-divider" />
+          </NavGroup>
+          
+          <NavGroup>
           <div className="nav-section">{t('Contractors & Site Operations')}</div>
           <NavLink to="/apartment/contractors" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
             <i className="fa-solid fa-hard-hat"></i>
@@ -140,8 +188,10 @@ export default function Layout() {
             <i className="fa-solid fa-truck-ramp-box"></i>
             <span>{t('Vendors & Invoices')}</span>
           </NavLink>
-
           <hr className="nav-divider" />
+          </NavGroup>
+          
+          <NavGroup>
           <div className="nav-section">{t('Financial Engine & Forecasting')}</div>
           <NavLink to="/apartment/cashflow" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
             <i className="fa-solid fa-chart-line"></i>
@@ -167,8 +217,10 @@ export default function Layout() {
             <i className="fa-solid fa-file-invoice"></i>
             <span>{t('Financial Reports')}</span>
           </NavLink>
-
           <hr className="nav-divider" />
+          </NavGroup>
+          
+          <NavGroup>
           <div className="nav-section">{t('Governance & Handover')}</div>
           <NavLink to="/apartment/voting" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
             <i className="fa-solid fa-check-to-slot"></i>
@@ -186,8 +238,17 @@ export default function Layout() {
             <i className="fa-solid fa-shield-halved"></i>
             <span>{t('Approvals & Audit Log')}</span>
           </NavLink>
-
           <hr className="nav-divider" />
+          </NavGroup>
+          
+          <NavGroup>
+          <div className="nav-section">{t('System', 'সিস্টেম')}</div>
+          <NavLink to="/admin/access" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
+            <i className="fa-solid fa-user-lock"></i>
+            <span>{t('Users, Roles & Permissions', 'ব্যবহারকারী, রোল ও অনুমতি')}</span>
+          </NavLink>
+          <hr className="nav-divider" />
+          </NavGroup>
           </>) : (<>
           <div className="nav-section">{t('My Flat')}</div>
           <NavLink to="/apartment/owner-portal" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
@@ -197,6 +258,10 @@ export default function Layout() {
           <hr className="nav-divider" />
           </>)}
           <div className="nav-section">{t('Account')}</div>
+          <NavLink to="/account" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
+            <i className="fa-solid fa-key"></i>
+            <span>{t('My account', 'আমার অ্যাকাউন্ট')}</span>
+          </NavLink>
           <button className="nav-item" onClick={handleLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left' }}>
             <i className="fa-solid fa-sign-out-alt"></i>
             <span>{t('Logout')}</span>
@@ -232,14 +297,14 @@ export default function Layout() {
             <div className="user-meta" style={{ display: 'flex', flexDirection: 'column' }}>
               <span className="user-name">{user?.name || t('Administrator', 'প্রশাসক')}</span>
               <span style={{ fontSize: '0.7rem', color: 'var(--gray-500)', textTransform: 'uppercase', fontWeight: 600 }}>
-                {user?.role || 'SUPER_ADMIN'}
+                {user?.role_name || user?.role}
               </span>
             </div>
           </div>
         </header>
 
         <main className="page-content">
-          <Outlet />
+          {user && !canPage(location.pathname) ? <NoAccess /> : <Outlet />}
         </main>
       </div>
     </div>

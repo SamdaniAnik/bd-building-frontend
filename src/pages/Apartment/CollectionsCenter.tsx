@@ -473,7 +473,7 @@ function SmsTab({ show }: Show) {
             {outbox?.map(m => (
               <tr key={m.id_sms}>
                 <td className="text-xs" style={{ whiteSpace: 'nowrap' }}>{new Date(m.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</td>
-                <td className="text-sm">{m.recipient_name}<div className="text-xs text-muted">{m.to_number}</div></td>
+                <td className="text-sm">{m.channel === 'WHATSAPP' && <i className="fa-brands fa-whatsapp" style={{ color: '#16a34a', marginRight: 4 }} title="WhatsApp" />}{m.recipient_name}<div className="text-xs text-muted">{m.to_number}</div></td>
                 <td className="text-sm" style={{ maxWidth: 380 }}>{m.message}</td>
                 <td className="text-center">{m.segments}</td>
                 <td><span className={`badge ${m.status === 'SENT' ? 'badge-success' : m.status === 'SIMULATED' ? 'badge-warning' : 'badge-danger'}`} title={m.provider_response || ''}>{m.status}</span></td>
@@ -530,11 +530,11 @@ function OnlineTab() {
 
 // ── Settings ─────────────────────────────────────────────────
 function SettingsTab({ show, status, reload }: Show & { status: any; reload: () => void }) {
-  const { user } = useAuth();
+  const { can } = useAuth();
   const [form, setForm] = useState<any>(status?.settings || null);
   useEffect(() => { if (status?.settings) setForm(status.settings); }, [status]);
   if (!form) return <div className="text-muted">{tr("Loading…")}</div>;
-  const admin = user?.role === 'admin';
+  const admin = can('collections.settings');
   const set = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
   const save = async () => { try { const r: any = await api.put('/collections/settings', form); show(true, r.message); reload(); } catch (e: any) { show(false, e.message); } };
   const F = (k: string, label: string, hint?: string) => (
@@ -552,6 +552,11 @@ function SettingsTab({ show, status, reload }: Show & { status: any; reload: () 
           <div className="form-group"><label className="form-label">{tr("SMS language")}</label>
             <select className="form-select" disabled={!admin} value={form.sms_language} onChange={e => set('sms_language', e.target.value)}><option value="bn">বাংলা (70 chars / {tr("part")})</option><option value="en">{tr("English (160 chars / part)")}</option></select></div>
           <div className="form-group" style={{ alignSelf: 'end' }}><label className="flex gap-2 text-sm"><input type="checkbox" disabled={!admin} checked={form.sms_auto_payment_received !== 'false'} onChange={e => set('sms_auto_payment_received', e.target.checked ? 'true' : 'false')} /> {tr("Auto-SMS owners when an online payment succeeds")}</label></div>
+          <div className="form-group"><label className="flex gap-2 text-sm"><input type="checkbox" disabled={!admin} checked={form.whatsapp_enabled === 'true'} onChange={e => set('whatsapp_enabled', e.target.checked ? 'true' : 'false')} /> <i className="fa-brands fa-whatsapp" /> {tr("Also send every SMS on WhatsApp")}</label>
+            <div className="form-text">{tr("Reminders, receipts and notices go to both. Needs the WhatsApp settings on the server (see right).")}</div></div>
+          <div className="form-group"><label className="form-label">{tr("Extra source tax when a vendor has no e-TIN (%)")}</label>
+            <input type="number" min={0} max={200} className="form-control" disabled={!admin} value={form.no_tin_tds_uplift_percent ?? ''} onChange={e => set('no_tin_tds_uplift_percent', e.target.value)} />
+            <div className="form-text">{tr("50 means a 5% TDS rate becomes 7.5%. Check the current Finance Act.")}</div></div>
         </div>
         {F('receipt_footer', 'Receipt footer')}
         {admin && <button className="btn btn-primary" onClick={save}>{tr("Save settings")}</button>}
@@ -569,6 +574,15 @@ SMS_SENDER_ID=...
 SMS_PROVIDER=sslwireless
 SMS_API_TOKEN=...
 SMS_SID=...`}</pre>
+        </div></div>
+        <div className="card mb-4"><div className="card-header"><span className="card-title"><i className="fa-brands fa-whatsapp" /> WhatsApp</span></div><div className="card-body text-sm">
+          <p>{tr("Status:")} <strong>{status?.whatsapp?.live ? 'live via Meta Cloud API' : status?.whatsapp?.provider === 'meta' ? `missing ${status.whatsapp.missing.join(', ')}` : 'simulated — nothing is sent'}</strong></p>
+          <p className="text-muted">{tr("WhatsApp only allows businesses to start a chat with an approved template. In WhatsApp Manager, create a UTILITY template whose body is just {{1}}, then set:")}</p>
+          <pre style={{ background: '#f1f5f9', padding: 10, borderRadius: 6, fontSize: 12, whiteSpace: 'pre-wrap' }}>{`WHATSAPP_PROVIDER=meta
+WHATSAPP_TOKEN=...
+WHATSAPP_PHONE_NUMBER_ID=...
+WHATSAPP_TEMPLATE=building_notice
+WHATSAPP_TEMPLATE_LANG=bn`}</pre>
         </div></div>
         <div className="card"><div className="card-header"><span className="card-title"><i className="fa-solid fa-credit-card" /> SSLCommerz</span></div><div className="card-body text-sm">
           <p>{tr("Status:")} <strong>{status?.gateway?.mode === 'SSLCOMMERZ' ? `configured (${status.gateway.sandbox ? 'sandbox' : 'LIVE'})` : status?.gateway?.mode === 'MOCK' ? 'test mode — no real money' : 'not configured'}</strong></p>

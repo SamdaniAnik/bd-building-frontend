@@ -10,6 +10,7 @@ const UnitsList = lazy(() => import('./pages/Apartment/UnitsList'));
 const OwnersList = lazy(() => import('./pages/Apartment/OwnersList'));
 const WorksManagement = lazy(() => import('./pages/Apartment/WorksManagement'));
 const BOQMaterials = lazy(() => import('./pages/Apartment/BOQMaterials'));
+const Inventory = lazy(() => import('./pages/Apartment/Inventory'));
 const ProcurementVendors = lazy(() => import('./pages/Apartment/ProcurementVendors'));
 const FinanceManagement = lazy(() => import('./pages/Apartment/FinanceManagement'));
 const FacilitiesLifts = lazy(() => import('./pages/Apartment/FacilitiesLifts'));
@@ -41,6 +42,12 @@ const BuildingStaff = lazy(() => import('./pages/Operations/BuildingStaff'));
 const GateParking = lazy(() => import('./pages/Operations/GateParking'));
 const Helpdesk = lazy(() => import('./pages/Operations/Helpdesk'));
 const Automation = lazy(() => import('./pages/Operations/Automation'));
+const RenewalsUpkeep = lazy(() => import('./pages/Operations/RenewalsUpkeep'));
+const Association = lazy(() => import('./pages/Operations/Association'));
+const Transfers = lazy(() => import('./pages/Operations/Transfers'));
+const AccessControl = lazy(() => import('./pages/Admin/AccessControl'));
+const MyAccount = lazy(() => import('./pages/Admin/MyAccount'));
+const TransferPrint = lazy(() => import('./pages/Operations/TransferPrint'));
 
 // Auth & Classic
 const Login = lazy(() => import('./pages/Login'));
@@ -62,10 +69,11 @@ const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   return token ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
+// Land on the first page the user's role allows (dashboard for most staff, the portal for owners).
 const HomeRedirect = () => {
-  const { user, isStaff } = useAuth();
+  const { user, firstPage } = useAuth();
   if (!user) return <Loader />;
-  return <Navigate to={isStaff ? '/apartment/dashboard' : '/apartment/owner-portal'} replace />;
+  return <Navigate to={firstPage()} replace />;
 };
 
 export default function App() {
@@ -79,6 +87,7 @@ export default function App() {
             {/* Print view sits outside the app shell so the page prints cleanly */}
             <Route path="/print/receipt/:id" element={<PrivateRoute><ReceiptPrint /></PrivateRoute>} />
             <Route path="/print/tenant-form/:id" element={<PrivateRoute><TenantFormPrint /></PrivateRoute>} />
+            <Route path="/print/transfer/:id" element={<PrivateRoute><TransferPrint /></PrivateRoute>} />
             <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
               <Route index element={<HomeRedirect />} />
               
@@ -89,6 +98,7 @@ export default function App() {
               <Route path="apartment/owners" element={<OwnersList />} />
               <Route path="apartment/works" element={<WorksManagement />} />
               <Route path="apartment/boq" element={<BOQMaterials />} />
+              <Route path="apartment/inventory" element={<Inventory />} />
               <Route path="apartment/procurement" element={<ProcurementVendors />} />
               <Route path="apartment/finances" element={<FinanceManagement />} />
               <Route path="apartment/facilities" element={<FacilitiesLifts />} />
@@ -116,6 +126,11 @@ export default function App() {
               <Route path="operations/gate" element={<GateParking />} />
               <Route path="operations/helpdesk" element={<Helpdesk />} />
               <Route path="operations/automation" element={<Automation />} />
+              <Route path="operations/renewals" element={<RenewalsUpkeep />} />
+              <Route path="operations/association" element={<Association />} />
+              <Route path="operations/transfers" element={<Transfers />} />
+              <Route path="admin/access" element={<AccessControl />} />
+              <Route path="account" element={<MyAccount />} />
 
               {/* ORIGINAL GENERAL MODULES */}
               <Route path="buildings" element={<ListBuilding />} />

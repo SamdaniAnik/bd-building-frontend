@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { tr, useLang } from '../../i18n/LanguageContext';
 import { Link } from 'react-router-dom';
 import api from '../../api/client';
+import { fmtDateTime } from '../../utils/bd';
 
 export default function ExecutiveDashboard() {
   useLang(); // re-render (without remounting) when the language changes, so tr() text updates and form state is kept
@@ -378,7 +379,7 @@ export default function ExecutiveDashboard() {
                     {a.new_value}
                   </div>
                   <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '2px' }}>
-                    {new Date(a.created_at).toLocaleString()}
+                    {fmtDateTime(a.created_at)}
                   </div>
                 </div>
               </div>
@@ -408,7 +409,7 @@ export default function ExecutiveDashboard() {
                     {n.message}
                   </div>
                   <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '2px' }}>
-                    {new Date(n.created_at).toLocaleString()}
+                    {fmtDateTime(n.created_at)}
                   </div>
                 </div>
               </div>

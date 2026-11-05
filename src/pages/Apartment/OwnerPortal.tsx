@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import MyComplaints from './MyComplaints';
+import ZakatStatement from '../Operations/ZakatStatement';
+import Ballot, { ElectionResults } from '../Operations/Ballot';
 import api from '../../api/client';
 import { useLang, tr } from '../../i18n/LanguageContext';
+import { fmtDate } from '../../utils/bd';
 
 export default function OwnerPortal() {
   const [portalData, setPortalData] = useState<any>(null);
@@ -11,7 +14,7 @@ export default function OwnerPortal() {
   const [isPreview, setIsPreview] = useState(false);
   // Coming back from the payment gateway lands on ?payment=success|failed|cancelled|error
   const returned = new URLSearchParams(window.location.search).get('payment');
-  const [activeTab, setActiveTab] = useState<'summary' | 'pay' | 'works' | 'payments' | 'loans' | 'ledger' | 'complaints'>(returned ? 'pay' : 'summary');
+  const [activeTab, setActiveTab] = useState<'summary' | 'pay' | 'works' | 'payments' | 'loans' | 'ledger' | 'complaints' | 'zakat' | 'vote'>(returned ? 'pay' : 'summary');
   const [openComplaints, setOpenComplaints] = useState<number | null>(null);
   const [banner, setBanner] = useState<string | null>(returned);
   const [payConfig, setPayConfig] = useState<{ enabled: boolean; mode: string | null; sandbox: boolean } | null>(null);
@@ -209,9 +212,19 @@ export default function OwnerPortal() {
         <button className={`pill-tab ${activeTab === 'complaints' ? 'active' : ''}`} onClick={() => setActiveTab('complaints')}>
           <i className="fa-solid fa-headset" style={{ marginRight: '6px' }}></i> {t('Complaints & Repairs', 'অভিযোগ ও মেরামত')}{openComplaints ? ` (${n(openComplaints)})` : ''}
         </button>
+        <button className={`pill-tab ${activeTab === 'vote' ? 'active' : ''}`} onClick={() => setActiveTab('vote')}>
+          <i className="fa-solid fa-check-to-slot" style={{ marginRight: '6px' }}></i> {t('Committee election', 'কমিটি নির্বাচন')}
+        </button>
+        <button className={`pill-tab ${activeTab === 'zakat' ? 'active' : ''}`} onClick={() => setActiveTab('zakat')}>
+          <i className="fa-solid fa-hand-holding-heart" style={{ marginRight: '6px' }}></i> {t('Zakat statement', 'যাকাত বিবরণী')}
+        </button>
       </div>
 
       {notices.length > 0 && <NoticeBoard notices={notices} />}
+
+      {activeTab === 'vote' && <MyElections isPreview={isPreview} />}
+
+      {activeTab === 'zakat' && <MyZakat previewOwnerId={isPreview ? portalData?.owner?.id_owners : null} />}
 
       {activeTab === 'complaints' && <MyComplaints previewOwnerId={isPreview ? portalData?.owner?.id_owners : null} onCount={setOpenComplaints} />}
 
@@ -260,7 +273,7 @@ export default function OwnerPortal() {
                 </div>
                 <div className="flex-between text-sm py-1">
                   <span>{t('Agreement Date:', 'চুক্তির তারিখ:')}</span>
-                  <span className="fw-semibold">{primaryUnit.agreement_date || '2026-01-15'}</span>
+                  <span className="fw-semibold">{fmtDate(primaryUnit.agreement_date)}</span>
                 </div>
                 <div className="flex-between text-sm py-1">
                   <span>{t('Current Flat Status:', 'ফ্ল্যাটের বর্তমান অবস্থা:')}</span>
@@ -439,7 +452,7 @@ export default function OwnerPortal() {
                         ? <button className="btn btn-light btn-sm" onClick={() => openReceipt(receiptByNo.get(c.receipt_number).id_receipts)}><i className="fa-solid fa-print" /> {c.receipt_number}</button>
                         : c.receipt_number}
                     </td>
-                    <td>{c.payment_date}</td>
+                    <td>{fmtDate(c.payment_date)}</td>
                     <td><span className="badge badge-info">{c.contribution_type?.replace('_', ' ')}</span></td>
                     <td>{c.payment_method}</td>
                     <td className="text-right fw-bold text-success">৳{parseFloat(c.amount).toLocaleString()}</td>
@@ -504,7 +517,7 @@ export default function OwnerPortal() {
               <tbody>
                 {ledger.map((l: any) => (
                   <tr key={l.id_ledger}>
-                    <td>{l.transaction_date}</td>
+                    <td>{fmtDate(l.transaction_date)}</td>
                     <td>
                       <span className={`badge ${l.entry_type === 'DEBIT' ? 'badge-danger' : 'badge-success'}`}>
                         {l.category}
@@ -552,6 +565,68 @@ function NoticeBoard({ notices }: { notices: any[] }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+// Owner's own zakat statement (staff previewing the portal see the previewed owner's).
+function MyZakat({ previewOwnerId }: { previewOwnerId: number | null }) {
+  const { t } = useLang();
+  const [d, setD] = useState<any>(null);
+  const [err, setErr] = useState<string | null>(null);
+  useEffect(() => {
+    api.get(previewOwnerId ? `/ops/association/zakat/${previewOwnerId}` : '/ops/association/zakat/portal').then(setD).catch((e: any) => setErr(e?.message || 'Could not load'));
+  }, [previewOwnerId]);
+  if (err) return <div className="alert alert-danger">{err}</div>;
+  if (!d) return <div className="text-muted">{t('Loading…', 'লোড হচ্ছে…')}</div>;
+  return <ZakatStatement data={d} />;
+}
+
+// Committee elections for the logged-in owner: vote while voting is open, see the result once published.
+function MyElections({ isPreview }: { isPreview: boolean }) {
+  const { t } = useLang();
+  const [rows, setRows] = useState<any[] | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [voting, setVoting] = useState<any>(null);
+  const [code, setCode] = useState('');
+  const [check, setCheck] = useState<{ id: number; result: any } | null>(null);
+  const load = () => api.get('/ops/elections/portal').then((r: any) => setRows(r.rows)).catch((e: any) => setErr(e?.message || 'Could not load'));
+  useEffect(() => { if (!isPreview) load(); }, [isPreview]);
+  if (isPreview) return <div className="alert alert-info">{t('Owners vote here with their own login. Staff run elections from Owners’ Association → Elections.', 'মালিকরা নিজের লগইনে এখানে ভোট দেন। কর্মীরা মালিক সমিতি → নির্বাচন থেকে পরিচালনা করেন।')}</div>;
+  if (err) return <div className="alert alert-danger">{err}</div>;
+  if (!rows) return <div className="text-muted">{t('Loading…', 'লোড হচ্ছে…')}</div>;
+  if (voting) return (
+    <div className="card"><div className="card-body">
+      <Ballot title={voting.title} positions={voting.positions.filter((p: any) => p.contested).concat(voting.positions.filter((p: any) => !p.contested))}
+        onCancel={() => { setVoting(null); load(); }}
+        onCast={async choices => { try { const r: any = await api.post(`/ops/elections/portal/${voting.id_elections}/ballot`, { choices }); return r.receipt; } catch (e: any) { alert(e?.message || 'Could not record the vote'); return null; } }} />
+    </div></div>
+  );
+  const verify = async (id: number) => { try { setCheck({ id, result: await api.get(`/ops/elections/portal/${id}/receipt/${encodeURIComponent(code.trim())}`) }); } catch { setCheck({ id, result: { counted: false } }); } };
+  if (!rows.length) return <div className="alert alert-info">{t('There is no committee election at the moment.', 'এখন কোনো কমিটি নির্বাচন নেই।')}</div>;
+  return (
+    <div>
+      {rows.map(e => (
+        <div key={e.id_elections} className="card mb-4">
+          <div className="card-header"><div className="card-title"><i className="fa-solid fa-check-to-slot" /> {e.title}</div></div>
+          <div className="card-body">
+            <div className="text-sm text-muted mb-4">{t('Voting', 'ভোটগ্রহণ')}: {new Date(e.voting_opens_at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })} → {new Date(e.voting_closes_at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })} · {e.is_secret ? t('secret ballot', 'গোপন ব্যালট') : t('open ballot', 'প্রকাশ্য ব্যালট')}</div>
+            {e.rules_note && <div className="alert alert-info mb-4">{e.rules_note}</div>}
+            {!e.eligible && <div className="alert alert-warning">{t('Only owners with an active flat can vote.', 'শুধু সক্রিয় ফ্ল্যাটের মালিক ভোট দিতে পারেন।')}</div>}
+            {e.eligible && e.has_voted && <div className="alert alert-success"><i className="fa-solid fa-circle-check" /> {t('You voted on', 'আপনি ভোট দিয়েছেন')} {new Date(e.voted_at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}. {t('Thank you.', 'ধন্যবাদ।')}</div>}
+            {e.eligible && !e.has_voted && e.phase === 'VOTING' && <button className="btn btn-success btn-lg" onClick={() => setVoting(e)}><i className="fa-solid fa-box-archive" /> {t('Vote now', 'এখন ভোট দিন')}</button>}
+            {e.eligible && !e.has_voted && e.phase === 'NOT_YET' && <div className="alert alert-info">{t('Voting has not opened yet.', 'ভোটগ্রহণ এখনো শুরু হয়নি।')}</div>}
+            {!e.has_voted && ['ENDED', 'CLOSED', 'PUBLISHED'].includes(e.phase) && <div className="text-sm text-muted">{t('Voting is closed.', 'ভোটগ্রহণ শেষ।')}</div>}
+            {e.status === 'CLOSED' && <div className="text-sm text-muted">{t('Votes are being counted — the result will appear here.', 'ভোট গণনা চলছে — ফলাফল এখানে দেখাবে।')}</div>}
+            {e.results && <div className="mt-4"><ElectionResults positions={e.results.positions} ballots={e.results.ballots} /></div>}
+            {e.has_voted && <div className="flex gap-2 mt-4" style={{ alignItems: 'center', flexWrap: 'wrap' }}>
+              <input className="form-control" style={{ width: 160, fontFamily: 'monospace' }} placeholder="XXXX-XXXX" aria-label={t('Ballot receipt', 'ব্যালট রসিদ')} value={code} onChange={ev => setCode(ev.target.value)} />
+              <button className="btn btn-light btn-sm" disabled={code.trim().length < 9} onClick={() => verify(e.id_elections)}>{t('Check my receipt', 'রসিদ যাচাই')}</button>
+              {check && check.id === e.id_elections && (check.result.counted ? <span className="badge badge-success">{t('Your ballot is in the count', 'আপনার ব্যালট গণনায় আছে')}</span> : <span className="badge badge-danger">{t('No ballot with this code', 'এই কোডে কোনো ব্যালট নেই')}</span>)}
+            </div>}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
